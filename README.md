@@ -35,10 +35,6 @@ An example of a simple REST server that responds to GET requests on http://local
             public void HandleGettingFoo(HttpListenerContext context)
             {
     			// code to handle foo goes here
-
-                context.Response.ContentType = "text/html";
-                context.Response.StatusCode = 200;
-                context.Response.StatusDescription = "Success";
                 this.SendResponse(context, "Foo was handled successfully");
             }
         }
