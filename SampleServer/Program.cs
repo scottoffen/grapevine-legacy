@@ -11,18 +11,14 @@ namespace SampleServer
         static void Main(string[] args)
         {
             var server = new RestServer();
-            server.Host = "*";
-            server.Port = "4567";
-            server.MaxThreads = 100;
-            server.WebRoot = "";
 
             server.Start();
             while (server.IsListening)
             {
                 Thread.Sleep(500);
             }
-
-            Environment.Exit(0);
+            server.Stop();
+//            Environment.Exit(0);
         }
     }
 }

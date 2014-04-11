@@ -1,0 +1,40 @@
+﻿{
+	"types":
+	[
+		{
+			"Extension" : "HTML",
+			"MIMEType" : "text/html",
+			"IsText" : true
+		},
+		{
+			"Extension" : "CSS",
+			"MIMEType" : "text/css",
+			"IsText" : true
+		},
+		{
+			"Extension" : "JS",
+			"MIMEType" : "application/javascript",
+			"IsText" : true
+		},
+		{
+			"Extension" : "PNG",
+			"MIMEType" : "image/png",
+			"IsText" : false
+		},
+		{
+			"Extension" : "JPG",
+			"MIMEType" : "image/jpg",
+			"IsText" : false
+		},
+		{
+			"Extension" : "GIF",
+			"MIMEType" : "image/gif",
+			"IsText" : false
+		},
+		{
+			"Extension" : "ICO",
+			"MIMEType" : "image/vnd.microsoft.icon",
+			"IsText" : false
+		}
+	]
+}

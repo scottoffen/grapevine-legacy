@@ -166,19 +166,15 @@ namespace Grapevine
 
         private void HandleRequests()
         {
-            while (_listening)
+            while (_listener.IsListening)
             {
                 try
                 {
                     var context = _listener.GetContext();
                     QueueContext(context);
                 }
-                catch
-                {
-                    Stop();
-                }
+                catch { }
             }
-            Stop();
         }
 
         private void QueueContext(HttpListenerContext context)
@@ -256,6 +252,7 @@ namespace Grapevine
             context.Response.StatusDescription = "Not Found";
             context.Response.ContentLength64 = length;
             context.Response.OutputStream.Write(buffer, 0, length);
+            context.Response.OutputStream.Close();
             context.Response.Close();
         }
 
@@ -284,20 +281,42 @@ namespace Grapevine
 
             context.Response.ContentLength64 = length;
             context.Response.OutputStream.Write(buffer, 0, length);
+            context.Response.OutputStream.Close();
             context.Response.Close();
         }
 
         protected void SendFileResponse(HttpListenerContext context, string path)
         {
-            // http://stackoverflow.com/questions/13385633/serving-large-files-with-c-sharp-httplistener
-            // http://www.codingvision.net/networking/c-simple-http-server
-
-            var buffer = Encoding.UTF8.GetBytes(path);
+            var type   = ContentTypes.GetContentType(path);
+            var buffer = GetFileBytes(path, type.IsText);
             var length = buffer.Length;
 
+            context.Response.ContentType = type.MIMEType;
             context.Response.ContentLength64 = length;
             context.Response.OutputStream.Write(buffer, 0, length);
+            context.Response.OutputStream.Close();
             context.Response.Close();
+        }
+
+        private byte[] GetFileBytes(string path, bool istext)
+        {
+            byte[] buffer;
+
+            if (istext)
+            {
+                var reader = new StreamReader(path);
+                buffer = Encoding.UTF8.GetBytes(reader.ReadToEnd());
+                reader.Close();
+            }
+            else
+            {
+                var finfo = new FileInfo(path);
+                var reader = new BinaryReader(File.Open(path, FileMode.Open, FileAccess.Read));
+                buffer = reader.ReadBytes((int)finfo.Length);
+                reader.Close();
+            }
+
+            return buffer;
         }
     }
 }
