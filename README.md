@@ -6,20 +6,20 @@ Grapevine
 Grapevine provides a framework for quickly and easily creating multithreaded .NET HTTP endpoints using the ubiquitous [HttpListener](http://msdn.microsoft.com/en-us/library/vstudio/system.net.httplistener(v=vs.100)) class and custom [attributes](http://msdn.microsoft.com/en-us/library/sw480ze8.aspx).  Grapevine makes it simple to serve up files and REST services equally well, providing all the functionality needed to create a robust backend for small- and medium-sized applications.
 
 ##Features##
-Grapevine is:
+[Grapevine](http://en.wikipedia.org/wiki/Grapevine_(gossip)#Features_of_Grapevine_Communication) is:
 
-- Flexible : Grapevine just listens, you provide the responses. You can even have one responder handle multiple request types. If no handler exists for the request, it looks for a file at the path specified.  If there is no file, it handles returning the errors.  You only have to worry about the happy path!
+- Flexible : Grapevine just listens, you provide the responses. You can even have one method handle multiple request types. If no handler exists for the request, it looks for a file at the path specified.  If there is no file, it handles returning the errors.  You only have to worry about the happy path!
 
 - Fast : Grapevine accepts incoming http requests and spins them off to be handled by another thread.  As a result, there is no blocking I/O; the server is always ready to respond to incoming requests.
 
-- No Distortion: The [message context](http://msdn.microsoft.com/en-us/library/vstudio/system.net.httplistenercontext(v=vs.110).aspx) is passed to your responder methods - you get all of the data all of the time so you can decide how to respond.
+- Constant : The [message context](http://msdn.microsoft.com/en-us/library/vstudio/system.net.httplistenercontext(v=vs.110).aspx) is passed to your handler methods - you get all of the data all of the time so you can decide how best to respond.
 
-- Spontaneous: Grapevine searches your code for the best responder, no need to "register" new responders.  You can add files to the webroot to be served on-the-fly - no need to restart the server.  You can even write a custom responder to shut down your server remotely!
+- Spontaneous : Grapevine searches your code for the best handler, no need to "register" new ones.  You can add files to the webroot to be served on-the-fly - no need to restart the server.  You can even write a custom handler to shut down your server remotely!
 
 ##Usage##
-Grapevine provides the [HttpResponder](https://github.com/scottoffen/Grapevine/blob/master/Grapevine/HttpResponder.cs) abstract class and the [Responder](https://github.com/scottoffen/Grapevine/blob/master/Grapevine/Responder.cs) custom attribute.  Simply create a class that extends HttpResponder, and annotate the appropriate responder methods with the Responder attribute.
+Grapevine provides the [HttpResponder](https://github.com/scottoffen/Grapevine/blob/master/Grapevine/HttpResponder.cs) abstract class and the [Responder](https://github.com/scottoffen/Grapevine/blob/master/Grapevine/Responder.cs) custom attribute.  Simply create a class that extends HttpResponder, and annotate the appropriate responder methods with the Responder attribute.  **No methods to implement!**
 
-Attribute values default to Method = "GET" and PathInfo = "/", so for a catch-all method you don't need to define anything.
+Attribute values default to Method = HttpMethod.GET and PathInfo = "/", so for a catch-all method you don't need to define anything.
 
 ###Example###
 An example of a simple REST server that responds to GET requests on http://localhost:1234/foo/5678
@@ -32,13 +32,9 @@ An example of a simple REST server that responds to GET requests on http://local
         class RestServer : HttpResponder
         {
             [Responder(Method = HttpMethod.GET, PathInfo = @"^/foo/\d+$")]
-            public void HandleGettingFoo(HttpListenerContext context)
+            public void HandleFoo(HttpListenerContext context)
             {
     			// code to handle foo goes here
-
-                context.Response.ContentType = "text/html";
-                context.Response.StatusCode = 200;
-                context.Response.StatusDescription = "Success";
                 this.SendResponse(context, "Foo was handled successfully");
             }
         }
@@ -64,12 +60,14 @@ In your main thread, spin up your server like so:
         }
     }
 
-See the [cookbook](https://github.com/scottoffen/Grapevine/wiki) for more examples, including how to change the host, port, number of threads and webroot directory.
+See the [**cookbook**](https://github.com/scottoffen/Grapevine/wiki) for more examples, including how to change the host, port, number of threads and webroot directory.
 
 ###Limitations###
 Grapevine is **not** intended to be a drop-in replacement for [Microsoft IIS](http://www.iis.net/) or [Apache HTTP Server](http://httpd.apache.org/).  Instead, Grapevine aims to be embedded in your application, where using one of those would be overkill.
 
 Grapevine does not support **ASP.NET** nor do any script parsing (**PHP**, **Perl**, **Python**, **Ruby**, etc.) by default - but feel free to fork this project and hack away at it to your hearts content.
+
+A single instance will only listen on one host/port combination (unless you define the host as "*").
 
 ##License##
 Copyright 2011-2014 Scott Offen
