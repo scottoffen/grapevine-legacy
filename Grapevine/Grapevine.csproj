@@ -54,6 +54,7 @@
   <ItemGroup>
     <Compile Include="ContentTypes.cs" />
     <Compile Include="Extension.cs" />
+    <Compile Include="InvalidStateException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Responder.cs" />
     <Compile Include="HttpResponder.cs" />

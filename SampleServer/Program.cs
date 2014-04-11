@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿using System.Threading;
 
 namespace SampleServer
 {
@@ -15,10 +11,9 @@ namespace SampleServer
             server.Start();
             while (server.IsListening)
             {
-                Thread.Sleep(500);
+                Thread.Sleep(100);
             }
             server.Stop();
-//            Environment.Exit(0);
         }
     }
 }

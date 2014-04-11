@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Grapevine
+﻿namespace Grapevine
 {
     [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple = true)]
     public class Responder : System.Attribute
     {
-        public string Method;
+        public HttpMethod Method;
         public string PathInfo;
 
         public Responder()
         {
-            this.Method = "GET";
+            this.Method = HttpMethod.GET;
             this.PathInfo = "/";
         }
     }
+
+    public enum HttpMethod { GET, HEAD, POST, PUT, DELETE };
 }

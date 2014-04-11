@@ -1,38 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net;
-using System.Threading;
-using System.Reflection;
 using System.IO;
+using System.Linq;
+using System.Net;
+using System.Reflection;
+using System.Text;
+using System.Threading;
 
 namespace Grapevine
 {
     public abstract class HttpResponder : IDisposable
     {
+        #region Instance Variables
+
         protected volatile bool _listening;
 
         protected string _webroot = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location) + @"\webroot";
         protected string _default = "index.html";
-        protected string _host = "localhost";
-        protected string _port = "1234";
-        protected int _maxt    = 25;
+        protected string _host    = "localhost";
+        protected string _port    = "1234";
+        protected int _maxt       = 5;
 
         protected readonly Thread _listenerThread;
         protected readonly Thread[] _workers;
-        protected readonly MethodInfo[] _methods;
+        protected readonly List<MethodInfo> _methods;
 
         protected readonly HttpListener _listener = new HttpListener();
         protected readonly ManualResetEvent _stop = new ManualResetEvent(false);
         protected readonly ManualResetEvent _ready = new ManualResetEvent(false);
         protected Queue<HttpListenerContext> _queue = new Queue<HttpListenerContext>();
 
+        #endregion
+
+        #region Constructors
+
         public HttpResponder()
         {
             _workers = new Thread[_maxt];
             _listenerThread = new Thread(HandleRequests);
-            _methods = this.GetType().GetMethods().Where(mi => mi.GetCustomAttributes(true).Any(attr => attr is Responder)).ToArray();
+            _methods = this.GetType().GetMethods().Where(mi => mi.GetCustomAttributes(true).Any(attr => attr is Responder)).ToList<MethodInfo>();
         }
 
         public HttpResponder(string host, string port, int maxThreads)
@@ -43,8 +49,12 @@ namespace Grapevine
 
             _workers = new Thread[_maxt];
             _listenerThread = new Thread(HandleRequests);
-            _methods = this.GetType().GetMethods().Where(mi => mi.GetCustomAttributes(true).Any(attr => attr is Responder)).ToArray();
+            _methods = this.GetType().GetMethods().Where(mi => mi.GetCustomAttributes(true).Any(attr => attr is Responder)).ToList<MethodInfo>();
         }
+
+        #endregion
+
+        #region Public Methods
 
         public void Start()
         {
@@ -63,7 +73,6 @@ namespace Grapevine
         public void Stop()
         {
             _stop.Set();
-            _listenerThread.Join();
             foreach (Thread worker in _workers)
                 worker.Join();
             _listener.Stop();
@@ -74,6 +83,8 @@ namespace Grapevine
         {
             Stop();
         }
+
+        #endregion
 
         #region Public Properties
 
@@ -112,6 +123,10 @@ namespace Grapevine
                 {
                     _host = value;
                 }
+                else
+                {
+                    throw new InvalidStateException();
+                }
             }
         }
 
@@ -126,6 +141,10 @@ namespace Grapevine
                 if (!_listening)
                 {
                     _port = value;
+                }
+                else
+                {
+                    throw new InvalidStateException();
                 }
             }
         }
@@ -142,27 +161,16 @@ namespace Grapevine
                 {
                     _maxt = value;
                 }
+                else
+                {
+                    throw new InvalidStateException();
+                }
             }
         }
 
         #endregion
 
-        private bool VerifyWebRoot(string webroot)
-        {
-            try
-            {
-                if (!Directory.Exists(webroot))
-                {
-                    Directory.CreateDirectory(webroot);
-                }
-
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        #region Threading, Queuing and Processing
 
         private void HandleRequests()
         {
@@ -222,7 +230,8 @@ namespace Grapevine
         {
             try
             {
-                var method = (from mi in _methods where mi.GetCustomAttributes(true).Any(attr => context.Request.RawUrl.Matches(((Responder)attr).PathInfo) && ((Responder)attr).Method == context.Request.HttpMethod.ToUpper()) select mi).First();
+                var x = _methods.ToList<MethodInfo>().Where(mi => mi != null).First();
+                var method = (from mi in _methods where mi.GetCustomAttributes(true).Any(attr => context.Request.RawUrl.Matches(((Responder)attr).PathInfo) && ((Responder)attr).Method.ToString().Equals(context.Request.HttpMethod.ToUpper())) select mi).First();
                 method.Invoke(this, new object[] { context });
             }
             catch
@@ -238,6 +247,27 @@ namespace Grapevine
                 }
 
                 NotImplemented(context);
+            }
+        }
+
+        #endregion
+
+        #region Responding Helpers
+
+        private bool VerifyWebRoot(string webroot)
+        {
+            try
+            {
+                if (!Directory.Exists(webroot))
+                {
+                    Directory.CreateDirectory(webroot);
+                }
+
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -318,5 +348,7 @@ namespace Grapevine
 
             return buffer;
         }
+
+        #endregion
     }
 }
