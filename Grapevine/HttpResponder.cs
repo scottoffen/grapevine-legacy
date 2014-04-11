@@ -304,6 +304,20 @@ namespace Grapevine
             return null;
         }
 
+        protected void SendResponse(HttpListenerContext context, string payload)
+        {
+            var buffer = Encoding.UTF8.GetBytes(payload);
+            var length = buffer.Length;
+
+            context.Response.StatusDescription = "Success";
+            context.Response.ContentType = "text/plain";
+            context.Response.StatusCode = 200;
+            context.Response.ContentLength64 = length;
+            context.Response.OutputStream.Write(buffer, 0, length);
+            context.Response.OutputStream.Close();
+            context.Response.Close();
+        }
+
         protected void SendTextResponse(HttpListenerContext context, string payload)
         {
             var buffer = Encoding.UTF8.GetBytes(payload);
