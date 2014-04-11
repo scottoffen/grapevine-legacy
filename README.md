@@ -18,7 +18,7 @@ Grapevine is:
 
 
 ##Usage##
-Grapevine provides the [HttpResponder](https://github.com/scottoffen/Grapevine/blob/master/HttpResponder.cs) abstract class and the [Responder](https://github.com/scottoffen/Grapevine/blob/master/Responder.cs) custom attribute.  Simply create a class that extends HttpResponder, and annotate the appropriate responder methods with the Responder attribute.
+Grapevine provides the [HttpResponder](https://github.com/scottoffen/Grapevine/blob/master/Grapevine/HttpResponder.cs) abstract class and the [Responder](https://github.com/scottoffen/Grapevine/blob/master/Grapevine/Responder.cs) custom attribute.  Simply create a class that extends HttpResponder, and annotate the appropriate responder methods with the Responder attribute.
 
 Attribute values default to Method = "GET" and PathInfo = "/", so for a catch-all method you don't need to define anything.
 
