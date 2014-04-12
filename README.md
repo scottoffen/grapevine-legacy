@@ -14,20 +14,20 @@ Grapevine provides a framework for quickly and easily creating multithreaded .NE
 
 - Constant : The [message context](http://msdn.microsoft.com/en-us/library/vstudio/system.net.httplistenercontext(v=vs.110).aspx) is passed to your handler methods - you get all of the data all of the time so you can decide how best to respond.
 
-- Spontaneous : Grapevine searches your code for the best handler, no need to "register" new ones.  You can add files to the webroot to be served on-the-fly - no need to restart the server.  You can even write a custom handler to shut down your server remotely!
+- Spontaneous : Grapevine searches your class for the best handler, no need to "register" new ones.  You can add files to the webroot to be served on-the-fly - no need to restart the server.  You can even write a custom handler to shut down your server remotely!
 
 ##Usage##
-Grapevine provides the [HttpResponder](https://github.com/scottoffen/Grapevine/blob/master/Grapevine/HttpResponder.cs) abstract class and the [Responder](https://github.com/scottoffen/Grapevine/blob/master/Grapevine/Responder.cs) custom attribute.  Simply create a class that extends HttpResponder, and annotate the appropriate responder methods with the Responder attribute.  **No methods to implement!**
+Grapevine provides the [HttpResponder](https://github.com/scottoffen/Grapevine/blob/master/Grapevine/HttpResponder.cs) abstract class and the [Responder](https://github.com/scottoffen/Grapevine/blob/master/Grapevine/Responder.cs) custom attribute.  Simply create a class that extends HttpResponder, and annotate the appropriate handler methods with the Responder attribute.  **No methods to implement!**
 
-Attribute values default to Method = HttpMethod.GET and PathInfo = "/", so for a catch-all method you don't need to define anything.
+Attribute values default to Method = `HttpMethod.GET` and PathInfo = `"/"`, so for a catch-all method you don't need to define anything.
 
 ###Example###
-An example of a simple REST server that responds to GET requests on http://localhost:1234/foo/5678
+An example of a simple REST server that responds to GET requests on `http://localhost:1234/foo/5678`.
 
     using System.Net;
     using Grapevine;
     
-    namespace YourApplication
+    namespace SampleServer
     {
         class RestServer : HttpResponder
         {
@@ -43,7 +43,7 @@ In your main thread, spin up your server like so:
 
     using System.Threading;
 
-    namespace YourApplication
+    namespace SampleServer
     {
         class Program
         {
@@ -63,11 +63,11 @@ In your main thread, spin up your server like so:
 See the [**cookbook**](https://github.com/scottoffen/Grapevine/wiki) for more examples, including how to change the host, port, number of threads and webroot directory.
 
 ###Limitations###
-Grapevine is **not** intended to be a drop-in replacement for [Microsoft IIS](http://www.iis.net/) or [Apache HTTP Server](http://httpd.apache.org/).  Instead, Grapevine aims to be embedded in your application, where using one of those would be overkill.
+- Grapevine is **not** intended to be a drop-in replacement for [Microsoft IIS](http://www.iis.net/) or [Apache HTTP Server](http://httpd.apache.org/).  Instead, Grapevine aims to be embedded in your application, where using one of those would be impossible, or just plain overkill.
 
-Grapevine does not support **ASP.NET** nor do any script parsing (**PHP**, **Perl**, **Python**, **Ruby**, etc.) by default - but feel free to fork this project and hack away at it to your hearts content.
+- Grapevine does not support **ASP.NET** nor do any script parsing (**PHP**, **Perl**, **Python**, **Ruby**, etc.) by default - but feel free to fork this project and hack away at it to your hearts content.
 
-A single instance will only listen on one host/port combination (unless you define the host as "*").
+- A single instance will only listen on one host/port combination (unless you define the host as "*").
 
 ##License##
 Copyright 2011-2014 Scott Offen
