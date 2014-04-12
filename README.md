@@ -38,6 +38,7 @@ An example of a simple REST server that responds to GET requests on `http://loca
                 this.SendResponse(context, "Foo was handled successfully");
             }
         }
+    }
 
 In your main thread, spin up your server like so:
 
