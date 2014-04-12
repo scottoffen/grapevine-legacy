@@ -18,7 +18,7 @@ namespace SampleServer
             context.Response.ContentType = "text/plain";
             context.Response.StatusCode = 418;
 
-            this.SendTextResponse(context, "Make your own coffe, foo!");
+            this.SendTextResponse(context, "Make your own coffee, foo!");
         }
 
         [Responder(Method = HttpMethod.POST, PathInfo = @"/.?")]

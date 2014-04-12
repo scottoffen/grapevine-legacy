@@ -230,8 +230,7 @@ namespace Grapevine
         {
             try
             {
-                var x = _methods.ToList<MethodInfo>().Where(mi => mi != null).First();
-                var method = (from mi in _methods where mi.GetCustomAttributes(true).Any(attr => context.Request.RawUrl.Matches(((Responder)attr).PathInfo) && ((Responder)attr).Method.ToString().Equals(context.Request.HttpMethod.ToUpper())) select mi).First();
+                var method = _methods.Where(mi => mi.GetCustomAttributes(true).Any(attr => context.Request.RawUrl.Matches(((Responder)attr).PathInfo) && ((Responder)attr).Method.ToString().Equals(context.Request.HttpMethod.ToUpper()))).First();
                 method.Invoke(this, new object[] { context });
             }
             catch
