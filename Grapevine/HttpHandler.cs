@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace Grapevine
 {
-    public abstract class HttpResponder : IDisposable
+    public abstract class HttpHandler : IDisposable
     {
         #region Instance Variables
 
@@ -34,14 +34,14 @@ namespace Grapevine
 
         #region Constructors
 
-        public HttpResponder()
+        public HttpHandler()
         {
             _workers = new Thread[_maxt];
             _listenerThread = new Thread(HandleRequests);
-            _methods = this.GetType().GetMethods().Where(mi => mi.GetCustomAttributes(true).Any(attr => attr is Responder)).ToList<MethodInfo>();
+            _methods = this.GetType().GetMethods().Where(mi => mi.GetCustomAttributes(true).Any(attr => attr is Handler)).ToList<MethodInfo>();
         }
 
-        public HttpResponder(string host, string port, int maxThreads)
+        public HttpHandler(string host, string port, int maxThreads)
         {
             _host = host;
             _port = port;
@@ -49,7 +49,7 @@ namespace Grapevine
 
             _workers = new Thread[_maxt];
             _listenerThread = new Thread(HandleRequests);
-            _methods = this.GetType().GetMethods().Where(mi => mi.GetCustomAttributes(true).Any(attr => attr is Responder)).ToList<MethodInfo>();
+            _methods = this.GetType().GetMethods().Where(mi => mi.GetCustomAttributes(true).Any(attr => attr is Handler)).ToList<MethodInfo>();
         }
 
         #endregion
@@ -230,7 +230,7 @@ namespace Grapevine
         {
             try
             {
-                var method = _methods.Where(mi => mi.GetCustomAttributes(true).Any(attr => context.Request.RawUrl.Matches(((Responder)attr).PathInfo) && ((Responder)attr).Method.ToString().Equals(context.Request.HttpMethod.ToUpper()))).First();
+                var method = _methods.Where(mi => mi.GetCustomAttributes(true).Any(attr => context.Request.RawUrl.Matches(((Handler)attr).PathInfo) && ((Handler)attr).Method.ToString().Equals(context.Request.HttpMethod.ToUpper()))).First();
                 method.Invoke(this, new object[] { context });
             }
             catch

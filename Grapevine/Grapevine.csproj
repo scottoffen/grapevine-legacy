@@ -56,8 +56,8 @@
     <Compile Include="Extension.cs" />
     <Compile Include="InvalidStateException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Responder.cs" />
-    <Compile Include="HttpResponder.cs" />
+    <Compile Include="Handler.cs" />
+    <Compile Include="HttpHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="content-types.json">

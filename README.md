@@ -17,7 +17,7 @@ Grapevine provides a framework for quickly and easily creating multithreaded .NE
 - Spontaneous : Grapevine searches your class for the best handler, no need to "register" new ones.  You can add files to the webroot to be served on-the-fly - no need to restart the server.  You can even write a custom handler to shut down your server remotely!
 
 ##Usage##
-Grapevine provides the [HttpResponder](https://github.com/scottoffen/Grapevine/blob/master/Grapevine/HttpResponder.cs) abstract class and the [Responder](https://github.com/scottoffen/Grapevine/blob/master/Grapevine/Responder.cs) custom attribute.  Simply create a class that extends HttpResponder, and annotate the appropriate handler methods with the Responder attribute.  **No methods to implement!**
+Grapevine provides the [HttpHandler](https://github.com/scottoffen/Grapevine/blob/master/Grapevine/HttpHandler.cs) abstract class and the [Handler](https://github.com/scottoffen/Grapevine/blob/master/Grapevine/Handler.cs) custom attribute.  Simply create a class that extends HttpHandler, and annotate the appropriate handler methods with the Handler attribute.  **No methods to implement!**
 
 Attribute values default to Method = `HttpMethod.GET` and PathInfo = `"/"`, so for a catch-all method you don't need to define anything.
 
@@ -29,9 +29,9 @@ An example of a simple REST server that responds to GET requests on `http://loca
     
     namespace SampleServer
     {
-        class RestServer : HttpResponder
+        class RestServer : HttpHandler
         {
-            [Responder(Method = HttpMethod.GET, PathInfo = @"^/foo/\d+$")]
+            [Handler(Method = HttpMethod.GET, PathInfo = @"^/foo/\d+$")]
             public void HandleFoo(HttpListenerContext context)
             {
     			// code to handle foo goes here
