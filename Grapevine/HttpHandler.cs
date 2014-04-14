@@ -262,6 +262,7 @@ namespace Grapevine
                     Directory.CreateDirectory(webroot);
                 }
 
+                ContentTypes.LoadContentTypes();
                 return true;
             }
             catch
