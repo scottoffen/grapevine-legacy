@@ -5,6 +5,11 @@ Grapevine
 
 Grapevine provides a framework for quickly and easily creating multithreaded .NET HTTP endpoints using the ubiquitous [HttpListener](http://msdn.microsoft.com/en-us/library/vstudio/system.net.httplistener(v=vs.100)) class and custom [attributes](http://msdn.microsoft.com/en-us/library/sw480ze8.aspx).  Grapevine makes it simple to serve up files and REST services equally well, providing all the functionality needed to create a robust backend for small- and medium-sized applications.
 
+###Install Grapevine via NuGet###
+As of 1.0.2, Grapevine is available to install via [NuGet](https://www.nuget.org/packages/Grapevine/):
+
+    > Install-Package Grapevine
+
 ##Features##
 [Grapevine](http://en.wikipedia.org/wiki/Grapevine_(gossip)#Features_of_Grapevine_Communication) is:
 
@@ -71,7 +76,7 @@ See the [**cookbook**](https://github.com/scottoffen/Grapevine/wiki) for more ex
 - A single instance will only listen on one host/port combination (unless you define the host as "*").
 
 ##License##
-Copyright 2011-2014 Scott Offen
+Copyright 2014 Scott Offen
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
