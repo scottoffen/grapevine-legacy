@@ -71,7 +71,7 @@ See the [**cookbook**](https://github.com/scottoffen/Grapevine/wiki) for more ex
 ###Limitations###
 - Grapevine is **not** intended to be a drop-in replacement for [Microsoft IIS](http://www.iis.net/) or [Apache HTTP Server](http://httpd.apache.org/).  Instead, Grapevine aims to be embedded in your application, where using one of those would be impossible, or just plain overkill.
 
-- Grapevine does not support **ASP.NET** nor do any script parsing (**PHP**, **Perl**, **Python**, **Ruby**, etc.) by default - but feel free to fork this project and hack away at it to your hearts content.
+- Grapevine does not support **ASP.NET** nor does it do any script parsing (**PHP**, **Perl**, **Python**, **Ruby**, etc.) by default - but feel free to fork this project and hack away at it to your hearts content.
 
 - A single instance will only listen on one host/port combination (unless you define the host as "*").
 
