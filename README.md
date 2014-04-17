@@ -3,16 +3,22 @@ Grapevine REST/HTTP Server
 
 ![](https://raw.github.com/scottoffen/Grapevine/master/grapevine.png)
 
-Grapevine provides a framework for quickly and easily creating multithreaded .NET HTTP endpoints using the ubiquitous [HttpListener](http://msdn.microsoft.com/en-us/library/vstudio/system.net.httplistener(v=vs.100)) class and custom [attributes](http://msdn.microsoft.com/en-us/library/sw480ze8.aspx).  Grapevine makes it simple to serve up files and REST services equally well, providing all the functionality needed to create a robust backend for small- and medium-sized applications.
+Grapevine provides a framework for quickly and easily creating multithreaded .NET HTTP endpoints using the ubiquitous [HttpListener](http://msdn.microsoft.com/en-us/library/vstudio/system.net.httplistener(v=vs.100)) class and custom [attributes](http://msdn.microsoft.com/en-us/library/sw480ze8.aspx).  Grapevine makes it equally simple to serve up static files and REST services.
+
+###Use Case for Grapevine###
+Like the [informal means of communication](http://en.wikipedia.org/wiki/Grapevine_(gossip)) its name alludes to, Grapevine is designed for use in application for which being an HTTP server or responding to REST requests is not the primary function or purpose of the application, but rather as a secondary means of communication with the application.
+
+For example, a Widows Forms application or Windows Service would be the primary means of communication, and having an object (or several) that extends Grapevine listening on a particular port would be your secondary means of communication - even if you plan on using Grapevine to expose the majority of your functionality.
 
 ###Install Grapevine via NuGet###
-As of 1.0.2, Grapevine is available to install via [NuGet](https://www.nuget.org/packages/Grapevine/):
+Grapevine is available to install via [NuGet](https://www.nuget.org/packages/Grapevine/):
 
     > Install-Package Grapevine
 
-##Features##
-[Grapevine](http://en.wikipedia.org/wiki/Grapevine_(gossip)#Features_of_Grapevine_Communication) is:
+###Dependencies###
+Grapevine has a dependency on [Json.NET](https://www.nuget.org/packages/Newtonsoft.Json/) v. 5.0.8 or higher.  While it has been successfully tested with version 6.0.2, any future changes to Json.NET could introduce error or incompatibilities in Grapevine.  If you experience any issues with a newer release of Json.NET, please [log an issue](https://github.com/scottoffen/Grapevine/issues?state=open) (make sure one doesn't already exist first, of course).
 
+##Features##
 - Flexible : Grapevine just listens, you provide the responses. You can even have one method handle multiple request types. If no handler exists for the request, it looks for a file at the path specified.  If there is no file, it handles returning the errors.  You only have to worry about the happy path!
 
 - Fast : Grapevine accepts incoming http requests and spins them off to be handled by another thread.  As a result, there is no blocking I/O; the server is always ready to respond to incoming requests.
@@ -68,12 +74,14 @@ In your main thread, spin up your server like so:
 
 See the [**cookbook**](https://github.com/scottoffen/Grapevine/wiki) for more examples, including how to change the host, port, number of threads and webroot directory.
 
-###Limitations###
+##Limitations##
 - Grapevine is **not** intended to be a drop-in replacement for [Microsoft IIS](http://www.iis.net/) or [Apache HTTP Server](http://httpd.apache.org/).  Instead, Grapevine aims to be embedded in your application, where using one of those would be impossible, or just plain overkill.
 
 - Grapevine does not support **ASP.NET** nor does it do any script parsing (**PHP**, **Perl**, **Python**, **Ruby**, etc.) by default - but feel free to fork this project and hack away at it to your hearts content.
 
 - A single instance will only listen on one host/port combination (unless you define the host as "*").
+
+- You will likely be required to [open a port in your firewall](http://www.lmgtfy.com/?q=how+to+open+a+port+on+windows) for remote computers to be able to send requests to your application. Grapevine will not [automatically](http://msdn.microsoft.com/en-us/library/aa366418%28VS.85%29.aspx) do that for you.  You might want to do that during the [installation of your application](http://www.codeproject.com/Articles/14906/Open-Windows-Firewall-During-Installation).
 
 ##License##
 Copyright 2014 Scott Offen
