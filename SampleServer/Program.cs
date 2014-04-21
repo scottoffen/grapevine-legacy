@@ -18,13 +18,11 @@ namespace SampleServer
             {
                 counter++;
 
+                var client = new RestClient(server.BaseUrl);
+
                 var request = new RestRequest("/foo/{id}");
                 request.AddParameter("id", "1234");
                 request.SetContentType(RequestContentType.TEXT);
-
-                var creds = new NetworkCredentials();
-
-                var client = new RestClient(server.BaseUrl);
 
                 var response = client.Execute(request);
 
