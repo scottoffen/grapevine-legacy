@@ -3,6 +3,8 @@ Grapevine REST/HTTP Server
 
 ![](https://raw.github.com/scottoffen/Grapevine/master/grapevine.png)
 
+**Current Version: 2.0**
+
 Grapevine provides a framework for quickly and easily creating multithreaded .NET HTTP endpoints using the ubiquitous [HttpListener](http://msdn.microsoft.com/en-us/library/vstudio/system.net.httplistener(v=vs.100)) class and custom [attributes](http://msdn.microsoft.com/en-us/library/sw480ze8.aspx).  Grapevine makes it equally simple to serve up static files and REST services.
 
 ###Use Case for Grapevine###
@@ -32,7 +34,7 @@ Grapevine provides the [HttpHandler](https://github.com/scottoffen/Grapevine/blo
 
 Attribute values default to Method = `HttpMethod.GET` and PathInfo = `"/"`, so for a catch-all method you don't need to define anything.
 
-###Example###
+###Rest Server Example###
 An example of a simple REST server that responds to GET requests on `http://localhost:1234/foo/5678`.
 
     using System.Net;
@@ -72,6 +74,49 @@ In your main thread, spin up your server like so:
         }
     }
 
+###Rest Client Example###
+You can also communicate with REST servers (or test your own) using the include `Grapevine.REST` namespace:
+
+    using System;
+	using System.Threading;
+	using Grapevine.REST;
+	
+	namespace SampleServer
+	{
+	    class Program
+	    {
+	        static void Main(string[] args)
+	        {
+	            var server  = new RestServer();
+	            var counter = 0;
+	            var max     = 5;
+	
+	            server.Start();
+	            while (max > counter)
+	            {
+	                counter++;
+	
+	                var request = new RestRequest("/foo/{id}");
+	                request.AddParameter("id", "1234");
+	                request.SetContentType(RequestContentType.TEXT);
+	
+	                var client = new RestClient(server.BaseUrl);
+	                var response = client.Execute(request);
+	
+	                Console.WriteLine(counter + " : " + response.StatusCode + " : " + response.ElapsedTime);
+	                Console.WriteLine();
+	
+	                Thread.Sleep(100);
+	            }
+	            server.Stop();
+	
+	            Console.WriteLine("Press Any Key to Continue...");
+	            Console.ReadLine();
+	        }
+	    }
+	}
+
+###Checkout the Cookbook###
 See the [**cookbook**](https://github.com/scottoffen/Grapevine/wiki) for more examples, including how to change the host, port, number of threads and webroot directory.
 
 ##Limitations##

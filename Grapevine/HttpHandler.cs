@@ -168,6 +168,14 @@ namespace Grapevine
             }
         }
 
+        public string BaseUrl
+        {
+            get
+            {
+                return "http://" + this._host + ":" + this._port;
+            }
+        }
+
         #endregion
 
         #region Threading, Queuing and Processing
