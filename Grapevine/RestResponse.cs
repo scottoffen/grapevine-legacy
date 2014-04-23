@@ -1,16 +1,32 @@
 ﻿using System;
 using System.Net;
+using System.IO;
 
-namespace Grapevine.REST
+namespace Grapevine
 {
     public class RestResponse
     {
         protected HttpWebResponse _response;
+        protected string _content;
 
         public RestResponse(HttpWebResponse response, long elapsedTime)
         {
             this._response = response;
             this.ElapsedTime = elapsedTime;
+        }
+
+        public string Content
+        {
+            get
+            {
+                if (Object.ReferenceEquals(_content, null))
+                {
+                    StreamReader reader = new StreamReader(this._response.GetResponseStream());
+                    this._content = reader.ReadToEnd();
+                }
+
+                return this._content;
+            }
         }
 
         public string ContentEncoding
@@ -47,22 +63,6 @@ namespace Grapevine.REST
 
         public long ElapsedTime { get; private set; }
 
-        //public string errormessage
-        //{
-        //    get
-        //    {
-        //        return this._response.errormessage;
-        //    }
-        //}
-
-        //public string errorexceptions
-        //{
-        //    get
-        //    {
-        //        return this._response.errormessage;
-        //    }
-        //}
-
         public WebHeaderCollection Headers
         {
             get
@@ -70,14 +70,6 @@ namespace Grapevine.REST
                 return this._response.Headers;
             }
         }
-
-        //public byte[] RawBytes
-        //{
-        //    get
-        //    {
-
-        //    }
-        //}
 
         public string ResponseStatus
         {

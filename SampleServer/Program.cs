@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Threading;
-using Grapevine.REST;
+using Grapevine;
 
 namespace SampleServer
 {
@@ -9,7 +9,7 @@ namespace SampleServer
     {
         static void Main(string[] args)
         {
-            var server = new RestServer();
+            var server  = new SampleServer();
             var counter = 0;
             var max     = 5;
 
@@ -22,11 +22,11 @@ namespace SampleServer
 
                 var request = new RestRequest("/foo/{id}");
                 request.AddParameter("id", "1234");
-                request.SetContentType(RequestContentType.TEXT);
+                request.SetContentType(ContentType.TXT);
 
                 var response = client.Execute(request);
 
-                Console.WriteLine(counter + " : " + response.StatusCode + " : " + response.ElapsedTime);
+                Console.WriteLine(counter + " : " + response.StatusCode + " : " + response.ElapsedTime + " : " + response.Content);
                 Console.WriteLine();
 
                 Thread.Sleep(100);

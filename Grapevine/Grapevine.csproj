@@ -52,17 +52,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="REST\RequestContentType.cs" />
-    <Compile Include="ContentTypes.cs" />
-    <Compile Include="Extension.cs" />
+    <Compile Include="ContentType.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="HttpMethod.cs" />
     <Compile Include="InvalidStateException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Handler.cs" />
-    <Compile Include="HttpHandler.cs" />
-    <Compile Include="REST\RestClient.cs" />
-    <Compile Include="REST\RestRequest.cs" />
-    <Compile Include="REST\RestResponse.cs" />
+    <Compile Include="RestHandler.cs" />
+    <Compile Include="RestServer.cs" />
+    <Compile Include="RestClient.cs" />
+    <Compile Include="RestRequest.cs" />
+    <Compile Include="RestResponse.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

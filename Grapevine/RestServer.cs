@@ -9,7 +9,7 @@ using System.Threading;
 
 namespace Grapevine
 {
-    public abstract class HttpHandler : IDisposable
+    public abstract class RestServer : IDisposable
     {
         #region Instance Variables
 
@@ -34,14 +34,14 @@ namespace Grapevine
 
         #region Constructors
 
-        public HttpHandler()
+        public RestServer()
         {
             _workers = new Thread[_maxt];
             _listenerThread = new Thread(HandleRequests);
-            _methods = this.GetType().GetMethods().Where(mi => mi.GetCustomAttributes(true).Any(attr => attr is Handler)).ToList<MethodInfo>();
+            _methods = this.GetType().GetMethods().Where(mi => mi.GetCustomAttributes(true).Any(attr => attr is RestHandler)).ToList<MethodInfo>();
         }
 
-        public HttpHandler(string host, string port, int maxThreads)
+        public RestServer(string host, string port, int maxThreads)
         {
             _host = host;
             _port = port;
@@ -49,7 +49,7 @@ namespace Grapevine
 
             _workers = new Thread[_maxt];
             _listenerThread = new Thread(HandleRequests);
-            _methods = this.GetType().GetMethods().Where(mi => mi.GetCustomAttributes(true).Any(attr => attr is Handler)).ToList<MethodInfo>();
+            _methods = this.GetType().GetMethods().Where(mi => mi.GetCustomAttributes(true).Any(attr => attr is RestHandler)).ToList<MethodInfo>();
         }
 
         #endregion
@@ -238,7 +238,7 @@ namespace Grapevine
         {
             try
             {
-                var method = _methods.Where(mi => mi.GetCustomAttributes(true).Any(attr => context.Request.RawUrl.Matches(((Handler)attr).PathInfo) && ((Handler)attr).Method.ToString().Equals(context.Request.HttpMethod.ToUpper()))).First();
+                var method = _methods.Where(mi => mi.GetCustomAttributes(true).Any(attr => context.Request.RawUrl.Matches(((RestHandler)attr).PathInfo) && ((RestHandler)attr).Method.ToString().Equals(context.Request.HttpMethod.ToUpper()))).First();
                 method.Invoke(this, new object[] { context });
             }
             catch
@@ -270,7 +270,6 @@ namespace Grapevine
                     Directory.CreateDirectory(webroot);
                 }
 
-                ContentTypes.LoadContentTypes();
                 return true;
             }
             catch
@@ -339,11 +338,13 @@ namespace Grapevine
 
         protected void SendFileResponse(HttpListenerContext context, string path)
         {
-            var type   = ContentTypes.GetContentType(path);
-            var buffer = GetFileBytes(path, type.IsText);
+            var ext  = Path.GetExtension(path).ToUpper();
+            var type = (Enum.IsDefined(typeof(ContentType), ext)) ? (ContentType)Enum.Parse(typeof(ContentType), ext) : ContentType.DEFAULT;
+ 
+            var buffer = GetFileBytes(path, type.IsText());
             var length = buffer.Length;
 
-            context.Response.ContentType = type.MIMEType;
+            context.Response.ContentType = type.ToValue();
             context.Response.ContentLength64 = length;
             context.Response.OutputStream.Write(buffer, 0, length);
             context.Response.OutputStream.Close();

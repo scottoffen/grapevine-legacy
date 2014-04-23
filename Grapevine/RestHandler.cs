@@ -1,12 +1,12 @@
 ﻿namespace Grapevine
 {
     [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple = true)]
-    public class Handler : System.Attribute
+    public class RestHandler : System.Attribute
     {
         public HttpMethod Method;
         public string PathInfo;
 
-        public Handler()
+        public RestHandler()
         {
             this.Method = HttpMethod.GET;
             this.PathInfo = "/";

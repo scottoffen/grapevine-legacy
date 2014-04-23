@@ -1,10 +1,9 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Grapevine.REST
+namespace Grapevine
 {
     public class RestClient
     {
@@ -25,7 +24,7 @@ namespace Grapevine.REST
             client.Timeout = request.Timeout;
             client.CookieContainer = this.Cookies;
             client.Method = request.Method.ToString();
-            client.ContentType = request.ContentType;
+            client.ContentType = request.ContentType.ToValue();
 
             if (request.Payload != null)
             {

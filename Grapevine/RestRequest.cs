@@ -1,33 +1,33 @@
 ﻿using System.Collections.Specialized;
 using System.Text.RegularExpressions;
 
-namespace Grapevine.REST
+namespace Grapevine
 {
     public class RestRequest
     {
         protected NameValueCollection _parameters;
         private string _resource;
 
-        public RestRequest() : this(HttpMethod.GET, "", RequestContentType.DEFAULT) { }
+        public RestRequest() : this(HttpMethod.GET, "", ContentType.DEFAULT) { }
 
-        public RestRequest(HttpMethod method) : this(method, "", RequestContentType.DEFAULT) { }
+        public RestRequest(HttpMethod method) : this(method, "", ContentType.DEFAULT) { }
 
-        public RestRequest(string resource) : this(HttpMethod.GET, resource, RequestContentType.DEFAULT) { }
+        public RestRequest(string resource) : this(HttpMethod.GET, resource, ContentType.DEFAULT) { }
 
-        public RestRequest(string resource, HttpMethod method) : this(method, resource, RequestContentType.DEFAULT) { }
+        public RestRequest(string resource, HttpMethod method) : this(method, resource, ContentType.DEFAULT) { }
 
-        public RestRequest(HttpMethod method, string resource, RequestContentType type)
+        public RestRequest(HttpMethod method, string resource, ContentType type)
         {
             this._parameters  = new NameValueCollection();
             this.Method      = method;
             this.Resource    = resource;
             this.Timeout     = 500;
-            this.ContentType = type.Value();
+            this.ContentType = type;
         }
 
-        public void SetContentType(RequestContentType type)
+        public void SetContentType(ContentType type)
         {
-            this.ContentType = type.Value();
+            this.ContentType = type;
         }
 
         public HttpMethod Method { get; set; }
@@ -48,7 +48,7 @@ namespace Grapevine.REST
 
         public string Payload { get; set; }
 
-        public string ContentType { get; set; }
+        public ContentType ContentType { get; set; }
 
         public void AddParameter(string name, string value)
         {
