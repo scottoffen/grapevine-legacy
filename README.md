@@ -1,5 +1,5 @@
-Grapevine REST/HTTP Server
-==========================
+Grapevine REST/HTTP Server +Client
+==================================
 
 ![](https://raw.github.com/scottoffen/Grapevine/master/grapevine.png)
 
