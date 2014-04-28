@@ -54,7 +54,7 @@
     <Compile Include="HttpMethod.cs" />
     <Compile Include="InvalidStateException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RestHandler.cs" />
+    <Compile Include="RestRoute.cs" />
     <Compile Include="RestServer.cs" />
     <Compile Include="RestClient.cs" />
     <Compile Include="RestRequest.cs" />

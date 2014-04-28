@@ -38,7 +38,7 @@ namespace Grapevine
         {
             _workers = new Thread[_maxt];
             _listenerThread = new Thread(HandleRequests);
-            _methods = this.GetType().GetMethods().Where(mi => mi.GetCustomAttributes(true).Any(attr => attr is RestHandler)).ToList<MethodInfo>();
+            _methods = this.GetType().GetMethods().Where(mi => mi.GetCustomAttributes(true).Any(attr => attr is RestRoute)).ToList<MethodInfo>();
         }
 
         public RestServer(string host, string port, int maxThreads)
@@ -49,7 +49,7 @@ namespace Grapevine
 
             _workers = new Thread[_maxt];
             _listenerThread = new Thread(HandleRequests);
-            _methods = this.GetType().GetMethods().Where(mi => mi.GetCustomAttributes(true).Any(attr => attr is RestHandler)).ToList<MethodInfo>();
+            _methods = this.GetType().GetMethods().Where(mi => mi.GetCustomAttributes(true).Any(attr => attr is RestRoute)).ToList<MethodInfo>();
         }
 
         #endregion
@@ -238,7 +238,7 @@ namespace Grapevine
         {
             try
             {
-                var method = _methods.Where(mi => mi.GetCustomAttributes(true).Any(attr => context.Request.RawUrl.Matches(((RestHandler)attr).PathInfo) && ((RestHandler)attr).Method.ToString().Equals(context.Request.HttpMethod.ToUpper()))).First();
+                var method = _methods.Where(mi => mi.GetCustomAttributes(true).Any(attr => context.Request.RawUrl.Matches(((RestRoute)attr).PathInfo) && ((RestRoute)attr).Method.ToString().Equals(context.Request.HttpMethod.ToUpper()))).First();
                 method.Invoke(this, new object[] { context });
             }
             catch
