@@ -114,6 +114,7 @@ DocProject/Help/*.hhk
 DocProject/Help/*.hhp
 DocProject/Help/Html2
 DocProject/Help/html
+DocProject/Help/htm
 
 # Click-Once directory
 publish/

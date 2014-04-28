@@ -44,9 +44,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExtendedServer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SampleServer.cs" />
+    <Compile Include="ExampleServer.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Grapevine\Grapevine.csproj">

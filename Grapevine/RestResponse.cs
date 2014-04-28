@@ -1,114 +1,66 @@
 ﻿using System;
-using System.Net;
 using System.IO;
+using System.Net;
 
 namespace Grapevine
 {
     public class RestResponse
     {
-        protected HttpWebResponse _response;
-        protected string _content;
+        public RestResponse(HttpWebResponse response, long elapsedTime) : this(response, elapsedTime, "", "") { }
 
-        public RestResponse(HttpWebResponse response, long elapsedTime)
+        public RestResponse(HttpWebResponse response, long elapsedTime, string error, string errorStatus)
         {
-            this._response = response;
+            StreamReader reader = new StreamReader(response.GetResponseStream());
+            this.Content = reader.ReadToEnd();
+
+            this.ContentEncoding = response.ContentEncoding;
+            this.ContentLength = response.ContentLength;
+            this.ContentType = response.ContentType;
+            this.Cookies = response.Cookies;
             this.ElapsedTime = elapsedTime;
+            this.Error = error;
+            this.ErrorStatus = errorStatus;
+            this.Headers = response.Headers;
+            this.ResponseStatus = response.StatusCode.ToString();
+            this.ResponseUri = response.ResponseUri;
+            this.ReturnedError = (this.Error.Length > 0) ? true : false;
+            this.Server = response.Server;
+            this.StatusCode = response.StatusCode;
+            this.StatusDescription = response.StatusDescription;
         }
 
-        public string Content
-        {
-            get
-            {
-                if (Object.ReferenceEquals(_content, null))
-                {
-                    StreamReader reader = new StreamReader(this._response.GetResponseStream());
-                    this._content = reader.ReadToEnd();
-                }
+        #region Public Properties
 
-                return this._content;
-            }
-        }
+        public string Content { get; private set; }
 
-        public string ContentEncoding
-        {
-            get
-            {
-                return this._response.ContentEncoding;
-            }
-        }
+        public string ContentEncoding { get; private set; }
 
-        public long ContentLength
-        {
-            get
-            {
-                return this._response.ContentLength;
-            }
-        }
+        public long ContentLength { get; private set; }
 
-        public string ContentType
-        {
-            get
-            {
-                return this._response.ContentType;
-            }
-        }
+        public string ContentType { get; private set; }
 
-        public CookieCollection Cookies
-        {
-            get
-            {
-                return this._response.Cookies;
-            }
-        }
+        public CookieCollection Cookies { get; private set; }
 
         public long ElapsedTime { get; private set; }
 
-        public WebHeaderCollection Headers
-        {
-            get
-            {
-                return this._response.Headers;
-            }
-        }
+        public string Error { get; private set; }
 
-        public string ResponseStatus
-        {
-            get
-            {
-                return this._response.StatusCode.ToString();
-            }
-        }
+        public string ErrorStatus { get; private set; }
+
+        public WebHeaderCollection Headers { get; private set; }
+
+        public string ResponseStatus { get; private set; }
         
-        public Uri ResponseUri
-        {
-	        get
-	        {
-		        return this._response.ResponseUri;
-	        }
-        }
+        public Uri ResponseUri { get; private set; }
 
-        public string Server
-        {
-	        get
-	        {
-                return this._response.Server;
-	        }
-        }
+        public bool ReturnedError { get; private set; }
 
-        public HttpStatusCode StatusCode
-        {
-            get
-            {
-                return this._response.StatusCode;
-            }
-        }
+        public string Server { get; private set; }
 
-        public string StatusDescription
-        {
-            get
-            {
-                return this._response.StatusDescription;
-            }
-        }
+        public HttpStatusCode StatusCode { get; private set; }
+
+        public string StatusDescription { get; private set; }
+
+        #endregion
     }
 }

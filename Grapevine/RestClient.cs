@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Net;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Grapevine
@@ -17,33 +16,64 @@ namespace Grapevine
 
         public RestResponse Execute(RestRequest request)
         {
-            var url = this._baseUrl + "/" + request.PathInfo;
-            var client = CreateRequest(url);
-            var stopwatch = new Stopwatch();
+            var querystr = request.QueryString;
+            var url      = (object.ReferenceEquals(querystr, null)) ? this._baseUrl + "/" + request.PathInfo : this._baseUrl + "/" + request.PathInfo + "?" + querystr;
+            var client   = CreateRequest(url);
 
+            var stopwatch = new Stopwatch();
             client.Timeout = request.Timeout;
+
             client.CookieContainer = this.Cookies;
             client.Method = request.Method.ToString();
             client.ContentType = request.ContentType.ToValue();
 
             if (request.Payload != null)
             {
-                var content = Encoding.ASCII.GetBytes(request.Payload);
+                var content = request.Encoding.GetBytes(request.Payload);
                 client.ContentLength = content.Length;
                 client.GetRequestStream().Write(content, 0, content.Length);
                 client.GetRequestStream().Close();
-            }            
+            }
+            else
+            {
+                client.ContentLength = 0;
+            }
+
+            HttpWebResponse httpresponse;
+            string error       = "";
+            string errorStatus = "";
 
             stopwatch.Start();
-            var httpresponse = (HttpWebResponse)client.GetResponse();
+            try
+            {
+                httpresponse = (HttpWebResponse)client.GetResponse();
+            }
+            catch (WebException e)
+            {
+                httpresponse = (HttpWebResponse)e.Response;
+            }
             stopwatch.Stop();
-
-            this.Cookies.Add(httpresponse.Cookies);
-
-            var response = new RestResponse(httpresponse, stopwatch.ElapsedMilliseconds);
             request.Reset();
+
+            var response = new RestResponse(httpresponse, stopwatch.ElapsedMilliseconds, error, errorStatus);
+            this.Cookies.Add(response.Cookies);
+
             return response;
         }
+
+        private HttpWebRequest CreateRequest(string url)
+        {
+            var request = (HttpWebRequest)WebRequest.Create(url);
+
+            if (this.Credentials != null)
+            {
+                request.Credentials = this.Credentials;
+            }
+
+            return request;
+        }
+
+        #region Public Properties
 
         public string BaseUrl
         {
@@ -57,16 +87,6 @@ namespace Grapevine
 
         public NetworkCredential Credentials { get; set; }
 
-        private HttpWebRequest CreateRequest(string url)
-        {
-            var request = (HttpWebRequest)WebRequest.Create(url);
-
-            if (this.Credentials != null)
-            {
-                request.Credentials = this.Credentials;
-            }
-
-            return request;
-        }
+        #endregion
     }
 }

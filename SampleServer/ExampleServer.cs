@@ -3,12 +3,12 @@ using Grapevine;
 
 namespace SampleServer
 {
-    class SampleServer : RestServer
+    class ExampleServer : RestServer
     {
         [RestRoute(Method = HttpMethod.GET, PathInfo = @"^/foo/\d+$")]
         public void HandleFoo(HttpListenerContext context)
         {
-            this.SendResponse(context, "Foo is a success!");
+            this.SendTextResponse(context, "Foo is a success!");
         }
 
         [RestRoute(Method = HttpMethod.GET, PathInfo = @"^/foo/\D+$")]
@@ -24,13 +24,13 @@ namespace SampleServer
         [RestRoute(Method = HttpMethod.POST, PathInfo = @"/.?")]
         public void HandleAllPosts(HttpListenerContext context)
         {
-            this.SendTextResponse(context, "All Post Go to Heaven");
+            this.SendTextResponse(context, "Rain or shine, snow or sleet!");
         }
 
         [RestRoute(Method = HttpMethod.DELETE, PathInfo = @"^/shutdown$")]
         public void RemoteShutDown(HttpListenerContext context)
         {
-            this.SendResponse(context, "Shutting down, Mr. Bond...");
+            this.SendTextResponse(context, "Shutting down, Mr. Bond...");
             this._listening = false;
         }
     }

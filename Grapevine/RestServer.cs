@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace Grapevine
@@ -125,7 +126,7 @@ namespace Grapevine
                 }
                 else
                 {
-                    throw new InvalidStateException();
+                    throw new ServerStateException();
                 }
             }
         }
@@ -144,7 +145,7 @@ namespace Grapevine
                 }
                 else
                 {
-                    throw new InvalidStateException();
+                    throw new ServerStateException();
                 }
             }
         }
@@ -163,7 +164,7 @@ namespace Grapevine
                 }
                 else
                 {
-                    throw new InvalidStateException();
+                    throw new ServerStateException();
                 }
             }
         }
@@ -311,29 +312,22 @@ namespace Grapevine
             return null;
         }
 
-        protected void SendResponse(HttpListenerContext context, string payload)
+        protected void SendResponse(HttpListenerContext context, Encoding encoding, string payload)
         {
-            var buffer = Encoding.UTF8.GetBytes(payload);
+            var buffer = encoding.GetBytes(payload);
             var length = buffer.Length;
 
-            context.Response.StatusDescription = "Success";
-            context.Response.ContentType = "text/plain";
-            context.Response.StatusCode = 200;
+            context.Response.ContentEncoding = encoding;
             context.Response.ContentLength64 = length;
             context.Response.OutputStream.Write(buffer, 0, length);
             context.Response.OutputStream.Close();
+
             context.Response.Close();
         }
 
         protected void SendTextResponse(HttpListenerContext context, string payload)
         {
-            var buffer = Encoding.UTF8.GetBytes(payload);
-            var length = buffer.Length;
-
-            context.Response.ContentLength64 = length;
-            context.Response.OutputStream.Write(buffer, 0, length);
-            context.Response.OutputStream.Close();
-            context.Response.Close();
+            this.SendResponse(context, Encoding.UTF8, payload);
         }
 
         protected void SendFileResponse(HttpListenerContext context, string path)
@@ -373,5 +367,13 @@ namespace Grapevine
         }
 
         #endregion
+    }
+
+    public static class StringExtensions
+    {
+        public static bool Matches(this String s, string pattern)
+        {
+            return ((Regex.IsMatch(s, pattern, RegexOptions.IgnoreCase))) ? true : false;
+        }
     }
 }

@@ -1,7 +1,9 @@
-﻿namespace Grapevine
+﻿using System;
+
+namespace Grapevine
 {
-    [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple = true)]
-    public class RestRoute : System.Attribute
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    public class RestRoute : Attribute
     {
         public HttpMethod Method;
         public string PathInfo;

@@ -9,28 +9,35 @@ namespace SampleServer
     {
         static void Main(string[] args)
         {
-            var server  = new SampleServer();
-            var counter = 0;
-            var max     = 5;
-
+            var server  = new ExtendedServer();
             server.Start();
-            while (max > counter)
+
+            var client  = new RestClient(server.BaseUrl);
+            RestResponse response; 
+            RestRequest[] requests = new RestRequest[]
             {
-                counter++;
+                new RestRequest("/foo/{id}", ContentType.TXT),
+                new RestRequest(HttpMethod.POST, "/foo/bar", ContentType.TXT)
+            };
 
-                var client = new RestClient(server.BaseUrl);
+            foreach (RestRequest request in requests)
+            {
+                switch (request.Method)
+                {
+                    case HttpMethod.GET:
+                        request.AddParameter("id", "d");
+                        break;
+                    case HttpMethod.POST:
+                        request.Payload = "Payload is optional";
+                        break;
+                }
 
-                var request = new RestRequest("/foo/{id}");
-                request.AddParameter("id", "1234");
-                request.SetContentType(ContentType.TXT);
+                response = client.Execute(request);
 
-                var response = client.Execute(request);
-
-                Console.WriteLine(counter + " : " + response.StatusCode + " : " + response.ElapsedTime + " : " + response.Content);
+                Console.WriteLine(response.StatusCode + " : " + response.ElapsedTime + " : " + response.Content);
                 Console.WriteLine();
-
-                Thread.Sleep(100);
             }
+
             server.Stop();
 
             Console.WriteLine("Press Any Key to Continue...");
