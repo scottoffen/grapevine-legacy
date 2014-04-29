@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Net;
 using System.Text.RegularExpressions;
 
@@ -27,7 +28,7 @@ namespace Grapevine
             client.Method = request.Method.ToString();
             client.ContentType = request.ContentType.ToValue();
 
-            if (request.Payload != null)
+            if (!Object.ReferenceEquals(request.Payload, null))
             {
                 var content = request.Encoding.GetBytes(request.Payload);
                 client.ContentLength = content.Length;
@@ -65,7 +66,7 @@ namespace Grapevine
         {
             var request = (HttpWebRequest)WebRequest.Create(url);
 
-            if (this.Credentials != null)
+            if (!Object.ReferenceEquals(this.Credentials, null))
             {
                 request.Credentials = this.Credentials;
             }

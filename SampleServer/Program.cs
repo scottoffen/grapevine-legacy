@@ -12,12 +12,16 @@ namespace SampleServer
             var server  = new ExtendedServer();
             server.Start();
 
+            bool failGet = false;
+
             var client  = new RestClient(server.BaseUrl);
             RestResponse response; 
             RestRequest[] requests = new RestRequest[]
             {
                 new RestRequest("/foo/{id}", ContentType.TXT),
-                new RestRequest(HttpMethod.POST, "/foo/bar", ContentType.TXT)
+                new RestRequest("/foo/{id}", ContentType.TXT),
+                new RestRequest(HttpMethod.POST, "/foo/bar", ContentType.TXT),
+                new RestRequest(HttpMethod.DELETE, "/shutdown")
             };
 
             foreach (RestRequest request in requests)
@@ -25,7 +29,8 @@ namespace SampleServer
                 switch (request.Method)
                 {
                     case HttpMethod.GET:
-                        request.AddParameter("id", "d");
+                        request.AddParameter("id", (failGet) ? "123" : "xyz");
+                        failGet = !failGet;
                         break;
                     case HttpMethod.POST:
                         request.Payload = "Payload is optional";

@@ -20,9 +20,29 @@ namespace Grapevine
 
         public RestRequest(string resource) : this(HttpMethod.GET, resource, ContentType.DEFAULT) { }
 
+        public RestRequest(ContentType type) : this(HttpMethod.GET, "", type) { }
+
         public RestRequest(string resource, HttpMethod method) : this(method, resource, ContentType.DEFAULT) { }
 
+        public RestRequest(HttpMethod method, string resource) : this(method, resource, ContentType.DEFAULT) { }
+
         public RestRequest(string resource, ContentType type) : this(HttpMethod.GET, resource, type) { }
+
+        public RestRequest(ContentType type, string resource) : this(HttpMethod.GET, resource, type) { }
+
+        public RestRequest(ContentType type, HttpMethod method) : this(method, "", type) { }
+
+        public RestRequest(HttpMethod method, ContentType type) : this(method, "", type) { }
+
+        public RestRequest(ContentType type, HttpMethod method, string resource) : this(method, resource, type) { }
+
+        public RestRequest(ContentType type, string resource, HttpMethod method) : this(method, resource, type) { }
+
+        public RestRequest(HttpMethod method, ContentType type, string resource) : this(method, resource, type) { }
+
+        public RestRequest(string resource, HttpMethod method, ContentType type) : this(method, resource, type) { }
+
+        public RestRequest(string resource, ContentType type, HttpMethod method) : this(method, resource, type) { }
 
         public RestRequest(HttpMethod method, string resource, ContentType type)
         {
@@ -30,9 +50,9 @@ namespace Grapevine
             this._querystring = new NameValueCollection();
             this.Method       = method;
             this.Resource     = resource;
-            this.Timeout      = 500;
             this.ContentType  = type;
-            this.Encoding = Encoding.UTF8;
+            this.Timeout      = 500;
+            this.Encoding     = Encoding.UTF8;
         }
 
         #endregion

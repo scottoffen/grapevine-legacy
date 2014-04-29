@@ -42,15 +42,22 @@ namespace Grapevine
             _methods = this.GetType().GetMethods().Where(mi => mi.GetCustomAttributes(true).Any(attr => attr is RestRoute)).ToList<MethodInfo>();
         }
 
-        public RestServer(string host, string port, int maxThreads)
-        {
-            _host = host;
-            _port = port;
-            _maxt = maxThreads;
+        public RestServer(string host) : this(host, "1234", 5, null) { }
 
-            _workers = new Thread[_maxt];
-            _listenerThread = new Thread(HandleRequests);
-            _methods = this.GetType().GetMethods().Where(mi => mi.GetCustomAttributes(true).Any(attr => attr is RestRoute)).ToList<MethodInfo>();
+        public RestServer(string host, string port) : this(host, port, 5, null) { }
+
+        public RestServer(string host, string port, string webroot) : this(host, port, 5, webroot) { }
+
+        public RestServer(string host, string port, int maxThreads) : this(host, port, maxThreads, null) { }
+
+        public RestServer(string host, string port, string webroot, int maxThreads) : this(host, port, maxThreads, webroot) { }
+
+        public RestServer(string host, string port, int maxThreads, string webroot) : this()
+        {
+            this.Host = host;
+            this.Port = port;
+            this.MaxThreads = maxThreads;
+            this.WebRoot = webroot;
         }
 
         #endregion
@@ -247,14 +254,14 @@ namespace Grapevine
                 if (VerifyWebRoot(_webroot))
                 {
                     var filename = GetFilePath(context.Request.RawUrl);
-                    if (filename != null)
+                    if (!Object.ReferenceEquals(filename, null))
                     {
                         SendFileResponse(context, filename);
                         return;
                     }
                 }
 
-                NotImplemented(context);
+                NotFound(context);
             }
         }
 
@@ -264,22 +271,22 @@ namespace Grapevine
 
         private bool VerifyWebRoot(string webroot)
         {
-            try
+            if (!Object.ReferenceEquals(webroot, null))
             {
-                if (!Directory.Exists(webroot))
+                try
                 {
-                    Directory.CreateDirectory(webroot);
+                    if (!Directory.Exists(webroot))
+                    {
+                        Directory.CreateDirectory(webroot);
+                    }
+                    return true;
                 }
-
-                return true;
+                catch { }
             }
-            catch
-            {
-                return false;
-            }
+            return false;
         }
 
-        private void NotImplemented(HttpListenerContext context)
+        protected void NotFound(HttpListenerContext context)
         {
             var payload = "<h1>Not Found</h1>";
             var buffer = Encoding.UTF8.GetBytes(payload);
@@ -292,24 +299,6 @@ namespace Grapevine
             context.Response.OutputStream.Write(buffer, 0, length);
             context.Response.OutputStream.Close();
             context.Response.Close();
-        }
-
-        private string GetFilePath(string rawurl)
-        {
-            var filename = ((rawurl.IndexOf("?") > -1) ? rawurl.Split('?') : rawurl.Split('#'))[0].Replace('/', '\\').Substring(1);
-            var path = Path.Combine(_webroot, filename);
-
-            if (Directory.Exists(path))
-            {
-                path = Path.Combine(path, _default);
-            }
-
-            if (File.Exists(path))
-            {
-                return path;
-            }
-
-            return null;
         }
 
         protected void SendResponse(HttpListenerContext context, Encoding encoding, string payload)
@@ -343,6 +332,24 @@ namespace Grapevine
             context.Response.OutputStream.Write(buffer, 0, length);
             context.Response.OutputStream.Close();
             context.Response.Close();
+        }
+
+        private string GetFilePath(string rawurl)
+        {
+            var filename = ((rawurl.IndexOf("?") > -1) ? rawurl.Split('?') : rawurl.Split('#'))[0].Replace('/', '\\').Substring(1);
+            var path = Path.Combine(_webroot, filename);
+
+            if (Directory.Exists(path))
+            {
+                path = Path.Combine(path, _default);
+            }
+
+            if (File.Exists(path))
+            {
+                return path;
+            }
+
+            return null;
         }
 
         private byte[] GetFileBytes(string path, bool istext)

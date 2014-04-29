@@ -3004,10 +3004,10 @@ namespace Grapevine
         {
             var type = ct.GetType();
             MemberInfo[] info = type.GetMember(ct.ToString());
-            if ((info != null) && (info.Length > 0))
+            if ((!Object.ReferenceEquals(info, null)) && (info.Length > 0))
             {
                 object[] attrs = info[0].GetCustomAttributes(typeof(ContentTypeMetadata), false);
-                if ((attrs != null) && (attrs.Length > 0))
+                if ((!Object.ReferenceEquals(attrs, null)) && (attrs.Length > 0))
                 {
                     return attrs[0];
                 }
@@ -3018,19 +3018,19 @@ namespace Grapevine
         public static string ToValue(this ContentType ct)
         {
             var metadata = GetMetadata(ct);
-            return (metadata != null) ? ((ContentTypeMetadata)metadata).Value : ct.ToString();
+            return (!Object.ReferenceEquals(metadata, null)) ? ((ContentTypeMetadata)metadata).Value : ct.ToString();
         }
 
         public static bool IsText(this ContentType ct)
         {
             var metadata = GetMetadata(ct);
-            return (metadata != null) ? ((ContentTypeMetadata)metadata).IsText : true;
+            return (!Object.ReferenceEquals(metadata, null)) ? ((ContentTypeMetadata)metadata).IsText : true;
         }
 
         public static bool IsBinary(this ContentType ct)
         {
             var metadata = GetMetadata(ct);
-            return (metadata != null) ? ((ContentTypeMetadata)metadata).IsBinary : false;
+            return (!Object.ReferenceEquals(metadata, null)) ? ((ContentTypeMetadata)metadata).IsBinary : false;
         }
     }
 }
