@@ -3,12 +3,12 @@ Grapevine REST/HTTP Server +Client
 
 ![](https://raw.github.com/scottoffen/Grapevine/master/grapevine.png)
 
-**Current Version: 2.3**
+**Current Version: 2.6**
 
 Grapevine provides a framework to quickly and easily embed both REST Clients and multithreaded REST/HTTP servers into your applications using the ubiquitous [HttpListener](http://msdn.microsoft.com/en-us/library/vstudio/system.net.httplistener(v=vs.100)) class.  Grapevine makes it equally simple to produce or consume REST services and serve up static files.
 
 ##Use Grapevine##
-See the wiki for a [**Getting Started Guide**](https://github.com/scottoffen/Grapevine/wiki/Getting-Started-Guide) and [other usage examples](https://github.com/scottoffen/Grapevine/wiki/_pages).
+See the wiki for a [**Getting Started Guide**](https://github.com/scottoffen/Grapevine/wiki/Getting-Started-Guide) and [other usage examples](https://github.com/scottoffen/Grapevine/wiki).
 
 ###Install Grapevine via NuGet###
 Grapevine is available to install via [NuGet](https://www.nuget.org/packages/Grapevine/):

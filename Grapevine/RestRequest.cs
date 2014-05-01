@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
+using System.Net;
 
 namespace Grapevine
 {
@@ -48,6 +49,7 @@ namespace Grapevine
         {
             this._parameters  = new NameValueCollection();
             this._querystring = new NameValueCollection();
+            this.Headers      = new WebHeaderCollection();
             this.Method       = method;
             this.Resource     = resource;
             this.ContentType  = type;
@@ -62,6 +64,8 @@ namespace Grapevine
         public ContentType ContentType { get; set; }
 
         public Encoding Encoding { get; set; }
+
+        public WebHeaderCollection Headers { get; private set; }
 
         public HttpMethod Method { get; set; }
 
@@ -117,7 +121,12 @@ namespace Grapevine
             }
             set
             {
-                this._resource = Regex.Replace(value, "^/", "");
+                value = Regex.Replace(value, "^/", "");
+                if (!value.Equals(this._resource))
+                {
+                    this._resource = Regex.Replace(value, "^/", "");
+                    this._parameters.Clear();
+                }
             }
         }
 

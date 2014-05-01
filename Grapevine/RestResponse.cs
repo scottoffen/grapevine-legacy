@@ -6,9 +6,9 @@ namespace Grapevine
 {
     public class RestResponse
     {
-        public RestResponse(HttpWebResponse response, long elapsedTime) : this(response, elapsedTime, "", "") { }
+        #region Constructors
 
-        public RestResponse(HttpWebResponse response, long elapsedTime, string error, string errorStatus)
+        private RestResponse(HttpWebResponse response, long elapsedTime, string error, WebExceptionStatus errorStatus)
         {
             StreamReader reader = new StreamReader(response.GetResponseStream());
             this.Content = reader.ReadToEnd();
@@ -23,11 +23,23 @@ namespace Grapevine
             this.Headers = response.Headers;
             this.ResponseStatus = response.StatusCode.ToString();
             this.ResponseUri = response.ResponseUri;
-            this.ReturnedError = (this.Error.Length > 0) ? true : false;
+            this.ReturnedError = (this.ErrorStatus.Equals(WebExceptionStatus.Success)) ? false : true;
             this.Server = response.Server;
             this.StatusCode = response.StatusCode;
             this.StatusDescription = response.StatusDescription;
         }
+
+        internal static RestResponse Create(HttpWebResponse response, long elapsedTime)
+        {
+            return new RestResponse(response, elapsedTime, "", WebExceptionStatus.Success);
+        }
+
+        internal static RestResponse Create(HttpWebResponse response, long elapsedTime, string error, WebExceptionStatus errorStatus)
+        {
+            return new RestResponse(response, elapsedTime, error, errorStatus);
+        }
+
+        #endregion
 
         #region Public Properties
 
@@ -45,12 +57,12 @@ namespace Grapevine
 
         public string Error { get; private set; }
 
-        public string ErrorStatus { get; private set; }
+        public WebExceptionStatus ErrorStatus { get; private set; }
 
         public WebHeaderCollection Headers { get; private set; }
 
         public string ResponseStatus { get; private set; }
-        
+
         public Uri ResponseUri { get; private set; }
 
         public bool ReturnedError { get; private set; }

@@ -10,5 +10,10 @@ namespace SampleServer
         {
             this.SendTextResponse(context, "This should respond to all posts.");
         }
+
+        public override void RemoteShutDown(HttpListenerContext context)
+        {
+            this.SendTextResponse(context, "Not gonna happen, bub.");
+        }
     }
 }

@@ -7,18 +7,16 @@ namespace Grapevine
 {
     public class RestClient
     {
-        protected string _baseUrl;
-
         public RestClient (string baseUrl)
         {
-            this._baseUrl = Regex.Replace(baseUrl, "/$", "");
+            this.BaseUrl = Regex.Replace(baseUrl, "/$", "");
             this.Cookies = new CookieContainer();
         }
 
         public RestResponse Execute(RestRequest request)
         {
             var querystr = request.QueryString;
-            var url      = (object.ReferenceEquals(querystr, null)) ? this._baseUrl + "/" + request.PathInfo : this._baseUrl + "/" + request.PathInfo + "?" + querystr;
+            var url      = (object.ReferenceEquals(querystr, null)) ? this.BaseUrl + "/" + request.PathInfo : this.BaseUrl + "/" + request.PathInfo + "?" + querystr;
             var client   = CreateRequest(url);
 
             var stopwatch = new Stopwatch();
@@ -27,6 +25,7 @@ namespace Grapevine
             client.CookieContainer = this.Cookies;
             client.Method = request.Method.ToString();
             client.ContentType = request.ContentType.ToValue();
+            client.Headers = request.Headers;
 
             if (!Object.ReferenceEquals(request.Payload, null))
             {
@@ -41,8 +40,8 @@ namespace Grapevine
             }
 
             HttpWebResponse httpresponse;
-            string error       = "";
-            string errorStatus = "";
+            string error = "";
+            WebExceptionStatus errorStatus = WebExceptionStatus.Success;
 
             stopwatch.Start();
             try
@@ -52,11 +51,13 @@ namespace Grapevine
             catch (WebException e)
             {
                 httpresponse = (HttpWebResponse)e.Response;
+                error = e.Message;
+                errorStatus = e.Status;
             }
             stopwatch.Stop();
             request.Reset();
 
-            var response = new RestResponse(httpresponse, stopwatch.ElapsedMilliseconds, error, errorStatus);
+            var response = RestResponse.Create(httpresponse, stopwatch.ElapsedMilliseconds, error, errorStatus);
             this.Cookies.Add(response.Cookies);
 
             return response;
@@ -76,13 +77,7 @@ namespace Grapevine
 
         #region Public Properties
 
-        public string BaseUrl
-        {
-            get
-            {
-                return this._baseUrl;
-            }
-        }
+        public string BaseUrl { get; private set; }
 
         public CookieContainer Cookies { get; private set; }
 

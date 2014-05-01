@@ -28,10 +28,10 @@ namespace SampleServer
         }
 
         [RestRoute(Method = HttpMethod.DELETE, PathInfo = @"^/shutdown$")]
-        public void RemoteShutDown(HttpListenerContext context)
+        public virtual void RemoteShutDown(HttpListenerContext context)
         {
             this.SendTextResponse(context, "Shutting down, Mr. Bond...");
-            this._listening = false;
+            this.IsListening = false;
         }
     }
 }

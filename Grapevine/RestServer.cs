@@ -14,22 +14,22 @@ namespace Grapevine
     {
         #region Instance Variables
 
-        protected volatile bool _listening;
+        private volatile bool _listening;
 
-        protected string _webroot = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location) + @"\webroot";
-        protected string _default = "index.html";
-        protected string _host    = "localhost";
-        protected string _port    = "1234";
-        protected int _maxt       = 5;
+        private string _webroot = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location) + @"\webroot";
+        private string _default = "index.html";
+        private string _host = "localhost";
+        private string _port = "1234";
+        private int _maxt = 5;
 
-        protected readonly Thread _listenerThread;
-        protected readonly Thread[] _workers;
-        protected readonly List<MethodInfo> _methods;
+        private readonly Thread _listenerThread;
+        private readonly Thread[] _workers;
+        private readonly List<MethodInfo> _methods;
 
-        protected readonly HttpListener _listener = new HttpListener();
-        protected readonly ManualResetEvent _stop = new ManualResetEvent(false);
-        protected readonly ManualResetEvent _ready = new ManualResetEvent(false);
-        protected Queue<HttpListenerContext> _queue = new Queue<HttpListenerContext>();
+        private readonly HttpListener _listener = new HttpListener();
+        private readonly ManualResetEvent _stop = new ManualResetEvent(false);
+        private readonly ManualResetEvent _ready = new ManualResetEvent(false);
+        private Queue<HttpListenerContext> _queue = new Queue<HttpListenerContext>();
 
         #endregion
 
@@ -100,7 +100,11 @@ namespace Grapevine
         {
             get
             {
-                return _listening;
+                return this._listening;
+            }
+            set
+            {
+                this._listening = false;
             }
         }
 
@@ -251,7 +255,7 @@ namespace Grapevine
             }
             catch
             {
-                if (VerifyWebRoot(_webroot))
+                if ((context.Request.HttpMethod.Equals("GET", StringComparison.CurrentCultureIgnoreCase)) && (VerifyWebRoot(_webroot)))
                 {
                     var filename = GetFilePath(context.Request.RawUrl);
                     if (!Object.ReferenceEquals(filename, null))
@@ -301,7 +305,7 @@ namespace Grapevine
             context.Response.Close();
         }
 
-        protected void SendResponse(HttpListenerContext context, Encoding encoding, string payload)
+        protected void SendTextResponse(HttpListenerContext context, Encoding encoding, string payload)
         {
             var buffer = encoding.GetBytes(payload);
             var length = buffer.Length;
@@ -316,7 +320,7 @@ namespace Grapevine
 
         protected void SendTextResponse(HttpListenerContext context, string payload)
         {
-            this.SendResponse(context, Encoding.UTF8, payload);
+            this.SendTextResponse(context, Encoding.UTF8, payload);
         }
 
         protected void SendFileResponse(HttpListenerContext context, string path)
