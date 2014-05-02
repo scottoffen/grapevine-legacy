@@ -9,6 +9,7 @@ namespace SampleServer
     {
         static void Main(string[] args)
         {
+            // Create an Extended Server
             var server  = new ExtendedServer();
             server.Start();
 

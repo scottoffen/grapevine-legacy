@@ -1,14 +1,18 @@
-﻿using System.Net;
+﻿using System;
+using System.Linq;
+using System.Net;
 using Grapevine;
 
 namespace SampleServer
 {
     class ExampleServer : RestServer
     {
+        // This simple route catches all get traffic to /foo/[numbers]
         [RestRoute(Method = HttpMethod.GET, PathInfo = @"^/foo/\d+$")]
         public void HandleFoo(HttpListenerContext context)
         {
-            this.SendTextResponse(context, "Foo is a success!");
+            var num = NumberFunction(context.Request.RawUrl.GrabFirst(@"^/foo/(\d+)$"));
+            this.SendTextResponse(context, "Foo is : " + num);
         }
 
         [RestRoute(Method = HttpMethod.GET, PathInfo = @"^/foo/\D+$")]
@@ -32,6 +36,20 @@ namespace SampleServer
         {
             this.SendTextResponse(context, "Shutting down, Mr. Bond...");
             this.IsListening = false;
+        }
+
+        private string NumberFunction(string values)
+        {
+            if (Object.ReferenceEquals(values, null))
+            {
+                return null;
+            }
+            else
+            {
+                char[] tokens = values.ToCharArray();
+                string[] strs = Array.ConvertAll<char, string>(tokens, char.ToString);
+                return Array.ConvertAll<string, int>(strs, int.Parse).Sum().ToString();
+            }
         }
     }
 }
