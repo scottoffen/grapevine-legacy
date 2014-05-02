@@ -8,7 +8,9 @@ namespace Grapevine
     {
         #region Constructors
 
-        private RestResponse(HttpWebResponse response, long elapsedTime, string error, WebExceptionStatus errorStatus)
+        internal RestResponse(HttpWebResponse response, long elapsedTime) : this(response, elapsedTime, "", WebExceptionStatus.Success) { }
+
+        internal RestResponse(HttpWebResponse response, long elapsedTime, string error, WebExceptionStatus errorStatus)
         {
             StreamReader reader = new StreamReader(response.GetResponseStream());
             this.Content = reader.ReadToEnd();
@@ -27,16 +29,6 @@ namespace Grapevine
             this.Server = response.Server;
             this.StatusCode = response.StatusCode;
             this.StatusDescription = response.StatusDescription;
-        }
-
-        internal static RestResponse Create(HttpWebResponse response, long elapsedTime)
-        {
-            return new RestResponse(response, elapsedTime, "", WebExceptionStatus.Success);
-        }
-
-        internal static RestResponse Create(HttpWebResponse response, long elapsedTime, string error, WebExceptionStatus errorStatus)
-        {
-            return new RestResponse(response, elapsedTime, error, errorStatus);
         }
 
         #endregion

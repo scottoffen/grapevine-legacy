@@ -57,7 +57,7 @@ namespace Grapevine
             stopwatch.Stop();
             request.Reset();
 
-            var response = RestResponse.Create(httpresponse, stopwatch.ElapsedMilliseconds, error, errorStatus);
+            var response = new RestResponse(httpresponse, stopwatch.ElapsedMilliseconds, error, errorStatus);
             this.Cookies.Add(response.Cookies);
 
             return response;

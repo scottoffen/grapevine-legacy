@@ -15,17 +15,17 @@ namespace Grapevine
 
         #region Constructors
 
-        public RestRequest() : this(HttpMethod.GET, "", ContentType.DEFAULT) { }
+        public RestRequest() : this(HttpMethod.GET, "", ContentType.TXT) { }
 
-        public RestRequest(HttpMethod method) : this(method, "", ContentType.DEFAULT) { }
+        public RestRequest(HttpMethod method) : this(method, "", ContentType.TXT) { }
 
-        public RestRequest(string resource) : this(HttpMethod.GET, resource, ContentType.DEFAULT) { }
+        public RestRequest(string resource) : this(HttpMethod.GET, resource, ContentType.TXT) { }
 
         public RestRequest(ContentType type) : this(HttpMethod.GET, "", type) { }
 
-        public RestRequest(string resource, HttpMethod method) : this(method, resource, ContentType.DEFAULT) { }
+        public RestRequest(string resource, HttpMethod method) : this(method, resource, ContentType.TXT) { }
 
-        public RestRequest(HttpMethod method, string resource) : this(method, resource, ContentType.DEFAULT) { }
+        public RestRequest(HttpMethod method, string resource) : this(method, resource, ContentType.TXT) { }
 
         public RestRequest(string resource, ContentType type) : this(HttpMethod.GET, resource, type) { }
 
@@ -55,6 +55,8 @@ namespace Grapevine
             this.ContentType  = type;
             this.Timeout      = 500;
             this.Encoding     = Encoding.UTF8;
+
+            this.Headers.Add(HttpRequestHeader.CacheControl, "no-store, must-revalidate");
         }
 
         #endregion
