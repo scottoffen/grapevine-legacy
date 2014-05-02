@@ -19,7 +19,7 @@ namespace SampleServer
             RestResponse response; 
             RestRequest[] requests = new RestRequest[]
             {
-                new RestRequest("/foo/{id}", ContentType.TXT),
+                new RestRequest("/foo/{id}/bobby", ContentType.TXT),
                 new RestRequest("/foo/{id}", ContentType.TXT),
                 new RestRequest(HttpMethod.POST, "/foo/bar", ContentType.TXT),
                 new RestRequest(HttpMethod.DELETE, "/shutdown")

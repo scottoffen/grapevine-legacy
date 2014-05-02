@@ -8,10 +8,10 @@ namespace SampleServer
     class ExampleServer : RestServer
     {
         // This simple route catches all get traffic to /foo/[numbers]
-        [RestRoute(Method = HttpMethod.GET, PathInfo = @"^/foo/\d+$")]
+        [RestRoute(Method = HttpMethod.GET, PathInfo = @"^/foo/\d+")]
         public void HandleFoo(HttpListenerContext context)
         {
-            var num = NumberFunction(context.Request.RawUrl.GrabFirst(@"^/foo/(\d+)$"));
+            var num = NumberFunction(context.Request.RawUrl.GrabFirst(@"^/foo/(\d+)/?(.*)$"));
             this.SendTextResponse(context, "Foo is : " + num);
         }
 
