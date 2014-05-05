@@ -27,7 +27,7 @@ Having the REST client in the same package means you can use a single package to
 
 - Fast : Grapevine uses a non-blocking I/O model, so the server is always ready to respond to incoming requests.
 
-- Constant : The [message context](http://msdn.microsoft.com/en-us/library/vstudio/system.net.httplistenercontext(v=vs.110).aspx) is passed to your route handler methods - you get all of the data all of the time so you can decide how best to respond.
+- Consistent : The [message context](http://msdn.microsoft.com/en-us/library/vstudio/system.net.httplistenercontext(v=vs.110).aspx) is passed to your route handler methods - you get all of the data all of the time so you can decide how best to respond.
 
 - Spontaneous : Grapevine finds the routes defined in your class, no need to "register" new ones.  You can add files to the webroot to be served on-the-fly - no need to restart the server.  You can even write a custom route to shut down your server remotely!
 
