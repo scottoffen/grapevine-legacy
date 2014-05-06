@@ -291,14 +291,18 @@ namespace Grapevine
 
         protected void NotFound(HttpListenerContext context)
         {
-            var payload = "<h1>Not Found</h1>";
+            this.NotFound(context, "<h1>Not Found</h1>", ContentType.HTML);
+        }
+
+        protected void NotFound(HttpListenerContext context, string payload, ContentType contentType)
+        {
             var buffer = Encoding.UTF8.GetBytes(payload);
             var length = buffer.Length;
 
-            context.Response.ContentType = "text/html";
             context.Response.StatusCode = 404;
             context.Response.StatusDescription = "Not Found";
             context.Response.ContentLength64 = length;
+            context.Response.ContentType = contentType.ToValue();
             context.Response.OutputStream.Write(buffer, 0, length);
             context.Response.OutputStream.Close();
             context.Response.Close();
