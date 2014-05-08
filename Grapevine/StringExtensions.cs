@@ -14,25 +14,15 @@ namespace Grapevine
             return s;
         }
 
-        public static GroupCollection GrabAll(this String s, string pattern)
+        public static GroupCollection GrabAll(this String s, string pattern, bool ignoreCase = true)
         {
-            return s.GrabAll(pattern, true);
-        }
-
-        public static GroupCollection GrabAll(this String s, string pattern, bool ignoreCase)
-        {
-            Match match = (ignoreCase) ? Regex.Match(s, pattern) : Regex.Match(s, pattern, RegexOptions.IgnoreCase);
+            Match match = (ignoreCase) ? Regex.Match(s, pattern, RegexOptions.IgnoreCase) : Regex.Match(s, pattern);
             return match.Groups;
         }
 
-        public static string GrabFirst(this String s, string pattern)
+        public static string GrabFirst(this String s, string pattern, bool ignoreCase = true)
         {
-            return s.GrabFirst(pattern, true);
-        }
-
-        public static string GrabFirst(this String s, string pattern, bool ignoreCase)
-        {
-            Match match = (ignoreCase) ? Regex.Match(s, pattern) : Regex.Match(s, pattern, RegexOptions.IgnoreCase);
+            Match match = (ignoreCase) ? Regex.Match(s, pattern, RegexOptions.IgnoreCase) : Regex.Match(s, pattern);
 
             if (match.Success)
             {
@@ -42,7 +32,7 @@ namespace Grapevine
             return null;
         }
 
-        public static bool Matches(this String s, string pattern, bool ignoreCase)
+        public static bool Matches(this String s, string pattern, bool ignoreCase = true)
         {
             if (ignoreCase)
             {
@@ -53,11 +43,5 @@ namespace Grapevine
                 return (Regex.IsMatch(s, pattern)) ? true : false;
             }
         }
-
-        public static bool Matches(this String s, string pattern)
-        {
-            return s.Matches(pattern, true);
-        }
     }
-
 }
