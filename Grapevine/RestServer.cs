@@ -328,7 +328,7 @@ namespace Grapevine
 
         protected void SendFileResponse(HttpListenerContext context, string path)
         {
-            var ext  = Path.GetExtension(path).ToUpper();
+            var ext  = Path.GetExtension(path).ToUpper().TrimStart('.');
             var type = (Enum.IsDefined(typeof(ContentType), ext)) ? (ContentType)Enum.Parse(typeof(ContentType), ext) : ContentType.DEFAULT;
  
             var buffer = GetFileBytes(path, type.IsText());
