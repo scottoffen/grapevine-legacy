@@ -345,14 +345,27 @@ namespace Grapevine
             var buffer = GetFileBytes(path, type.IsText());
             var length = buffer.Length;
 
+            var lastModified = File.GetLastWriteTimeUtc(path).ToString("R");
+            var expireDate = File.GetLastWriteTimeUtc(path).AddHours(23).ToString("R");
+
+            context.Response.AddHeader("Last-Modified", lastModified);
+            context.Response.AddHeader("Expires", expireDate);
             context.Response.ContentType = type.ToValue();
-            FlushResponse(context, buffer, length);
+
+            if (context.Request.Headers.AllKeys.Contains("If-Modified-Since") && context.Request.Headers["If-Modified-Since"].Equals(lastModified))
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.NotModified;
+                context.Response.Close();
+            }
+            else
+            {
+                FlushResponse(context, buffer, length);
+            }
         }
 
         protected void FlushResponse(HttpListenerContext context, byte[] buffer, int length)
         {
             if (context.Request.Headers.AllKeys.Contains("Accept-Encoding") &&
-                //context.Request.Headers["Accept-Encoding"].Contains("gzip"))
                 context.Request.Headers["Accept-Encoding"].Contains("gzip") &&
                 length > 1024)
             {
