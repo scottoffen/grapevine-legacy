@@ -17,7 +17,7 @@ namespace Grapevine
 
         private volatile bool _listening;
 
-        private string _webroot = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location) + @"\webroot";
+        private string _webroot = Path.Combine(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location), "webroot");
         private string _default = "index.html";
         private string _host = "localhost";
         private string _port = "1234";
@@ -389,7 +389,7 @@ namespace Grapevine
 
         private string GetFilePath(string rawurl)
         {
-            var filename = ((rawurl.IndexOf("?") > -1) ? rawurl.Split('?') : rawurl.Split('#'))[0].Replace('/', '\\').Substring(1);
+            var filename = ((rawurl.IndexOf("?") > -1) ? rawurl.Split('?') : rawurl.Split('#'))[0].Replace('/', Path.DirectorySeparatorChar).Substring(1);
             var path = Path.Combine(_webroot, filename);
 
             if (Directory.Exists(path))
