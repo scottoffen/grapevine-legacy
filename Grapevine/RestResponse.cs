@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Net;
 
 namespace Grapevine
@@ -12,8 +14,14 @@ namespace Grapevine
 
         internal RestResponse(HttpWebResponse response, long elapsedTime, string error, WebExceptionStatus errorStatus)
         {
-            StreamReader reader = new StreamReader(response.GetResponseStream());
+            var stream = response.GetResponseStream();
+            if (response.Headers.AllKeys.Contains("Content-Encoding") && response.Headers["Content-Encoding"].Contains("gzip"))
+            {
+                stream = new GZipStream(stream, CompressionMode.Decompress);
+            }
+            StreamReader reader = new StreamReader(stream);
             this.Content = reader.ReadToEnd();
+            stream.Close();
 
             this.ContentEncoding = response.ContentEncoding;
             this.ContentLength = response.ContentLength;
