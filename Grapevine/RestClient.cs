@@ -50,6 +50,11 @@ namespace Grapevine
             }
             catch (WebException e)
             {
+                if (e.Status == WebExceptionStatus.Timeout)
+                {
+                    throw e;
+                }
+                
                 httpresponse = (HttpWebResponse)e.Response;
                 error = e.Message;
                 errorStatus = e.Status;
