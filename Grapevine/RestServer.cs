@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Web.UI;
 
 namespace Grapevine
 {
@@ -15,7 +17,7 @@ namespace Grapevine
 
         private volatile bool _listening;
 
-        private string _webroot = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location) + @"\webroot";
+        private string _webroot = Path.Combine(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location), "webroot");
         private string _default = "index.html";
         private string _host = "localhost";
         private string _port = "1234";
@@ -51,7 +53,8 @@ namespace Grapevine
 
         public RestServer(string host, string port, string webroot, int maxThreads) : this(host, port, maxThreads, webroot) { }
 
-        public RestServer(string host, string port, int maxThreads, string webroot) : this()
+        public RestServer(string host, string port, int maxThreads, string webroot)
+            : this()
         {
             this.Host = host;
             this.Port = port;
@@ -249,8 +252,24 @@ namespace Grapevine
         {
             try
             {
-                var method = _methods.Where(mi => mi.GetCustomAttributes(true).Any(attr => context.Request.RawUrl.Matches(((RestRoute)attr).PathInfo) && ((RestRoute)attr).Method.ToString().Equals(context.Request.HttpMethod.ToUpper()))).First();
-                method.Invoke(this, new object[] { context });
+                var method = _methods.FirstOrDefault(mi => mi.GetCustomAttributes(true).Any(attr => context.Request.RawUrl.Matches(((RestRoute)attr).PathInfo) && ((RestRoute)attr).Method.ToString().Equals(context.Request.HttpMethod.ToUpper())));
+                if (method != null)
+                {
+                    method.Invoke(this, new object[] { context });
+                }
+                else
+                {
+                    if ((context.Request.HttpMethod.Equals("GET", StringComparison.CurrentCultureIgnoreCase)) && (VerifyWebRoot(_webroot)))
+                    {
+                        var filename = GetFilePath(context.Request.RawUrl);
+                        if (!Object.ReferenceEquals(filename, null))
+                        {
+                            SendFileResponse(context, filename);
+                            return;
+                        }
+                    }
+                    NotFound(context);
+                }
             }
             catch
             {
@@ -301,24 +320,16 @@ namespace Grapevine
 
             context.Response.StatusCode = 404;
             context.Response.StatusDescription = "Not Found";
-            context.Response.ContentLength64 = length;
             context.Response.ContentType = contentType.ToValue();
-            context.Response.OutputStream.Write(buffer, 0, length);
-            context.Response.OutputStream.Close();
-            context.Response.Close();
+            FlushResponse(context, buffer, length);
         }
 
         protected void SendTextResponse(HttpListenerContext context, Encoding encoding, string payload)
         {
             var buffer = encoding.GetBytes(payload);
             var length = buffer.Length;
-
             context.Response.ContentEncoding = encoding;
-            context.Response.ContentLength64 = length;
-            context.Response.OutputStream.Write(buffer, 0, length);
-            context.Response.OutputStream.Close();
-
-            context.Response.Close();
+            FlushResponse(context, buffer, length);
         }
 
         protected void SendTextResponse(HttpListenerContext context, string payload)
@@ -328,13 +339,48 @@ namespace Grapevine
 
         protected void SendFileResponse(HttpListenerContext context, string path)
         {
-            var ext  = Path.GetExtension(path).ToUpper();
+            var ext = Path.GetExtension(path).ToUpper().TrimStart('.');
             var type = (Enum.IsDefined(typeof(ContentType), ext)) ? (ContentType)Enum.Parse(typeof(ContentType), ext) : ContentType.DEFAULT;
- 
+
             var buffer = GetFileBytes(path, type.IsText());
             var length = buffer.Length;
 
+            var lastModified = File.GetLastWriteTimeUtc(path).ToString("R");
+            var expireDate = File.GetLastWriteTimeUtc(path).AddHours(23).ToString("R");
+
+            context.Response.AddHeader("Last-Modified", lastModified);
+            context.Response.AddHeader("Expires", expireDate);
             context.Response.ContentType = type.ToValue();
+
+            if (context.Request.Headers.AllKeys.Contains("If-Modified-Since") && context.Request.Headers["If-Modified-Since"].Equals(lastModified))
+            {
+                context.Response.StatusCode = (int)HttpStatusCode.NotModified;
+                context.Response.Close();
+            }
+            else
+            {
+                FlushResponse(context, buffer, length);
+            }
+        }
+
+        protected void FlushResponse(HttpListenerContext context, byte[] buffer, int length)
+        {
+            if (context.Request.Headers.AllKeys.Contains("Accept-Encoding") &&
+                context.Request.Headers["Accept-Encoding"].Contains("gzip") &&
+                length > 1024)
+            {
+                /*create a gzip-response*/
+                using (var ms = new MemoryStream())
+                {
+                    using (var zip = new GZipStream(ms, CompressionMode.Compress))
+                    {
+                        zip.Write(buffer, 0, length);
+                    }
+                    buffer = ms.ToArray();
+                }
+                length = buffer.Length;
+                context.Response.AddHeader("Content-Encoding", "gzip");
+            }
             context.Response.ContentLength64 = length;
             context.Response.OutputStream.Write(buffer, 0, length);
             context.Response.OutputStream.Close();
@@ -343,7 +389,7 @@ namespace Grapevine
 
         private string GetFilePath(string rawurl)
         {
-            var filename = ((rawurl.IndexOf("?") > -1) ? rawurl.Split('?') : rawurl.Split('#'))[0].Replace('/', '\\').Substring(1);
+            var filename = ((rawurl.IndexOf("?") > -1) ? rawurl.Split('?') : rawurl.Split('#'))[0].Replace('/', Path.DirectorySeparatorChar).Substring(1);
             var path = Path.Combine(_webroot, filename);
 
             if (Directory.Exists(path))

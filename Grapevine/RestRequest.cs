@@ -47,16 +47,17 @@ namespace Grapevine
 
         public RestRequest(HttpMethod method, string resource, ContentType type)
         {
-            this._parameters  = new NameValueCollection();
+            this._parameters = new NameValueCollection();
             this._querystring = new NameValueCollection();
-            this.Headers      = new WebHeaderCollection();
-            this.Method       = method;
-            this.Resource     = resource;
-            this.ContentType  = type;
-            this.Timeout      = 500;
-            this.Encoding     = Encoding.UTF8;
+            this.Headers = new WebHeaderCollection();
+            this.Method = method;
+            this.Resource = resource;
+            this.ContentType = type;
+            this.Timeout = 500;
+            this.Encoding = Encoding.UTF8;
 
             this.Headers.Add(HttpRequestHeader.CacheControl, "no-store, must-revalidate");
+            this.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip");
         }
 
         #endregion
