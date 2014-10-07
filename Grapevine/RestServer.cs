@@ -7,7 +7,6 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using System.Web.UI;
 
 namespace Grapevine
 {
@@ -53,8 +52,7 @@ namespace Grapevine
 
         public RestServer(string host, string port, string webroot, int maxThreads) : this(host, port, maxThreads, webroot) { }
 
-        public RestServer(string host, string port, int maxThreads, string webroot)
-            : this()
+        public RestServer(string host, string port, int maxThreads, string webroot) : this()
         {
             this.Host = host;
             this.Port = port;
@@ -253,23 +251,7 @@ namespace Grapevine
             try
             {
                 var method = _methods.FirstOrDefault(mi => mi.GetCustomAttributes(true).Any(attr => context.Request.RawUrl.Matches(((RestRoute)attr).PathInfo) && ((RestRoute)attr).Method.ToString().Equals(context.Request.HttpMethod.ToUpper())));
-                if (method != null)
-                {
-                    method.Invoke(this, new object[] { context });
-                }
-                else
-                {
-                    if ((context.Request.HttpMethod.Equals("GET", StringComparison.CurrentCultureIgnoreCase)) && (VerifyWebRoot(_webroot)))
-                    {
-                        var filename = GetFilePath(context.Request.RawUrl);
-                        if (!Object.ReferenceEquals(filename, null))
-                        {
-                            SendFileResponse(context, filename);
-                            return;
-                        }
-                    }
-                    NotFound(context);
-                }
+                method.Invoke(this, new object[] { context });
             }
             catch
             {
