@@ -44,6 +44,11 @@ namespace SampleServer
                 Console.WriteLine();
             }
 
+            //while (server.IsListening)
+            //{
+            //    Thread.Sleep(300);
+            //}
+
             server.Stop();
 
             Console.WriteLine("Press Any Key to Continue...");
