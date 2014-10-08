@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -190,6 +191,33 @@ namespace Grapevine
 
         #endregion
 
+        #region EventLog and Logging
+
+        public EventLog EventLog { get; set; }
+
+        protected void Log(Exception e)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine(e.ToString());
+            sb.AppendLine("");
+            sb.AppendLine("Source: " + e.Source);
+            sb.AppendLine("");
+            sb.AppendLine("Message: " + e.Message);
+
+            this.Log(sb.ToString());
+        }
+
+        protected void Log(string message)
+        {
+            if (this.EventLog != null)
+            {
+                this.EventLog.WriteEntry(message);
+            }
+        }
+
+        #endregion
+
         #region Threading, Queuing and Processing
 
         private void HandleRequests()
@@ -201,7 +229,10 @@ namespace Grapevine
                     var context = _listener.GetContext();
                     QueueContext(context);
                 }
-                catch { }
+                catch (Exception e)
+                {
+                    this.Log(e);
+                }
             }
         }
 
@@ -215,9 +246,9 @@ namespace Grapevine
                     _ready.Set();
                 }
             }
-            catch
+            catch (Exception e)
             {
-                return;
+                this.Log(e);
             }
         }
 
@@ -242,7 +273,10 @@ namespace Grapevine
                 {
                     ProcessRequest(context);
                 }
-                catch { return; }
+                catch (Exception e)
+                {
+                    this.Log(e);
+                }
             }
         }
 
@@ -253,8 +287,10 @@ namespace Grapevine
                 var method = _methods.FirstOrDefault(mi => mi.GetCustomAttributes(true).Any(attr => context.Request.RawUrl.Matches(((RestRoute)attr).PathInfo) && ((RestRoute)attr).Method.ToString().Equals(context.Request.HttpMethod.ToUpper())));
                 method.Invoke(this, new object[] { context });
             }
-            catch
+            catch (Exception e)
             {
+                this.Log(e);
+
                 if ((context.Request.HttpMethod.Equals("GET", StringComparison.CurrentCultureIgnoreCase)) && (VerifyWebRoot(_webroot)))
                 {
                     var filename = GetFilePath(context.Request.RawUrl);
@@ -285,7 +321,10 @@ namespace Grapevine
                     }
                     return true;
                 }
-                catch { }
+                catch (Exception e)
+                {
+                    this.Log(e);
+                }
             }
             return false;
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Grapevine
@@ -50,10 +51,7 @@ namespace Grapevine
             }
             catch (WebException e)
             {
-                if (e.Status == WebExceptionStatus.Timeout)
-                {
-                    throw e;
-                }
+                this.Log(e);
                 
                 httpresponse = (HttpWebResponse)e.Response;
                 error = e.Message;
@@ -87,6 +85,33 @@ namespace Grapevine
         public CookieContainer Cookies { get; private set; }
 
         public NetworkCredential Credentials { get; set; }
+
+        #endregion
+
+        #region EventLog and Logging
+
+        public EventLog EventLog { get; set; }
+
+        protected void Log(Exception e)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine(e.ToString());
+            sb.AppendLine("");
+            sb.AppendLine("Source: " + e.Source);
+            sb.AppendLine("");
+            sb.AppendLine("Message: " + e.Message);
+
+            this.Log(sb.ToString());
+        }
+
+        protected void Log(string message)
+        {
+            if (this.EventLog != null)
+            {
+                this.EventLog.WriteEntry(message);
+            }
+        }
 
         #endregion
     }
