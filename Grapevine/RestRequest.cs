@@ -7,7 +7,7 @@ using System.Net;
 
 namespace Grapevine
 {
-    public class RestRequest
+    public class RestRequest : AbstractEventLogger
     {
         protected NameValueCollection _parameters;
         protected NameValueCollection _querystring;
@@ -86,6 +86,13 @@ namespace Grapevine
 
                 if (pathinfo.Matches("{") || pathinfo.Matches("}"))
                 {
+                    StringBuilder sb = new StringBuilder();
+
+                    sb.AppendLine("Not all parameters were replaced in your request resource:");
+                    sb.AppendLine("");
+                    sb.AppendLine(pathinfo);
+
+                    this.Log(sb.ToString());
                     throw new ServerStateException("Not all parameters were replaced in your request resource");
                 }
 

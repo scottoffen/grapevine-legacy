@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace Grapevine
 {
-    public abstract class RestServer : IDisposable
+    public abstract class RestServer : AbstractEventLogger, IDisposable
     {
         #region Instance Variables
 
@@ -138,6 +138,7 @@ namespace Grapevine
                 }
                 else
                 {
+                    this.Log("Exception: Attempted to modify Host property after server start.");
                     throw new ServerStateException();
                 }
             }
@@ -157,6 +158,7 @@ namespace Grapevine
                 }
                 else
                 {
+                    this.Log("Exception: Attempted to modify Port property after server start.");
                     throw new ServerStateException();
                 }
             }
@@ -176,6 +178,7 @@ namespace Grapevine
                 }
                 else
                 {
+                    this.Log("Exception: Attempted to modify MaxThreads property after server start.");
                     throw new ServerStateException();
                 }
             }
@@ -186,33 +189,6 @@ namespace Grapevine
             get
             {
                 return "http://" + this._host + ":" + this._port;
-            }
-        }
-
-        #endregion
-
-        #region EventLog and Logging
-
-        public EventLog EventLog { get; set; }
-
-        protected void Log(Exception e)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendLine(e.ToString());
-            sb.AppendLine("");
-            sb.AppendLine("Source: " + e.Source);
-            sb.AppendLine("");
-            sb.AppendLine("Message: " + e.Message);
-
-            this.Log(sb.ToString());
-        }
-
-        protected void Log(string message)
-        {
-            if (this.EventLog != null)
-            {
-                this.EventLog.WriteEntry(message);
             }
         }
 

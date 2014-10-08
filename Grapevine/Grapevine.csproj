@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AbstractEventLogger.cs" />
     <Compile Include="ContentType.cs" />
     <Compile Include="HttpMethod.cs" />
     <Compile Include="ServerStateException.cs" />
