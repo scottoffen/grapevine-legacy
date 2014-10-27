@@ -7,18 +7,24 @@ namespace Grapevine
     public abstract class AbstractEventLogger
     {
         public EventLog EventLog { get; set; }
+        public Boolean LogExceptions = false;
 
         protected void Log(Exception e)
         {
-            StringBuilder sb = new StringBuilder();
+            if (LogExceptions)
+            {
+                var trace = new StackTrace(e, true);
+                var frame = trace.GetFrame(0);
+                var file = frame.GetFileName();
+                var line = frame.GetFileLineNumber();
 
-            sb.AppendLine(e.ToString());
-            sb.AppendLine("");
-            sb.AppendLine("Source: " + e.Source);
-            sb.AppendLine("");
-            sb.AppendLine("Message: " + e.Message);
+                StringBuilder sb = new StringBuilder(String.Format("{0} : {1}", file, line));
+                sb.AppendLine(String.Format("[Source] {0} : [Message] {1}", e.Source, e.Message));
+                sb.AppendLine("");
+                sb.AppendLine(e.ToString());
 
-            this.Log(sb.ToString());
+                this.Log(sb.ToString());
+            }
         }
 
         protected void Log(string message)
