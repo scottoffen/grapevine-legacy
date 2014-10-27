@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace Grapevine
 {
-    public abstract class RestServer : AbstractEventLogger, IDisposable
+    public class RestServer : AbstractEventLogger, IDisposable
     {
         #region Instance Variables
 
@@ -25,6 +25,9 @@ namespace Grapevine
 
         private readonly Thread _listenerThread;
         private readonly Thread[] _workers;
+
+        //private readonly List<Type> _resources;
+        //private readonly Dictionary<Type, List<MethodInfo>> _routes;
         private readonly List<MethodInfo> _methods;
 
         private readonly HttpListener _listener = new HttpListener();
