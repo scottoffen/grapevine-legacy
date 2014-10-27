@@ -105,7 +105,7 @@ namespace Grapevine
             }
             set
             {
-                this._listening = false;
+                this._listening = value;
             }
         }
 
