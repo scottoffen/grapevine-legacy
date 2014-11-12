@@ -1,6 +1,8 @@
-﻿
-namespace Grapevine
+﻿namespace Grapevine
 {
+    /// <summary>
+    /// Http methods (or verbs) to indicate the desired action to be performed on the resource
+    /// </summary>
     public enum HttpMethod
     {
         CONNECT,

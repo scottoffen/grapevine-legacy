@@ -3,6 +3,9 @@ using System.Reflection;
 
 namespace Grapevine
 {
+    /// <summary>
+    /// MIME type of the body of the request or response
+    /// </summary>
     public enum ContentType
     {
         [ContentTypeMetadata(Value = "application/x-authorware-bin", IsBinary = true)]
