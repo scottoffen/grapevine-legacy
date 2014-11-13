@@ -1,7 +1,9 @@
-Grapevine 3.0
-=============
+Grapevine 3.0.2
+===============
 
 *The best solutions are the simplest to implement*. Embedding a REST/HTTP server in your application should be **simple**. Consuming REST resources from inside your application should be **simple**. If what you've been using *doesn't feel simple*, try **Grapevine**. It doesn't get any simpler than this.
+
+>For a version of Grapevine with JSON support baked in, try new [Grapevine Plus](https://github.com/scottoffen/GrapevinePlus)!
 
 ![](https://raw.github.com/scottoffen/Grapevine/master/grapevine.png)
 
