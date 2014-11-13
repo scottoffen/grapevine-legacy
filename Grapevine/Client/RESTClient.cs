@@ -8,7 +8,7 @@ namespace Grapevine.Client
     /// <summary>
     /// Represents a server exposing resources to interact with
     /// </summary>
-    class RESTClient
+    public class RESTClient
     {
         public RESTClient(string baseUrl)
         {
