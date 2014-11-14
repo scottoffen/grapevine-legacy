@@ -35,6 +35,11 @@
         /// </summary>
         public int MaxThreads { get; set; }
 
+        /// <summary>
+        /// Used to configure the EventLogger Exception logging
+        /// </summary>
+        public bool LogExceptions { get; set; }
+
         public Config()
         {
             this.Protocol = "http";
@@ -42,6 +47,7 @@
             this.Port = "1234";
             this.DirIndex = "index.html";
             this.MaxThreads = 5;
+            this.LogExceptions = false;
         }
     }
 }
