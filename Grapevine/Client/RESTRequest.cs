@@ -22,15 +22,15 @@ namespace Grapevine.Client
 
         public RESTRequest(string resource = "", HttpMethod method = HttpMethod.GET, ContentType type = ContentType.TXT, int timeout = -1, Encoding encoding = null)
         {
+            this._parameters = new NameValueCollection();
+            this._querystring = new NameValueCollection();
+            this.Headers = new WebHeaderCollection();
+
             this.Method = method;
             this.Resource = resource;
             this.ContentType = type;
             this.Timeout = (timeout > -1) ? timeout : RESTRequest.GlobalTimeout;
             this.Encoding = (!object.ReferenceEquals(encoding, null)) ? encoding : Encoding.UTF8;
-
-            this._parameters = new NameValueCollection();
-            this._querystring = new NameValueCollection();
-            this.Headers = new WebHeaderCollection();
 
             this.Headers.Add(HttpRequestHeader.CacheControl, "no-store, must-revalidate");
             this.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip");
