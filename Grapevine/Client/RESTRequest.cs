@@ -20,20 +20,20 @@ namespace Grapevine.Client
 
         #region Constructors
 
-        public RESTRequest (string resource = "", HttpMethod method = HttpMethod.GET, ContentType type = ContentType.TXT, int timeout = -1, Encoding encoding = null)
+        public RESTRequest(string resource = "", HttpMethod method = HttpMethod.GET, ContentType type = ContentType.TXT, int timeout = -1, Encoding encoding = null)
         {
-            this._parameters = new NameValueCollection ();
-            this._querystring = new NameValueCollection ();
-            this.Headers = new WebHeaderCollection ();
+            this._parameters = new NameValueCollection();
+            this._querystring = new NameValueCollection();
+            this.Headers = new WebHeaderCollection();
 
             this.Method = method;
             this.Resource = resource;
             this.ContentType = type;
             this.Timeout = (timeout > -1) ? timeout : RESTRequest.GlobalTimeout;
-            this.Encoding = (!object.ReferenceEquals (encoding, null)) ? encoding : Encoding.UTF8;
+            this.Encoding = (!object.ReferenceEquals(encoding, null)) ? encoding : Encoding.UTF8;
 
-            this.Headers.Add (HttpRequestHeader.CacheControl, "no-store, must-revalidate");
-            this.Headers.Add (HttpRequestHeader.AcceptEncoding, "gzip");
+            this.Headers.Add(HttpRequestHeader.CacheControl, "no-store, must-revalidate");
+            this.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip");
         }
 
         #endregion
@@ -63,24 +63,28 @@ namespace Grapevine.Client
         /// <summary>
         /// Gets the parsed PathInfo
         /// </summary>
-        public string PathInfo {
-            get {
+        public string PathInfo
+        {
+            get
+            {
                 string pathinfo = this.Resource;
 
-                foreach (var key in this._parameters.AllKeys) {
-                    var value = this._parameters.Get (key);
-                    pathinfo = Regex.Replace (pathinfo, "{" + key + "}", value);
+                foreach (var key in this._parameters.AllKeys)
+                {
+                    var value = this._parameters.Get(key);
+                    pathinfo = Regex.Replace(pathinfo, "{" + key + "}", value);
                 }
 
-                if (pathinfo.Matches ("{") || pathinfo.Matches ("}")) {
-                    StringBuilder sb = new StringBuilder ();
+                if (pathinfo.Matches("{") || pathinfo.Matches("}"))
+                {
+                    StringBuilder sb = new StringBuilder();
 
-                    sb.AppendLine ("Not all parameters were replaced in your request resource:");
-                    sb.AppendLine ("");
-                    sb.AppendLine (pathinfo);
+                    sb.AppendLine("Not all parameters were replaced in your request resource:");
+                    sb.AppendLine("");
+                    sb.AppendLine(pathinfo);
 
-                    EventLogger.Log (sb.ToString ());
-                    throw new ClientStateException ("Not all parameters were replaced in your request resource");
+                    EventLogger.Log(sb.ToString());
+                    throw new ClientStateException("Not all parameters were replaced in your request resource");
                 }
 
                 return pathinfo;
@@ -95,17 +99,21 @@ namespace Grapevine.Client
         /// <summary>
         /// Gets the parsed QueryString
         /// </summary>
-        public string QueryString {
-            get {
-                if (this._querystring.Count > 0) {
-                    List<string> querystring = new List<string> ();
+        public string QueryString
+        {
+            get
+            {
+                if (this._querystring.Count > 0)
+                {
+                    List<string> querystring = new List<string>();
 
-                    foreach (var key in this._querystring.AllKeys) {
-                        var value = this._querystring.Get (key);
-                        querystring.Add (HttpUtility.UrlEncode (key) + "=" + HttpUtility.UrlEncode (value));
+                    foreach (var key in this._querystring.AllKeys)
+                    {
+                        var value = this._querystring.Get(key);
+                        querystring.Add(HttpUtility.UrlEncode(key) + "=" + HttpUtility.UrlEncode(value));
                     }
 
-                    return string.Join ("&", querystring.ToArray ());
+                    return string.Join("&", querystring.ToArray());
                 }
 
                 return null;
@@ -115,15 +123,19 @@ namespace Grapevine.Client
         /// <summary>
         /// Get or set the optionally-tokenized string that represents the path to the desired resource; when changed, all parameters are cleared
         /// </summary>
-        public string Resource {
-            get {
+        public string Resource
+        {
+            get
+            {
                 return this._resource;
             }
-            set {
-                value = Regex.Replace (value, "^/", "");
-                if (!value.Equals (this._resource)) {
+            set
+            {
+                value = Regex.Replace(value, "^/", "");
+                if (!value.Equals(this._resource))
+                {
                     this._resource = value;
-                    this._parameters.Clear ();
+                    this._parameters.Clear();
                 }
             }
         }
@@ -140,27 +152,27 @@ namespace Grapevine.Client
         /// <summary>
         /// Provide a name and value for tokens included in the Resource string
         /// </summary>
-        public void AddParameter (string name, string value)
+        public void AddParameter(string name, string value)
         {
-            this._parameters.Add (name, value);
+            this._parameters.Add(name, value);
         }
 
         /// <summary>
         /// Provide a name and value for parameters to be sent in the query string of the request
         /// </summary>
-        public void AddQuery (string name, string value)
+        public void AddQuery(string name, string value)
         {
-            this._querystring.Add (name, value);
+            this._querystring.Add(name, value);
         }
 
         /// <summary>
         /// Clears the payload, parameters and query string of the request; automatically called when the request is passed as an argument to RESTClient.Execute
         /// </summary>
-        public void Reset ()
+        public void Reset()
         {
             this.Payload = null;
-            this._parameters.Clear ();
-            this._querystring.Clear ();
+            this._parameters.Clear();
+            this._querystring.Clear();
         }
 
         #endregion
