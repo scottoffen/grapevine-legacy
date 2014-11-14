@@ -42,8 +42,11 @@ namespace Grapevine.Server
             this.Protocol = protocol;
             this.MaxThreads = maxthreads;
 
-            this.WebRoot = Path.Combine(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location), "webroot");
             this.WebRoot = webroot;
+            if (object.ReferenceEquals(this.WebRoot, null))
+            {
+                this.WebRoot = Path.Combine(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location), "webroot");
+            }
 
             this._resources = this.LoadRestResources();
             this._routes = this.LoadRestRoutes();
