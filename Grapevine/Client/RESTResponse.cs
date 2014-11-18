@@ -13,23 +13,27 @@ namespace Grapevine.Client
     {
         #region Constructor
 
-        internal RESTResponse(HttpWebResponse response, long elapsedTime, string error = null, WebExceptionStatus errorStatus = WebExceptionStatus.Success)
+        internal RESTResponse(HttpWebResponse response, long elapsedTime = 0, string error = null, WebExceptionStatus errorStatus = WebExceptionStatus.Success)
         {
-            this.Content = this.GetContent(response);
-            this.ContentEncoding = response.ContentEncoding;
-            this.ContentLength = response.ContentLength;
-            this.ContentType = response.ContentType;
-            this.Cookies = response.Cookies;
+            if (!object.ReferenceEquals(response, null))
+            {
+                this.Content = this.GetContent(response);
+                this.ContentEncoding = response.ContentEncoding;
+                this.ContentLength = response.ContentLength;
+                this.ContentType = response.ContentType;
+                this.Cookies = response.Cookies;
+                this.Headers = response.Headers;
+                this.ResponseStatus = response.StatusCode.ToString();
+                this.ResponseUri = response.ResponseUri;
+                this.ReturnedError = (this.ErrorStatus.Equals(WebExceptionStatus.Success)) ? false : true;
+                this.Server = response.Server;
+                this.StatusCode = response.StatusCode;
+                this.StatusDescription = response.StatusDescription;
+            }
+
             this.ElapsedTime = elapsedTime;
             this.Error = error;
             this.ErrorStatus = errorStatus;
-            this.Headers = response.Headers;
-            this.ResponseStatus = response.StatusCode.ToString();
-            this.ResponseUri = response.ResponseUri;
-            this.ReturnedError = (this.ErrorStatus.Equals(WebExceptionStatus.Success)) ? false : true;
-            this.Server = response.Server;
-            this.StatusCode = response.StatusCode;
-            this.StatusDescription = response.StatusDescription;
         }
 
         private string GetContent(HttpWebResponse response)
