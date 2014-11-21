@@ -27,8 +27,6 @@ Having a REST client in the same package means you can both produce and consume 
 
 ## Features ##
 
-- Grapevine uses a non-blocking I/O model, so the server is always ready to respond to incoming requests.
-
 - Embed a REST server in your application. Add attributes to your classes and methods to define resources and routes for managing traffic based on HTTP method and path info (using regular expressions). The [message context](http://msdn.microsoft.com/en-us/library/vstudio/system.net.httplistenercontext(v=vs.110).aspx) is passed to your route every time, and each resource has a reference to the server that spawned it.
 
 - Manage multiple REST servers simultaneously and easily with a `RESTCluster`. Scope your resources to one, many or all REST servers.
