@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading;
+using System.Diagnostics;
 
 namespace Grapevine.Server
 {
@@ -12,6 +13,11 @@ namespace Grapevine.Server
     /// Delegate for pre and post starting and stopping of RESTServer
     /// </summary>
     public delegate void ToggleServerHandler();
+
+	/// <summary>
+	/// Delegate to be notified of exceptions caught in RESTServer
+	/// </summary>
+	public delegate void ServerExceptionHandler(Exception ex);
 
     public class RESTServer : Responder, IDisposable
     {
@@ -126,6 +132,7 @@ namespace Grapevine.Server
                 catch (Exception e)
                 {
                     EventLogger.Log(e);
+					this.FireException (e);
                 }
             }
             return false;
@@ -184,6 +191,13 @@ namespace Grapevine.Server
                 this.OnAfterStop = value;
             }
         }
+
+
+		public ServerExceptionHandler ExceptionHandler {
+			get;
+			set;
+		}
+
 
         /// <summary>
         /// Returns true if the server is currently listening for incoming traffic
@@ -380,6 +394,7 @@ namespace Grapevine.Server
                 {
                     this.IsListening = false;
                     EventLogger.Log(e);
+					this.FireException (e);
                 }
             }
         }
@@ -409,6 +424,7 @@ namespace Grapevine.Server
             catch (Exception e)
             {
                 EventLogger.Log(e);
+				this.FireException (e);
             }
         }
 
@@ -453,6 +469,7 @@ namespace Grapevine.Server
             catch (Exception e)
             {
                 EventLogger.Log(e);
+				this.FireException (e);
             }
         }
 
@@ -483,6 +500,7 @@ namespace Grapevine.Server
             {
                 scripterr = e;
                 EventLogger.Log(e);
+				this.FireException (e);
             }
             finally
             {
@@ -526,6 +544,7 @@ namespace Grapevine.Server
                 catch (Exception e)
                 {
                     EventLogger.Log(e);
+					this.FireException (e);
                 }
             }
         }
@@ -566,9 +585,28 @@ namespace Grapevine.Server
                 catch (Exception e)
                 {
                     EventLogger.Log(e);
+					this.FireException (e);
                 }
             }
         }
+
+		private void FireException(Exception ex)
+		{
+			ServerExceptionHandler method = this.ExceptionHandler;
+
+			if (!object.ReferenceEquals (method, null)) 
+			{
+				try
+				{
+					method(ex);
+				}
+				catch(Exception e) 
+				{
+					EventLogger.Log ("Exception when handling exception message!");
+					EventLogger.Log (e);
+				}
+			}
+		}
 
         #endregion
     }
