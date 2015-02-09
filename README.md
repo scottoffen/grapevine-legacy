@@ -48,8 +48,6 @@ Having a REST client in the same package means you can both produce and consume 
 ## Contact Me ##
 Feel free to [contact me with feedback](mailto:github@scottoffen.com) if Grapevine has been useful for you or your company. If you find you are having problems and need help check out my [support options](https://github.com/scottoffen/Grapevine/blob/master/SUPPORT.md).
 
-Thanks for checking out Grapevine! 
-
 ## License ##
 Copyright 2014 Scott Offen
 
