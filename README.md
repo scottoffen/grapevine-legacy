@@ -46,7 +46,7 @@ Having a REST client in the same package means you can both produce and consume 
 - You will likely be required to [open a port in your firewall](http://www.lmgtfy.com/?q=how+to+open+a+port+on+windows) for remote computers to be able to send requests to your application. Grapevine will not [automatically](http://msdn.microsoft.com/en-us/library/aa366418%28VS.85%29.aspx) do that for you.  You might want to do that during the [installation of your application](http://www.codeproject.com/Articles/14906/Open-Windows-Firewall-During-Installation).
 
 ## Contact Me ##
-I love to hear from people and companies using Grapevine, if for no other reason than to know someone else is finding this package useful. Please, [email me](mailto:github@scottoffen.com) with your feedback; or, if you are having problems, [open an issue](https://github.com/scottoffen/Grapevine/issues).
+Feel free to [contact me with feedback](mailto:github@scottoffen.com) if Grapevine has been useful for you or your company. If you find you are having problems and need help check out my [support options](https://github.com/scottoffen/Grapevine/blob/master/SUPPORT.md).
 
 Thanks for checking out Grapevine! 
 
