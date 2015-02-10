@@ -27,7 +27,7 @@ If you have a great idea for an enhancement, but don't know how to implement it,
 
 ### Geek For Hire ###
 
-Let be **very clear** about this: I did not create Grapevine and offer it as open source with the intention of making money off of it, nor am I making this suggestion in an attempt to monetize my efforts after-the-fact. Not that I'd turn down the opportunity to benefit from my hard work here, but I'd be just fine if this option were never exercised.
+Let me be **very clear** about this: I did not create Grapevine and offer it as open source with the intention of making money off of it, nor am I making this suggestion in an attempt to monetize my efforts after-the-fact. Not that I'd turn down the opportunity to benefit from my hard work here, but I'd be just fine if this option were never exercised.
 
 That being said, **if you'd like to pay** for my time and expenses to:
 
