@@ -1,7 +1,7 @@
 Grapevine Support
 =================
 
-Unfortunately, I don't have the time to personally respond to every support request I receive for the Open Source software I publish. [sadface] Fortunately, I haven't received very many - because that means Grapevine is easy to understand and intuitive to use! If you do find a need for some support, here are several options:
+Unfortunately, I don't have the time to *personally* respond to every support request I receive for the open source software I publish. [sadface] Fortunately, I haven't received very many - because that means Grapevine is easy to understand and intuitive to use! If you do find a need for some support, here are several options:
 
 ### [Refer To The Documentation](https://github.com/scottoffen/Grapevine/wiki) ###
 
