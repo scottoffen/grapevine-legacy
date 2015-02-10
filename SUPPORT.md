@@ -35,4 +35,4 @@ That being said, **if you'd like to pay** for my time and expenses to:
 - Train your team on REST and/or Grapevine
 - Give higher priority to your support requests
 
-Then you should [contact me directly](mailto:github@scottoffen.com) with your request, project time-frame and a description of the problem you'd like me to solve, and I'll respond to you with a quote and on a first-come-first-serve basis.
+Then you should [contact me directly](mailto:github@scottoffen.com) with your request, project time-frame and a description of the problem you'd like me to solve, and I'll respond to you with my availability and an estimate on a first-come-first-serve basis.
