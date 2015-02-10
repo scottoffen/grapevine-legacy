@@ -1,7 +1,7 @@
 Grapevine Support
 =================
 
-Unfortunately, I don't have the time to *personally* respond to every support request I receive for the open source software I publish. [sadface] Fortunately, I haven't received very many - because that means Grapevine is easy to understand and intuitive to use! If you do find a need for some support, here are several options:
+Unfortunately, I don't have the time to personally respond to every support request I receive for the open source software I publish. [sadface] Fortunately, I haven't received very many - because that means Grapevine is easy to understand and intuitive to use! If you do find a need for some support, here are several options free options, and one not-so-free option.
 
 ### [Refer To The Documentation](https://github.com/scottoffen/Grapevine/wiki) ###
 
@@ -22,6 +22,8 @@ Did you find a defect with Grapevine? Man, that's gotta be embarrassing for me, 
 Grapevine is open source, and quite a few people that have found Grapevine useful have also generously given back to the community by [sharing the enhancements](https://github.com/scottoffen/Grapevine/graphs/contributors) they have made. Great contributions, everyone, thanks! If you've made an improvement to Grapevine that you'd like to share with the rest of the community, create a pull requests and our team of enthusiasts (yeah, still just me) will take a look and maybe even pull them into a future release.
 
 If you have a great idea for an enhancement, but don't know how to implement it, create an issue and tag it as an *enhancement*, and maybe someone else will pick it up and add it for you.
+
+>Depending on my availability, sometimes pull requests will sit in the queue until I can get around to reviewing them and merging them into the master branch. I appreciate your patience with my time as I endeavor to ensure that Grapevine remains a stable, high-quality and reliable solution.
 
 ### Geek For Hire ###
 
