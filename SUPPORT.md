@@ -13,7 +13,7 @@ I'm on the [StackOverflow](http://stackoverflow.com/) Q&A boards regularly, as a
 
 ### [Report An Issue](https://github.com/scottoffen/Grapevine/issues) ###
 
-Did you find a defect with Grapevine? Man, that's gotta be embarrassing for me, right? Do me a huge favor and use the [Issues feature](https://github.com/scottoffen/Grapevine/issues) on GitHub to let me know what you found and how to reproduce it. One of the many great advantages to this approach is that you can follow the progress of the issue over time. Remember, the more detail you can provide, the faster I can provide an update with a fix or another solution.
+Did you find a defect with Grapevine? Man, that's gotta be embarrassing for me, right? Do me (and everyone else) a huge favor and use the [Issues feature](https://github.com/scottoffen/Grapevine/issues) on GitHub to let me know what you found and how to reproduce it. One of the many great advantages to this approach is that you can follow the progress of the issue over time. Remember, the more detail you can provide, the faster I can provide an update with a fix or another solution.
 
 >**IMPORTANT:** Please use this option only for code related issues, not usage support requests.
 
