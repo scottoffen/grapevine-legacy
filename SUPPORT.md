@@ -23,7 +23,7 @@ Grapevine is open source, and quite a few people that have found Grapevine usefu
 
 If you have a great idea for an enhancement, but don't know how to implement it, create an issue and tag it as an *enhancement*, and maybe someone else will pick it up and add it for you.
 
-Whether your contributing code or just an idea, providing a clear and detailed use case and usage examples is going to be paramount in deciding if and when your contribution makes it into the core library.
+Whether you're contributing code or just an idea, providing a clear and detailed use case and usage examples is going to be paramount in deciding if and when your contribution makes it into the core library.
 
 >Depending on my availability, sometimes pull requests will sit in the queue until I can get around to reviewing them and merging them into the master branch. I appreciate your patience with my time as I endeavor to ensure that Grapevine remains a stable, high-quality and reliable solution.
 
