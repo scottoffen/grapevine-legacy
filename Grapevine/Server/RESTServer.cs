@@ -517,16 +517,24 @@ namespace Grapevine.Server
             }
             finally
             {
-                if (notfound)
+                try
                 {
-                    if (object.ReferenceEquals(scripterr, null))
+                    if (notfound)
                     {
-                        this.NotFound(context);
+                        if (object.ReferenceEquals(scripterr, null))
+                        {
+                            this.NotFound(context);
+                        }
+                        else
+                        {
+                            this.InternalServerError(context, scripterr);
+                        }
                     }
-                    else
-                    {
-                        this.InternalServerError(context, scripterr);
-                    }
+                }
+                finally
+                {
+                    context.Response.OutputStream.Close();
+                    context.Response.Close(); // paranoia
                 }
             }
         }
