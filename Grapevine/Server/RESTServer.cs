@@ -519,16 +519,23 @@ namespace Grapevine.Server
             {
                 try
                 {
-                    if (notfound)
+                    try
                     {
-                        if (object.ReferenceEquals(scripterr, null))
+                        if (notfound)
                         {
-                            this.NotFound(context);
+                            if (object.ReferenceEquals(scripterr, null))
+                            {
+                               this.NotFound(context);
+                            }
+                            else
+                            {
+                               this.InternalServerError(context, scripterr);
+                            }
                         }
-                        else
-                        {
-                            this.InternalServerError(context, scripterr);
-                        }
+                    }
+                    catch (Exception)
+                    {
+                        context.Response.StatusCode = 500;
                     }
                 }
                 finally
