@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -18,8 +17,7 @@ namespace Grapevine.Server
     {
         #region Instance Variables
 
-        private readonly Dictionary<string, RESTResource> _resources;
-        private readonly List<RouteCache> _routes;
+        private readonly RouteCache _routeCache;
 
         private readonly Thread _listenerThread;
         private readonly Thread[] _workers;
@@ -49,77 +47,13 @@ namespace Grapevine.Server
                 this.WebRoot = Path.Combine(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location), "webroot");
             }
 
-            this._resources = this.LoadRestResources();
-            this._routes = this.LoadRestRoutes();
+            this._routeCache = new RouteCache(this, this.BaseUrl);
 
             this._workers = new Thread[this.MaxThreads];
             this._listenerThread = new Thread(this.HandleRequests);
         }
 
         public RESTServer(Config config) : this(host: config.Host, port: config.Port, protocol: config.Protocol, dirindex: config.DirIndex, webroot: config.WebRoot, maxthreads: config.MaxThreads) { }
-
-        private List<RouteCache> LoadRestRoutes()
-        {
-            List<RouteCache> routes = new List<RouteCache>();
-
-            foreach (KeyValuePair<string, RESTResource> pair in this._resources)
-            {
-                pair.Value.Server = this;
-                var methods = pair.Value.GetType().GetMethods().Where(mi => !mi.IsStatic && mi.GetCustomAttributes(true).Any(attr => attr is RESTRoute)).ToList<MethodInfo>();
-
-                foreach (var method in methods)
-                {
-                    foreach (var attr in method.GetCustomAttributes(true))
-                    {
-                       RESTRoute routeAttr = (RESTRoute)attr;
-                       var regex = new Regex(routeAttr.PathInfo, RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                       var routeMethod = routeAttr.Method.ToString();
-                       routes.Add( new RouteCache( method, regex, routeMethod ) );
-                    }
-                }
-            }
-
-            return routes;
-        }
-
-        private Dictionary<string, RESTResource> LoadRestResources()
-        {
-            Dictionary<string, RESTResource> resources = new Dictionary<string, RESTResource>();
-            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                if (assembly.FullName.Matches(@"^(microsoft|mscorlib|vshost|system|grapevine)")) { continue; }
-                foreach (Type type in assembly.GetTypes())
-                {
-                    if ((!type.IsAbstract) && (type.IsSubclassOf(typeof(RESTResource))))
-                    {
-                        if (type.IsSealed)
-                        {
-                            if (type.GetCustomAttributes(true).Any(attr => attr is RESTScope))
-                            {
-                                var scopes = type.GetCustomAttributes(typeof(RESTScope), true);
-                                foreach (RESTScope scope in scopes)
-                                {
-                                    if ((scope.BaseUrl.Equals(this.BaseUrl)) || (scope.BaseUrl.Equals("*")))
-                                    {
-                                        resources.Add(type.Name, Activator.CreateInstance(type) as RESTResource);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                resources.Add(type.Name, Activator.CreateInstance(type) as RESTResource);
-                            }
-                        }
-                        else
-                        {
-                            throw new ArgumentException(type.Name + " inherits from RESTResource but is not sealed!");
-                        }
-                    }
-                }
-            }
-
-            return resources;
-        }
 
         private bool VerifyWebRoot(string webroot)
         {
@@ -457,47 +391,13 @@ namespace Grapevine.Server
             }
         }
 
-        //
-        // todo: I don't like multiple out parameteres, but I don't like special "result"
-        //       data structures either. Hmm.
-        //
-        private bool FindRoute(HttpListenerContext context, ref MethodInfo method, ref Match match)
-        {
-           var httpMethod = context.Request.HttpMethod.ToUpper();
-           var url = context.Request.RawUrl;
-           foreach (RouteCache route in this._routes)
-           {
-              if (route.Match(url, httpMethod, ref match))
-              {
-                 method = route.MethodInfo;
-                 return true;
-              }
-           }
-
-           return false; // no route found
-        }
-
-
         private void ProcessRequest(HttpListenerContext context)
         {
-            var notfound  = true;
-            Exception scripterr = null;
-
             try
             {
-                MethodInfo route = null;
-                Match match = null;
-                if (FindRoute(context, ref route, ref match))
+                var notfound = true;
+                if (this._routeCache.FindAndInvokeRoute(context))
                 {
-                    if (route.GetParameters().Length == 2)
-                    {
-                        route.Invoke(this._resources[route.ReflectedType.Name], new object[] { context, match });
-                    }
-                    else
-                    {
-                        route.Invoke(this._resources[route.ReflectedType.Name], new object[] { context });
-                        
-                    }
                     notfound = false;
                 }
                 else if ((context.Request.HttpMethod.ToUpper().Equals("GET")) && (!object.ReferenceEquals(this.WebRoot, null)))
@@ -509,40 +409,28 @@ namespace Grapevine.Server
                         notfound = false;
                     }
                 }
+
+                if (notfound)
+                {
+                    this.NotFound(context);
+                }
             }
             catch (Exception e)
             {
-                scripterr = e;
-                EventLogger.Log(e);
+                try
+                {
+                    EventLogger.Log(e);
+                    this.InternalServerError(context, e);
+                }
+                catch (Exception) // We're really in trouble?
+                {
+                    context.Response.StatusCode = 500; // make sure code is at least error.
+                }
             }
             finally
             {
-                try
-                {
-                    try
-                    {
-                        if (notfound)
-                        {
-                            if (object.ReferenceEquals(scripterr, null))
-                            {
-                               this.NotFound(context);
-                            }
-                            else
-                            {
-                               this.InternalServerError(context, scripterr);
-                            }
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        context.Response.StatusCode = 500;
-                    }
-                }
-                finally
-                {
-                    context.Response.OutputStream.Close();
-                    context.Response.Close(); // paranoia
-                }
+                context.Response.OutputStream.Close();
+                context.Response.Close(); // paranoia
             }
         }
 
