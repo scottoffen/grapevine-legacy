@@ -110,6 +110,7 @@ namespace Grapevine.Server
         {
            var httpMethod = context.Request.HttpMethod.ToUpper();
            string url = UrlPathPart(context.Request.RawUrl);
+Console.WriteLine( "'{0}' PATHPART: '{1}'", context.Request.RawUrl, url );
            foreach (Entry route in _routes)
            {
               if (route.Match(url, httpMethod, out match))
@@ -161,7 +162,8 @@ namespace Grapevine.Server
 
         /// <summary>
         /// Strip the query from the url (everything after the question mark)
-        /// and return just the path.
+        /// and return just the path. This first unescapes the uri to 
+        /// make finding the question mark easier.
         /// </summary>
         protected static string UrlPathPart(string url)
         {
@@ -169,7 +171,7 @@ namespace Grapevine.Server
             if (offset == -1)
                 return url;
 
-            return url.Substring( offset );
+            return url.Substring( 0, offset );
         }
 
         private List<RESTResource> LoadRestResources( string baseUrl )
