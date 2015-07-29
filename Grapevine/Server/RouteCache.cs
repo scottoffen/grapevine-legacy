@@ -110,7 +110,6 @@ namespace Grapevine.Server
         {
            var httpMethod = context.Request.HttpMethod.ToUpper();
            string url = UrlPathPart(context.Request.RawUrl);
-Console.WriteLine( "'{0}' PATHPART: '{1}'", context.Request.RawUrl, url );
            foreach (Entry route in _routes)
            {
               if (route.Match(url, httpMethod, out match))
