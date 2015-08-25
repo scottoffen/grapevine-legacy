@@ -11,17 +11,18 @@ namespace Grapevine
     public static class EventLogger
     {
 
-		private static ILog _logImplementation;
-		public static ILog LogImplementation {
-			get 
+        private static ILog _logImplementation;
+        public static ILog LogImplementation 
         {
-				if (_logImplementation == null)
-					_logImplementation = new LogToEventLog ();
-				return _logImplementation;
-            }
-			set 
+            get 
             {
-				_logImplementation = value;
+                if (_logImplementation == null)
+                    _logImplementation = new LogToEventLog ();
+                return _logImplementation;
+            }
+            set 
+            {
+                _logImplementation = value;
             }
         }
 
@@ -30,15 +31,15 @@ namespace Grapevine
         /// </summary>
         public static void Log(Exception e)
         {
-			LogImplementation.Log (e);
-            }
+            LogImplementation.Log (e);
+        }
 
         /// <summary>
         /// Logs the message to the EventLog
         /// </summary>
         public static void Log(String message)
         {
-			LogImplementation.Log (message);
+            LogImplementation.Log (message);
         }
     }
 }
