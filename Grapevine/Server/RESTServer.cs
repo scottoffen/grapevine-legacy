@@ -13,6 +13,11 @@ namespace Grapevine.Server
     /// </summary>
     public delegate void ToggleServerHandler();
 
+    /// <summary>
+    /// Delegate to be notified of exceptions caught in RESTServer
+    /// </summary>
+    public delegate void ServerExceptionHandler(Exception ex);
+
     public class RESTServer : Responder, IDisposable
     {
         #region Instance Variables
@@ -31,7 +36,7 @@ namespace Grapevine.Server
 
         #region Constructors
 
-		public RESTServer(string host = "localhost", string port = "1234", string protocol = "http", string dirindex = "index.html", string webroot = null, int maxthreads = 5, object tag = null)
+        public RESTServer(string host = "localhost", string port = "1234", string protocol = "http", string dirindex = "index.html", string webroot = null, int maxthreads = 5, object tag = null)
         {
             this.IsListening = false;
             this.DirIndex = dirindex;
@@ -40,7 +45,7 @@ namespace Grapevine.Server
             this.Port = port;
             this.Protocol = protocol;
             this.MaxThreads = maxthreads;
-			this.Tag = tag;
+            this.Tag = tag;
 
             this.WebRoot = webroot;
             if (object.ReferenceEquals(this.WebRoot, null))
@@ -54,7 +59,7 @@ namespace Grapevine.Server
             this._listenerThread = new Thread(this.HandleRequests);
         }
 
-		public RESTServer(Config config, object tag = null) : this(host: config.Host, port: config.Port, protocol: config.Protocol, dirindex: config.DirIndex, webroot: config.WebRoot, maxthreads: config.MaxThreads, tag: tag) { }
+        public RESTServer(Config config, object tag = null) : this(host: config.Host, port: config.Port, protocol: config.Protocol, dirindex: config.DirIndex, webroot: config.WebRoot, maxthreads: config.MaxThreads, tag: tag) { }
 
         private bool VerifyWebRoot(string webroot)
         {
@@ -71,6 +76,7 @@ namespace Grapevine.Server
                 catch (Exception e)
                 {
                     EventLogger.Log(e);
+                    this.FireExceptionHandler(e);
                 }
             }
             return false;
@@ -129,6 +135,13 @@ namespace Grapevine.Server
                 this.OnAfterStop = value;
             }
         }
+
+        public ServerExceptionHandler ExceptionHandler 
+        {
+            get;
+            set;
+        }
+
 
         /// <summary>
         /// Returns true if the server is currently listening for incoming traffic
@@ -283,15 +296,15 @@ namespace Grapevine.Server
         }
         private string _protocol;
 
-        /// <summary>
-        /// Arbitary object to tag the server with.
-        /// </summary>
-        /// <value>The tag.</value>
+		/// <summary>
+		/// Arbitary object to tag the server with.
+		/// </summary>
+		/// <value>The tag.</value>
         public object Tag 
         {
-            get;
-            set;
-        }
+			get;
+			set;
+		}
 
         #endregion
 
@@ -326,6 +339,7 @@ namespace Grapevine.Server
                 {
                     this.IsListening = false;
                     EventLogger.Log(e);
+                    this.FireExceptionHandler(e);
                 }
             }
         }
@@ -355,6 +369,7 @@ namespace Grapevine.Server
             catch (Exception e)
             {
                 EventLogger.Log(e);
+                this.FireExceptionHandler(e);
             }
         }
 
@@ -382,27 +397,19 @@ namespace Grapevine.Server
                 catch (Exception e)
                 {
                     EventLogger.Log(e);
+                    this.FireExceptionHandler(e);
                 }
             }
         }
 
         private void QueueRequest(HttpListenerContext context)
         {
-            try
+            lock (this._queue)
             {
-                lock (this._queue)
-                {
-                    this._queue.Enqueue(context);
-                    this._ready.Set();
-                }
-            }
-            catch (Exception e)
-            {
-                EventLogger.Log(e);
+                this._queue.Enqueue(context);
+                this._ready.Set();
             }
         }
-
-
 
         private void ProcessRequest(HttpListenerContext context)
         {
@@ -433,16 +440,17 @@ namespace Grapevine.Server
                 try
                 {
                     EventLogger.Log(e);
+                    this.FireExceptionHandler(e);
                     this.InternalServerError(context, e);
                 }
-                catch (Exception) // We're really in trouble?
+                catch (Exception) // We can't even serve an error?
                 {
-                    context.Response.StatusCode = 500; // make sure code is at least error.
+                    context.Response.StatusCode = 500; // Maybe we can serve the code
                 }
             }
             finally
             {
-                context.Response.OutputStream.Close();
+                context.Response.OutputStream.Close(); // prevent resource leaks
                 context.Response.Close(); // paranoia
             }
         }
@@ -473,6 +481,7 @@ namespace Grapevine.Server
                 catch (Exception e)
                 {
                     EventLogger.Log(e);
+                    this.FireExceptionHandler(e);
                 }
             }
         }
@@ -512,6 +521,25 @@ namespace Grapevine.Server
                 }
                 catch (Exception e)
                 {
+                    EventLogger.Log(e);
+                    this.FireExceptionHandler(e);
+                }
+            }
+        }
+
+        private void FireExceptionHandler(Exception ex)
+        {
+            ServerExceptionHandler method = this.ExceptionHandler;
+
+            if (!object.ReferenceEquals(method, null)) 
+            {
+                try
+                {
+                    method(ex);
+                }
+                catch(Exception e) 
+                {
+                    EventLogger.Log("Exception when handling exception message!");
                     EventLogger.Log(e);
                 }
             }
