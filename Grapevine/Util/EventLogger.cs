@@ -10,20 +10,20 @@ namespace Grapevine
     /// </summary>
     public static class EventLogger
     {
-        
+
 		private static ILog _logImplementation;
 		public static ILog LogImplementation {
 			get 
-			{
+        {
 				if (_logImplementation == null)
 					_logImplementation = new LogToEventLog ();
 				return _logImplementation;
-			}
+            }
 			set 
-			{
+            {
 				_logImplementation = value;
-			}
-		}
+            }
+        }
 
         /// <summary>
         /// If LogExceptions is true, writes the result of ExceptionToString(e) to the event log
@@ -31,7 +31,7 @@ namespace Grapevine
         public static void Log(Exception e)
         {
 			LogImplementation.Log (e);
-        }
+            }
 
         /// <summary>
         /// Logs the message to the EventLog

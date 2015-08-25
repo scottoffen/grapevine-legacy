@@ -41,8 +41,13 @@ namespace Grapevine.Util.Logging
 			{
 				var trace = new StackTrace(e, true);
 				var frame = trace.GetFrame(2);
-				var file = frame.GetFileName();
-				var line = frame.GetFileLineNumber();
+				var file = String.Empty;
+				var line = -1;
+				if (null != frame)
+				{
+				       file = frame.GetFileName();
+				       line = frame.GetFileLineNumber();
+				}
 
 				StringBuilder sb = new StringBuilder(String.Format("{0} line {1}", file, line));
 				sb.AppendLine("");
