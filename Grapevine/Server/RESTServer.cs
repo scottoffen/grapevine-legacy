@@ -283,14 +283,15 @@ namespace Grapevine.Server
         }
         private string _protocol;
 
-		/// <summary>
-		/// Arbitary object to tag the server with.
-		/// </summary>
-		/// <value>The tag.</value>
-		public object Tag {
-			get;
-			set;
-		}
+        /// <summary>
+        /// Arbitary object to tag the server with.
+        /// </summary>
+        /// <value>The tag.</value>
+        public object Tag 
+        {
+            get;
+            set;
+        }
 
         #endregion
 
