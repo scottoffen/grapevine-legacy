@@ -1,6 +1,8 @@
 Grapevine 3.0.4
 ===============
 
+[![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/scottoffen/Grapevine.svg)](http://isitmaintained.com/project/scottoffen/Grapevine "Average time to resolve an issue") [![Percentage of issues still open](http://isitmaintained.com/badge/open/scottoffen/Grapevine.svg)](http://isitmaintained.com/project/scottoffen/Grapevine "Percentage of issues still open")
+
 *The best solutions are the simplest to implement*. Embedding a REST/HTTP server in your application should be **simple**. Consuming REST resources from inside your application should be **simple**. If what you've been using *doesn't feel simple*, try **Grapevine**. It doesn't get any simpler than this.
 
 >For a version of Grapevine with JSON support baked in, try new [Grapevine Plus](https://github.com/scottoffen/GrapevinePlus)!
