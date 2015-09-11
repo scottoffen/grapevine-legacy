@@ -1,7 +1,11 @@
 Grapevine 3.0.4
 ===============
 
-[![Percentage of issues still open](http://isitmaintained.com/badge/open/scottoffen/Grapevine.svg)](http://isitmaintained.com/project/scottoffen/Grapevine "Percentage of issues still open") [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/scottoffen/Grapevine.svg)](http://isitmaintained.com/project/scottoffen/Grapevine "Average time to resolve an issue")
+[![Nuget][nuget-img]][nuget-url]
+[![GitHub license][github-license-img]][github-license-url]
+[![GitHub issues][github-issues-img]][github-issues-url]
+[![Percentage of issues still open][issues-open-img]][issues-open-url]
+[![Average time to resolve an issue][issues-res-img]][issues-res-url]
 
 *The best solutions are the simplest to implement*. Embedding a REST/HTTP server in your application should be **simple**. Consuming REST resources from inside your application should be **simple**. If what you've been using *doesn't feel simple*, try **Grapevine**. It doesn't get any simpler than this.
 
@@ -58,3 +62,14 @@ Licensed under the Apache License, Version 2.0 (the "License"); you may not use 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, **WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND**, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
 "Grapes In Dark Blue Cloud" Icon courtesy of [aha-soft](http://www.aha-soft.com/free-icons/free-dark-blue-cloud-icons/).
+
+[nuget-img]: https://img.shields.io/nuget/dt/Grapevine.svg
+[nuget-url]: http://www.nuget.org/packages/Grapevine "Downloads from NuGet"
+[github-issues-img]: https://img.shields.io/github/issues/scottoffen/Grapevine.svg
+[github-issues-url]: https://github.com/scottoffen/Grapevine/issues "Current open issues"
+[github-license-img]: https://img.shields.io/github/license/scottoffen/Grapevine.svg
+[github-license-url]: LICENSE "Project license"
+[issues-open-img]: http://isitmaintained.com/badge/open/scottoffen/Grapevine.svg
+[issues-open-url]: http://isitmaintained.com/project/scottoffen/Grapevine "Percentage of issues still open"
+[issues-res-img]: http://isitmaintained.com/badge/resolution/scottoffen/Grapevine.svg
+[issues-res-url]: http://isitmaintained.com/project/scottoffen/Grapevine "Average time to resolve an issue"
