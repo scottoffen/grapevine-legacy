@@ -1,13 +1,11 @@
+Grapevine 3.0.4
+===============
+
 [![Nuget][nuget-img]][nuget-url]
 [![GitHub license][github-license-img]][github-license-url]
 [![GitHub issues][github-issues-img]][github-issues-url]
 [![Percentage of issues still open][issues-open-img]][issues-open-url]
 [![Average time to resolve an issue][issues-res-img]][issues-res-url]
-
-Grapevine 3.0.4
-===============
-
-![](https://raw.github.com/scottoffen/Grapevine/master/grapevine.png)
 
 *The best solutions are the simplest to implement*. Embedding a REST/HTTP server in your application should be **simple**. Consuming REST resources from inside your application should be **simple**. If what you've been using *doesn't feel simple*, try **Grapevine**. It doesn't get any simpler than this.
 
