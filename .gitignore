@@ -24,6 +24,9 @@ bld/
 *.VisualState.xml
 TestResult.xml
 
+#SonarQube
+.sonar
+
 # Build Results of an ATL Project
 [Dd]ebugPS/
 [Rr]eleasePS/
