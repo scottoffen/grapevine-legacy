@@ -48,13 +48,6 @@ Having a REST client in the same package means you can both produce and consume 
 ## Contact Me ##
 Feel free to [contact me with feedback](mailto:github@scottoffen.com) if Grapevine has been useful for you or your company. If you find you are having problems and need help check out my [support options](https://github.com/scottoffen/Grapevine/blob/master/SUPPORT.md).
 
-## License ##
-Copyright 2014 Scott Offen
-
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at [apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, **WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND**, either express or implied. See the License for the specific language governing permissions and limitations under the License.
-
 "Grapes In Dark Blue Cloud" Icon courtesy of [aha-soft](http://www.aha-soft.com/free-icons/free-dark-blue-cloud-icons/).
 
 [nuget-img]: https://img.shields.io/nuget/dt/Grapevine.svg
