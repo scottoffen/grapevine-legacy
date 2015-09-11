@@ -1,25 +1,19 @@
-Grapevine 3.0.4
-===============
-
 [![Nuget][nuget-img]][nuget-url]
 [![GitHub license][github-license-img]][github-license-url]
 [![GitHub issues][github-issues-img]][github-issues-url]
 [![Percentage of issues still open][issues-open-img]][issues-open-url]
 [![Average time to resolve an issue][issues-res-img]][issues-res-url]
 
-*The best solutions are the simplest to implement*. Embedding a REST/HTTP server in your application should be **simple**. Consuming REST resources from inside your application should be **simple**. If what you've been using *doesn't feel simple*, try **Grapevine**. It doesn't get any simpler than this.
-
->For a version of Grapevine with JSON support baked in, try new [Grapevine Plus](https://github.com/scottoffen/GrapevinePlus)!
+Grapevine 3.0.4
+===============
 
 ![](https://raw.github.com/scottoffen/Grapevine/master/grapevine.png)
 
->Grapevine is a .NET 4.0 class library for embedding REST/HTTP servers **and/or** clients inside any application.
->
->**Server** - Utilizing the ubiquitous [`HttpListener`](http://msdn.microsoft.com/en-us/library/vstudio/system.net.httplistener(v=vs.100)) class, Grapevine allows you to map HTTP Methods and URL patterns (using regular expressions) to specific methods.
->
->**Client** - Streamline connecting and communicating with REST servers using simple patterns and placeholders.
->
->*Version 3.0 is not backwards compatible with earlier versions.*
+*The best solutions are the simplest to implement*. Embedding a REST/HTTP server in your application should be **simple**. Consuming REST resources from inside your application should be **simple**. If what you've been using *doesn't feel simple*, try **Grapevine**. It doesn't get any simpler than this.
+
+Grapevine is a .NET 4.0 class library for embedding REST/HTTP servers **and/or** clients inside any application. Utilizing the ubiquitous [`HttpListener`](http://msdn.microsoft.com/en-us/library/vstudio/system.net.httplistener(v=vs.100)) class, Grapevine allows you to map HTTP Methods and URL patterns (using regular expressions) to specific methods. It also streamlines connecting and communicating with REST servers using simple patterns and placeholders.
+
+>*Version 3.0 is not backwards compatible with earlier versions.* For a version of Grapevine with JSON support baked in, try new [Grapevine Plus](https://github.com/scottoffen/GrapevinePlus)!
 
 ## Use Case for Grapevine ##
 
