@@ -94,7 +94,6 @@ namespace Grapevine
 
             var buffer = this.GetFileBytes(path, type.IsText());
             var length = buffer.Length;
-
             var lastWriteTime = File.GetLastWriteTimeUtc(path);
             var lastModified = lastWriteTime.ToString("R");
             var maxAge = (long)((DateTime.UtcNow - lastWriteTime).TotalSeconds + 86400);
