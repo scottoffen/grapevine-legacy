@@ -21,10 +21,22 @@ namespace Grapevine.Server
         /// </summary>
         public string PathInfo { get; set; }
 
+        /// <summary>
+        /// When more than one rules match a request (Method + PathInfo), choose rule with the highest priority
+        /// </summary>
+        public int Priority { get; set; }
+
+
         public RESTRoute()
         {
             this.Method = HttpMethod.GET;
             this.PathInfo = @"^.*$";
+            this.Priority = 1000;
+        }
+
+        public override string ToString()
+        {
+            return String.Format("RESTRoute[Method={0}, PathInfo={1}, Priority={2}]", Method, PathInfo, Priority);
         }
     }
 

@@ -21,12 +21,13 @@ namespace Grapevine.Server
         {
             #region Constructors
 
-            internal Entry(RESTResource resource, MethodInfo methodInfo, Regex regex, string httpMethod)
+            internal Entry(RESTResource resource, MethodInfo methodInfo, Regex regex, string httpMethod, int priority)
             {
                 this.RESTResource = resource;
                 this.MethodInfo = methodInfo;
                 this.Regex = regex;
                 this.HttpMethod = httpMethod;
+                this.Priority = priority;
             }
 
             #endregion
@@ -53,6 +54,12 @@ namespace Grapevine.Server
             /// PathInfo attribute regular expression, compiled
             /// </summary>
             internal readonly Regex Regex;
+
+            /// <summary>
+            /// Priority from the RESTRoute attribute Priority. Higher numbers
+            /// are preferred when matching.
+            /// </summary>
+            internal readonly int Priority;
 
             #endregion
 
@@ -91,11 +98,19 @@ namespace Grapevine.Server
                             RESTRoute routeAttr = (RESTRoute)attr;
                             var regex = new Regex(routeAttr.PathInfo, RegexOptions.IgnoreCase | RegexOptions.Compiled);
                             var httpMethod = routeAttr.Method.ToString();
-                            _routes.Add( new Entry( resource, mi, regex, httpMethod ) );
+                            int priority = routeAttr.Priority;
+                            _routes.Add( new Entry( resource, mi, regex, httpMethod, priority ) );
                         }
                     }
                 }
             }
+
+
+            // Sort found resources by Priority.
+            // For backward compatibility, RESTRoutes with the same Priority
+            // should remain in the same order, so this must be a /stable/
+            // sort (as in Enumerable.OrderBy).
+            _routes = _routes.OrderByDescending( entry => entry.Priority ).ToList<Entry>();
         }
 
         #endregion

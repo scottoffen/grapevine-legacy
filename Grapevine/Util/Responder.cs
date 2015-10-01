@@ -39,7 +39,7 @@ namespace Grapevine
         /// </summary>
         protected virtual void InternalServerError(HttpListenerContext context, Exception e)
         {
-            this.InternalServerError(context, EventLogger.ExceptionToString(e), ContentType.HTML);
+            this.InternalServerError (context, e.ToString());
         }
 
         /// <summary>
@@ -94,7 +94,6 @@ namespace Grapevine
 
             var buffer = this.GetFileBytes(path, type.IsText());
             var length = buffer.Length;
-
             var lastWriteTime = File.GetLastWriteTimeUtc(path);
             var lastModified = lastWriteTime.ToString("R");
             var maxAge = (long)((DateTime.UtcNow - lastWriteTime).TotalSeconds + 86400);
