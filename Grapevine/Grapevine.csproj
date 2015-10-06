@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -11,6 +11,8 @@
     <AssemblyName>Grapevine</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -31,9 +33,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -56,12 +55,16 @@
     <Compile Include="Server\RESTResource.cs" />
     <Compile Include="Server\RESTAttributes.cs" />
     <Compile Include="Server\RESTServer.cs" />
+    <Compile Include="Server\RouteCache.cs" />
     <Compile Include="Util\ContentType.cs" />
     <Compile Include="Util\EventLogger.cs" />
     <Compile Include="Util\Exceptions.cs" />
     <Compile Include="Util\Extensions.cs" />
     <Compile Include="Util\HttpMethod.cs" />
     <Compile Include="Util\Responder.cs" />
+    <Compile Include="Util\Logging\ILog.cs" />
+    <Compile Include="Util\Logging\LogToEventLog.cs" />
+    <Compile Include="Util\Logging\LogToConsole.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -71,4 +74,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup>
+    <Folder Include="Util\Logging\" />
+  </ItemGroup>
 </Project>
