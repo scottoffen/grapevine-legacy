@@ -119,7 +119,9 @@ namespace Grapevine
         /// </summary>
         protected void FlushResponse(HttpListenerContext context, byte[] buffer, int length)
         {
-            if (context.Request.Headers.AllKeys.Contains("Accept-Encoding") && context.Request.Headers["Accept-Encoding"].Contains("gzip") && length > 1024)
+            if (length > 1024
+                && context.Request.Headers.AllKeys.Contains("Accept-Encoding") 
+                && context.Request.Headers["Accept-Encoding"].Contains("gzip"))
             {
                 using (var ms = new MemoryStream())
                 {
@@ -127,14 +129,19 @@ namespace Grapevine
                     {
                         zip.Write(buffer, 0, length);
                     }
-                    buffer = ms.ToArray();
-                }
-                length = buffer.Length;
-                context.Response.AddHeader("Content-Encoding", "gzip");
+                    ms.Position = 0;
+
+                    context.Response.AddHeader("Content-Encoding", "gzip");
+                    context.Response.ContentLength64 = ms.Length;
+                    ms.WriteTo( context.Response.OutputStream );
+                 }
+            }
+            else
+            {
+                context.Response.ContentLength64 = length;
+                context.Response.OutputStream.Write(buffer, 0, length);
             }
 
-            context.Response.ContentLength64 = length;
-            context.Response.OutputStream.Write(buffer, 0, length);
             context.Response.OutputStream.Close();
             context.Response.Close();
         }
