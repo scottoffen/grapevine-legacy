@@ -92,8 +92,6 @@ namespace Grapevine
             var ext = Path.GetExtension(path).ToUpper().TrimStart('.');
             var type = (Enum.IsDefined(typeof(ContentType), ext)) ? (ContentType)Enum.Parse(typeof(ContentType), ext) : ContentType.DEFAULT;
 
-            var buffer = this.GetFileBytes(path, type.IsText());
-            var length = buffer.Length;
             var lastWriteTime = File.GetLastWriteTimeUtc(path);
             var lastModified = lastWriteTime.ToString("R");
             var maxAge = (long)((DateTime.UtcNow - lastWriteTime).TotalSeconds + 86400);
@@ -110,7 +108,23 @@ namespace Grapevine
             }
             else
             {
-                FlushResponse(context, buffer, length);
+                if (type.IsText())
+                {
+                    // Don't get too excited; this only detects UTF-8 and UTF-16.
+                    byte [] buffer;
+                    using (var reader = new StreamReader(path))
+                    {
+                        buffer = Encoding.UTF8.GetBytes(reader.ReadToEnd());
+                    }
+                    FlushResponse(context, buffer, buffer.Length);
+                }
+                else
+                {
+                    using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read))
+                    {
+                        FlushResponse(context, stream);
+                    }
+                }
             }
         }
 
@@ -125,10 +139,11 @@ namespace Grapevine
             {
                 using (var ms = new MemoryStream())
                 {
-                    using (var zip = new GZipStream(ms, CompressionMode.Compress))
+                    using (var zip = new GZipStream(ms, CompressionMode.Compress, true))
                     {
                         zip.Write(buffer, 0, length);
                     }
+
                     ms.Position = 0;
 
                     context.Response.AddHeader("Content-Encoding", "gzip");
@@ -146,25 +161,33 @@ namespace Grapevine
             context.Response.Close();
         }
 
-        private byte[] GetFileBytes(string path, bool istext)
+        protected void FlushResponse(HttpListenerContext context, FileStream stream)
         {
-            byte[] buffer;
-
-            if (istext)
+            if (stream.Length > 1024
+                && context.Request.Headers.AllKeys.Contains("Accept-Encoding") 
+                && context.Request.Headers["Accept-Encoding"].Contains("gzip"))
             {
-                var reader = new StreamReader(path);
-                buffer = Encoding.UTF8.GetBytes(reader.ReadToEnd());
-                reader.Close();
+                using (var ms = new MemoryStream())
+                {
+                    using (var zip = new GZipStream(ms, CompressionMode.Compress, true))
+                    {
+                        stream.CopyTo( zip );
+                    }
+                    ms.Position = 0;
+
+                    context.Response.AddHeader("Content-Encoding", "gzip");
+                    context.Response.ContentLength64 = ms.Length;
+                    ms.WriteTo( context.Response.OutputStream );
+                 }
             }
             else
             {
-                var finfo = new FileInfo(path);
-                var reader = new BinaryReader(File.Open(path, FileMode.Open, FileAccess.Read));
-                buffer = reader.ReadBytes((int)finfo.Length);
-                reader.Close();
+                context.Response.ContentLength64 = stream.Length;
+                stream.CopyTo( context.Response.OutputStream );
             }
 
-            return buffer;
+            context.Response.OutputStream.Close();
+            context.Response.Close();
         }
     }
 }
