@@ -257,6 +257,29 @@ namespace Grapevine.Server
         private int _maxt;
 
         /// <summary>
+        /// Maximum number of outstanding requests that will be queued for
+        /// processing.
+        /// </summary>
+        public int MaxPendingRequests
+        {
+            set
+            {
+                if (value < 1)
+                {
+                    var e = new ArgumentException("cannot be less than 1", "MaxPendingRequests");
+                    EventLogger.Log(e);
+                    throw e;
+                }
+                _maxRequests = value;
+            }
+            get
+            {
+                return _maxRequests;
+            }
+        }
+        private int _maxRequests = 200;
+
+        /// <summary>
         /// <para>The URI scheme (or protocol) to be used in creating the HttpListener prefix; ex. "http" or "https"</para>
         /// <para>&#160;</para>
         /// <para>Note that if you create an HttpListener using https, you must select a Server Certificate for that listener. See the MSDN documentation on the HttpListener class for more information.</para>
@@ -390,6 +413,17 @@ namespace Grapevine.Server
         {
             lock (this._queue)
             {
+                if (_queue.Count > MaxPendingRequests)
+                {
+                    context.Response.StatusCode = 503;
+                    context.Response.OutputStream.Close();
+                    context.Response.Close();
+                    EventLogger.Log(
+                        String.Format( "Request queue max size reached: {0}. Connection refused with 503 error.", 
+                                       MaxPendingRequests ) );
+                    return;
+                }
+
                 this._queue.Enqueue(context);
                 this._ready.Set();
             }
