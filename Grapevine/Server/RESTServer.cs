@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
+// using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
+
+using SocketHttpListener.Net;
 
 namespace Grapevine.Server
 {
@@ -19,7 +21,6 @@ namespace Grapevine.Server
 
         private readonly RouteCache _routeCache;
 
-        private readonly Thread _listenerThread;
         private readonly Thread[] _workers;
 
         private readonly HttpListener _listener = new HttpListener();
@@ -51,7 +52,7 @@ namespace Grapevine.Server
             this._routeCache = new RouteCache(this, this.BaseUrl);
 
             this._workers = new Thread[this.MaxThreads];
-            this._listenerThread = new Thread(this.HandleRequests);
+            this._listener.OnContext += new Action<HttpListenerContext>(QueueRequest);
         }
 
         public RESTServer(Config config, object tag = null) : this(host: config.Host, port: config.Port, protocol: config.Protocol, dirindex: config.DirIndex, webroot: config.WebRoot, maxthreads: config.MaxThreads, tag: tag) { }
@@ -335,7 +336,6 @@ namespace Grapevine.Server
                     this._listener.Prefixes.Add(this.BaseUrl);
 
                     this._listener.Start();
-                    this._listenerThread.Start();
 
                     for (int i = 0; i < _workers.Length; i++)
                     {
@@ -392,22 +392,6 @@ namespace Grapevine.Server
         #endregion
 
         #region Private Threading Methods
-
-        private void HandleRequests()
-        {
-            while (this.IsListening)
-            {
-                try
-                {
-                    var context = this._listener.GetContext();
-                    this.QueueRequest(context);
-                }
-                catch (Exception e)
-                {
-                    EventLogger.Log(e);
-                }
-            }
-        }
 
         private void QueueRequest(HttpListenerContext context)
         {
