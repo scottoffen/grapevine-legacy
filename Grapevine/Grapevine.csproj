@@ -50,7 +50,10 @@
       <HintPath>packages\Patterns.Logging.1.0.0.2\lib\portable-net45+sl4+wp71+win8+wpa81\Patterns.Logging.dll</HintPath>
     </Reference>
     <Reference Include="SocketHttpListener">
-      <HintPath>packages\SocketHttpListener.1.0.0.13\lib\net45\SocketHttpListener.dll</HintPath>
+      <HintPath>packages\SocketHttpListener.1.0.0.25\lib\net45\SocketHttpListener.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -73,6 +76,7 @@
     <Compile Include="Util\Logging\ILog.cs" />
     <Compile Include="Util\Logging\LogToEventLog.cs" />
     <Compile Include="Util\Logging\LogToConsole.cs" />
+    <Compile Include="Test\TestFixture.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -84,8 +88,14 @@
   -->
   <ItemGroup>
     <Folder Include="Util\Logging\" />
+    <Folder Include="Test\" />
+    <Folder Include="Test\web\" />
+    <Folder Include="Test\web\subdir\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Test\web\file with spaces.txt" />
+    <None Include="Test\web\myindex.html" />
+    <None Include="Test\web\subdir\file1.txt" />
   </ItemGroup>
 </Project>
