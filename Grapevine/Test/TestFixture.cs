@@ -25,7 +25,7 @@ public class TestFixture
       Protocol = "http",
       Host = "localhost",
       Port = "8123",
-      WebRoot = "../../Test/web",
+      WebRoot = "../../Data/web",
       DirIndex = "myindex.html",
       MaxThreads = 3,
       AutoLoadRestResources = false
