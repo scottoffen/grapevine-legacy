@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Web;
 
 using SocketHttpListener.Net;
 
@@ -80,43 +81,65 @@ namespace Grapevine.Server
         /// <summary>
         /// Construction loads all routes found in the project's DLLs.
         /// </summary>
-        internal RouteCache(RESTServer server, string baseUrl)
+        internal RouteCache(RESTServer server, string baseUrl, bool autoLoadResources)
         {
             _routes = new List<Entry>();
 
-            foreach (RESTResource resource in LoadRestResources(baseUrl))
+            if (autoLoadResources)
             {
-                resource.Server = server;
-
-                // Create a route cache Entry for each valid RESTRoute attribute found
-
-                foreach (MethodInfo mi in resource.GetType().GetMethods())
+                foreach (RESTResource resource in LoadRestResources(baseUrl))
                 {
-                    if (!mi.IsStatic && mi.GetCustomAttributes(true).Any(attr => attr is RESTRoute))
-                    {
-                        foreach (var attr in mi.GetCustomAttributes(true))
-                        {
-                            RESTRoute routeAttr = (RESTRoute)attr;
-                            var regex = new Regex(routeAttr.PathInfo, RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                            var httpMethod = routeAttr.Method.ToString();
-                            int priority = routeAttr.Priority;
-                            _routes.Add( new Entry( resource, mi, regex, httpMethod, priority ) );
-                        }
-                    }
+                   resource.Server = server;
+                   this.Add( resource );
                 }
+     
+                SortRoutes();
             }
-
-
-            // Sort found resources by Priority.
-            // For backward compatibility, RESTRoutes with the same Priority
-            // should remain in the same order, so this must be a /stable/
-            // sort (as in Enumerable.OrderBy).
-            _routes = _routes.OrderByDescending( entry => entry.Priority ).ToList<Entry>();
         }
 
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Find all RESTRoute decorated methods of a resource and add them as routes.
+        /// The cache owns the resource now. Be sure to call SortRoutes when you are finished
+        /// Add()ing them.
+        /// </summary>
+        /// Note: This method does not set RESTResource.Server
+        /// 
+        internal void Add( RESTResource resource )
+        {
+           // Create a route cache Entry for each valid RESTRoute attribute found
+    
+           foreach (MethodInfo mi in resource.GetType().GetMethods())
+           {
+              if (!mi.IsStatic && mi.GetCustomAttributes(true).Any(attr => attr is RESTRoute))
+              {
+                 foreach (var attr in mi.GetCustomAttributes(true))
+                 {
+                    RESTRoute routeAttr = (RESTRoute)attr;
+                    var regex = new Regex(routeAttr.PathInfo, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                    var httpMethod = routeAttr.Method.ToString();
+                    int priority = routeAttr.Priority;
+                    _routes.Add( new Entry( resource, mi, regex, httpMethod, priority ) );
+                 }
+              }
+           }
+        }
+      
+        /// <summary>
+        /// Sorts routes by Priority. Until this is called, routes added with AddRoute will be searched in the
+        /// order they were added.
+        /// </summary>
+        internal void SortRoutes()
+        {
+           // Sort found resources by Priority.
+           // For backward compatibility, RESTRoutes with the same Priority
+           // should remain in the same order, so this must be a /stable/
+           // sort (as in Enumerable.OrderBy).
+           _routes = _routes.OrderByDescending( entry => entry.Priority ).ToList<Entry>();
+        }
 
         //
         // todo: I don't like multiple out parameters, but I don't like special "result"
@@ -125,7 +148,8 @@ namespace Grapevine.Server
         internal bool FindRoute(HttpListenerContext context, out RESTResource resource, out MethodInfo method, out Match match)
         {
            var httpMethod = context.Request.HttpMethod.ToUpper();
-           string url = UrlPathPart(context.Request.RawUrl);
+           string url = HttpUtility.UrlDecode( context.Request.Url.AbsolutePath );
+         
            foreach (Entry route in _routes)
            {
               if (route.Match(url, httpMethod, out match))
@@ -169,7 +193,7 @@ namespace Grapevine.Server
 
         #region Private Fields
 
-        readonly List<Entry> _routes = new List<Entry>();
+        List<Entry> _routes = new List<Entry>();
 
         #endregion
 

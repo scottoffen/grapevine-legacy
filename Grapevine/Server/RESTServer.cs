@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-// using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -32,31 +31,43 @@ namespace Grapevine.Server
 
         #region Constructors
 
+        [Obsolete( "Please use RESTServer(config,tag)" )]
         public RESTServer(string host = "localhost", string port = "1234", string protocol = "http", string dirindex = "index.html", string webroot = null, int maxthreads = 5, object tag = null)
+         : this( 
+            new Config { 
+                Host = host,
+                Port = port,
+                Protocol = protocol,
+                DirIndex = dirindex, 
+                WebRoot = webroot, 
+                MaxThreads = maxthreads }, 
+            tag )
+        {
+        }
+
+        public RESTServer(Config config, object tag = null) 
         {
             this.IsListening = false;
-            this.DirIndex = dirindex;
-
-            this.Host = host;
-            this.Port = port;
-            this.Protocol = protocol;
-            this.MaxThreads = maxthreads;
+            this.DirIndex = config.DirIndex;
+      
+            this.Host = config.Host;
+            this.Port = config.Port;
+            this.Protocol = config.Protocol;
+            this.MaxThreads = config.MaxThreads;
+            this.AutoLoadRestResources = config.AutoLoadRestResources;
             this.Tag = tag;
-
-            this.WebRoot = webroot;
+      
+            this.WebRoot = config.WebRoot;
             if (object.ReferenceEquals(this.WebRoot, null))
             {
                 this.WebRoot = Path.Combine(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location), "webroot");
             }
-
-            this._routeCache = new RouteCache(this, this.BaseUrl);
-
+         
+            this._routeCache = new RouteCache(this, this.BaseUrl, this.AutoLoadRestResources);
             this._workers = new Thread[this.MaxThreads];
             this._listener.OnContext += new Action<HttpListenerContext>(QueueRequest);
         }
-
-        public RESTServer(Config config, object tag = null) : this(host: config.Host, port: config.Port, protocol: config.Protocol, dirindex: config.DirIndex, webroot: config.WebRoot, maxthreads: config.MaxThreads, tag: tag) { }
-
+        
         private bool VerifyWebRoot(string webroot)
         {
             if (!Object.ReferenceEquals(webroot, null))
@@ -78,7 +89,6 @@ namespace Grapevine.Server
         }
 
         #endregion
-
         #region Public Properties
 
         /// <summary>
@@ -256,6 +266,11 @@ namespace Grapevine.Server
             }
         }
         private int _maxt;
+  
+        /// <summary>
+        /// Should the app automatically search for RESTRoute-decorated objects in the application path?
+        /// </summary>
+        public bool AutoLoadRestResources { set; get; }
 
         /// <summary>
         /// Maximum number of outstanding requests that will be queued for
@@ -320,6 +335,19 @@ namespace Grapevine.Server
         #endregion
 
         #region Public Methods
+  
+        /// <summary>
+        /// Manually register a rest resource. The resource will be adopted by this class.
+        /// </summary>
+        /// <example>
+        ///   server = new RESTServer( Config { AutoLoadRestResource = false; } );
+        ///   server.AddResource( new MyRestResource() );
+        ///   server.Start();
+        /// </example>
+        public void AddResource( RESTResource resource )
+        {
+            _routeCache.Add( resource );
+        }
 
         /// <summary>
         /// Attempts to start the server; executes delegates for OnBeforeStart and OnAfterStart
@@ -332,6 +360,7 @@ namespace Grapevine.Server
                 {
                     this.FireDelegate(this.OnBeforeStart);
 
+                    this._routeCache.SortRoutes();
                     this.IsListening = true;
                     this._listener.Prefixes.Add(this.BaseUrl);
 
@@ -424,7 +453,7 @@ namespace Grapevine.Server
                 }
                 else if ((context.Request.HttpMethod.ToUpper().Equals("GET")) && (!object.ReferenceEquals(this.WebRoot, null)))
                 {
-                    var filename = this.GetFilePath(context.Request.RawUrl);
+                    var filename = this.GetFilePath( context.Request.Url.LocalPath );
                     if (!object.ReferenceEquals(filename, null))
                     {
                         this.SendFileResponse(context, filename);
@@ -497,9 +526,9 @@ namespace Grapevine.Server
 
         #region Private Utility Methods
 
-        private string GetFilePath(string rawurl)
+        private string GetFilePath(string urlPath)
         {
-            var filename = ((rawurl.IndexOf("?") > -1) ? rawurl.Split('?') : rawurl.Split('#'))[0].Replace('/', Path.DirectorySeparatorChar).Substring(1);
+            string filename = urlPath.TrimStart('/', '\\');
             var path = Path.Combine(this.WebRoot, filename);
 
             if (File.Exists(path))
