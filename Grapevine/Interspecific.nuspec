@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Interspecific</id>
+    <version>1.0.1.1</version>
+    <title>Interspecific</title>
+    <authors>Scott Offen and various Interspecific project contributors</authors>
+    <owners></owners>
+    <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
+    <projectUrl>https://github.com/tekhedd/Interspecific</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Interspecific REST HTTP server framework. See https://github.com/tekhedd/Interspecific</description>
+    <releaseNotes>Bugfixes and enhancements.</releaseNotes>
+    <copyright>Copyright 2014-2016</copyright>
+    <tags>REST HTTP C# Networking</tags>
+    <dependencies>
+      <!-- dependency id="Patterns.Logging" version="1.0.0.2" / -->
+      <dependency id="SocketHttpListener" version="1.0.0.25" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin/Release/Interspecific.dll" target="lib\net45\Interspecific.dll" />
+  </files>
+</package>
