@@ -11,7 +11,7 @@ Grapevine 3.0.4
 
 Grapevine is a .NET 4.0 class library for embedding REST/HTTP servers **and/or** clients inside any application. Utilizing the ubiquitous [`HttpListener`](http://msdn.microsoft.com/en-us/library/vstudio/system.net.httplistener(v=vs.100)) class, Grapevine allows you to map HTTP Methods and URL patterns (using regular expressions) to specific methods. It also streamlines connecting and communicating with REST servers using simple patterns and placeholders.
 
->*Version 3.0 is not backwards compatible with earlier versions.* For a version of Grapevine with JSON support baked in, try new [Grapevine Plus](https://github.com/scottoffen/GrapevinePlus)!
+>*Version 3.0 is not backwards compatible with earlier versions.* For a version of Grapevine with JSON support baked in, try new [Grapevine Plus](https://github.com/sukona/GrapevinePlus)!
 
 ## Use Case for Grapevine ##
 
@@ -44,17 +44,17 @@ Having a REST client in the same package means you can both produce and consume 
 - You will likely be required to [open a port in your firewall](http://www.lmgtfy.com/?q=how+to+open+a+port+on+windows) for remote computers to be able to send requests to your application. Grapevine will not [automatically](http://msdn.microsoft.com/en-us/library/aa366418%28VS.85%29.aspx) do that for you.  You might want to do that during the [installation of your application](http://www.codeproject.com/Articles/14906/Open-Windows-Firewall-During-Installation).
 
 ## Contact Me ##
-Feel free to [contact me with feedback](mailto:github@scottoffen.com) if Grapevine has been useful for you or your company. If you find you are having problems and need help check out my [support options](https://github.com/scottoffen/Grapevine/blob/master/SUPPORT.md).
+Feel free to [contact me with feedback](mailto:github@scottoffen.com) if Grapevine has been useful for you or your company. If you find you are having problems and need help check out my [support options](https://github.com/sukona/Grapevine/blob/master/SUPPORT.md).
 
 "Grapes In Dark Blue Cloud" Icon courtesy of [aha-soft](http://www.aha-soft.com/free-icons/free-dark-blue-cloud-icons/).
 
 [nuget-img]: https://img.shields.io/nuget/dt/Grapevine.svg
 [nuget-url]: http://www.nuget.org/packages/Grapevine "Downloads from NuGet"
-[github-issues-img]: https://img.shields.io/github/issues/scottoffen/Grapevine.svg
-[github-issues-url]: https://github.com/scottoffen/Grapevine/issues "Current open issues"
-[github-license-img]: https://img.shields.io/github/license/scottoffen/Grapevine.svg
+[github-issues-img]: https://img.shields.io/github/issues/sukona/Grapevine.svg
+[github-issues-url]: https://github.com/sukona/Grapevine/issues "Current open issues"
+[github-license-img]: https://img.shields.io/github/license/sukona/Grapevine.svg
 [github-license-url]: LICENSE "Project license"
-[issues-open-img]: http://isitmaintained.com/badge/open/scottoffen/Grapevine.svg
-[issues-open-url]: http://isitmaintained.com/project/scottoffen/Grapevine "Percentage of issues still open"
-[issues-res-img]: http://isitmaintained.com/badge/resolution/scottoffen/Grapevine.svg
-[issues-res-url]: http://isitmaintained.com/project/scottoffen/Grapevine "Average time to resolve an issue"
+[issues-open-img]: http://isitmaintained.com/badge/open/sukona/Grapevine.svg
+[issues-open-url]: http://isitmaintained.com/project/sukona/Grapevine "Percentage of issues still open"
+[issues-res-img]: http://isitmaintained.com/badge/resolution/sukona/Grapevine.svg
+[issues-res-url]: http://isitmaintained.com/project/sukona/Grapevine "Average time to resolve an issue"
