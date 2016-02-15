@@ -18,7 +18,7 @@ namespace Grapevine.Server
         #region Instance Variables
 
         private readonly Dictionary<string, RESTResource> _resources;
-        private readonly List<MethodInfo> _routes;
+        private readonly List<Handler> _handlers;
 
         private readonly Thread _listenerThread;
         private readonly Thread[] _workers;
@@ -49,7 +49,7 @@ namespace Grapevine.Server
             }
 
             this._resources = this.LoadRestResources();
-            this._routes = this.LoadRestRoutes();
+            this._handlers = this.LoadRestRoutes();
 
             this._workers = new Thread[this.MaxThreads];
             this._listenerThread = new Thread(this.HandleRequests);
@@ -57,15 +57,21 @@ namespace Grapevine.Server
 
         public RESTServer(Config config) : this(host: config.Host, port: config.Port, protocol: config.Protocol, dirindex: config.DirIndex, webroot: config.WebRoot, maxthreads: config.MaxThreads) { }
 
-        private List<MethodInfo> LoadRestRoutes()
+        private List<Handler> LoadRestRoutes()
         {
-            List<MethodInfo> routes = new List<MethodInfo>();
+            var routes = new List<Handler>();
 
-            foreach (KeyValuePair<string, RESTResource> pair in this._resources)
+            foreach (var pair in this._resources)
             {
                 pair.Value.Server = this;
-                var methods = pair.Value.GetType().GetMethods().Where(mi => !mi.IsStatic && mi.GetCustomAttributes(true).Any(attr => attr is RESTRoute)).ToList<MethodInfo>();
-                routes.AddRange(methods);
+                var methods = pair.Value.GetType().GetMethods();
+                foreach (var mi in methods)
+                {
+                    if (mi.IsStatic) continue;
+
+                    var attrs = mi.GetCustomAttributes(true).Where(attr => attr is RESTRoute).ToList();
+                    routes.AddRange(attrs.Select(attr => new Handler { Method = mi, Route = attr as RESTRoute }));
+                }
             }
 
             return routes;
@@ -446,14 +452,32 @@ namespace Grapevine.Server
             }
         }
 
+
+        private MethodInfo FindMatchingHandler(HttpListenerContext context)
+        {
+            var matchingRoutes =
+                _handlers.Where(h => h.Route.Matches(context.Request.HttpMethod, context.Request.RawUrl)).ToList();
+
+            if (!matchingRoutes.Any())
+                return null;
+
+            matchingRoutes.Sort();
+            Console.WriteLine("url: {0}", context.Request.Url);
+            foreach (var r in matchingRoutes)
+            {
+               Console.WriteLine(r.Route); 
+            }
+            return matchingRoutes.First().Method;
+        }
+
         private void ProcessRequest(HttpListenerContext context)
         {
-            var notfound  = true;
+            var notfound = true;
             Exception scripterr = null;
 
             try
             {
-                var route = this._routes.FirstOrDefault(mi => mi.GetCustomAttributes(true).Any(attr => context.Request.RawUrl.Matches(((RESTRoute)attr).PathInfo) && context.Request.HttpMethod.ToUpper().Equals(((RESTRoute)attr).Method.ToString())));
+                var route = FindMatchingHandler(context);
                 if (!object.ReferenceEquals(route, null))
                 {
                     route.Invoke(this._resources[route.ReflectedType.Name], new object[] { context });

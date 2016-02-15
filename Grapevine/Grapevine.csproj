@@ -52,6 +52,7 @@
     <Compile Include="Client\RESTRequest.cs" />
     <Compile Include="Client\RESTResponse.cs" />
     <Compile Include="Server\Config.cs" />
+    <Compile Include="Server\Handler.cs" />
     <Compile Include="Server\RESTCluster.cs" />
     <Compile Include="Server\RESTResource.cs" />
     <Compile Include="Server\RESTAttributes.cs" />
