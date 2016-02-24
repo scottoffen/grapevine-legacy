@@ -11,6 +11,8 @@
     <AssemblyName>Grapevine</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -31,9 +33,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -62,6 +61,9 @@
     <Compile Include="Util\Extensions.cs" />
     <Compile Include="Util\HttpMethod.cs" />
     <Compile Include="Util\Responder.cs" />
+    <Compile Include="Util\Logging\ILog.cs" />
+    <Compile Include="Util\Logging\LogToEventLog.cs" />
+    <Compile Include="Util\Logging\LogToConsole.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -71,4 +73,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup>
+    <Folder Include="Util\Logging\" />
+  </ItemGroup>
 </Project>
