@@ -32,7 +32,7 @@ namespace Grapevine.Server
 
         #region Constructors
 
-        public RESTServer(string host = "localhost", string port = "1234", string protocol = "http", string dirindex = "index.html", string webroot = null, int maxthreads = 5)
+		public RESTServer(string host = "localhost", string port = "1234", string protocol = "http", string dirindex = "index.html", string webroot = null, int maxthreads = 5, object tag = null)
         {
             this.IsListening = false;
             this.DirIndex = dirindex;
@@ -41,6 +41,7 @@ namespace Grapevine.Server
             this.Port = port;
             this.Protocol = protocol;
             this.MaxThreads = maxthreads;
+			this.Tag = tag;
 
             this.WebRoot = webroot;
             if (object.ReferenceEquals(this.WebRoot, null))
@@ -55,7 +56,7 @@ namespace Grapevine.Server
             this._listenerThread = new Thread(this.HandleRequests);
         }
 
-        public RESTServer(Config config) : this(host: config.Host, port: config.Port, protocol: config.Protocol, dirindex: config.DirIndex, webroot: config.WebRoot, maxthreads: config.MaxThreads) { }
+		public RESTServer(Config config, object tag = null) : this(host: config.Host, port: config.Port, protocol: config.Protocol, dirindex: config.DirIndex, webroot: config.WebRoot, maxthreads: config.MaxThreads, tag: tag) { }
 
         private List<MethodInfo> LoadRestRoutes()
         {
@@ -336,6 +337,15 @@ namespace Grapevine.Server
             }
         }
         private string _protocol;
+
+		/// <summary>
+		/// Arbitary object to tag the server with.
+		/// </summary>
+		/// <value>The tag.</value>
+		public object Tag {
+			get;
+			set;
+		}
 
         #endregion
 

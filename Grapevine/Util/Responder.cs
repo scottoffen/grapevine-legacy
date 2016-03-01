@@ -39,7 +39,7 @@ namespace Grapevine
         /// </summary>
         protected virtual void InternalServerError(HttpListenerContext context, Exception e)
         {
-            this.InternalServerError(context, EventLogger.ExceptionToString(e), ContentType.HTML);
+			this.InternalServerError (context, e);
         }
 
         /// <summary>
