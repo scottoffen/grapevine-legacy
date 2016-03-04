@@ -76,7 +76,8 @@ namespace Grapevine.Server
             Dictionary<string, RESTResource> resources = new Dictionary<string, RESTResource>();
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                if (assembly.FullName.Matches(@"^(microsoft|mscorlib|vshost|system|grapevine)")) { continue; }
+                if ((assembly.GlobalAssemblyCache) || (Enum.IsDefined(typeof(AssembliesToIgnore), assembly.GetName().Name))) continue;
+
                 foreach (Type type in assembly.GetTypes())
                 {
                     if ((!type.IsAbstract) && (type.IsSubclassOf(typeof(RESTResource))))
@@ -562,4 +563,6 @@ namespace Grapevine.Server
 
         #endregion
     }
+
+    enum AssembliesToIgnore { vshost32, Grapevine, GrapevinePlus }
 }
