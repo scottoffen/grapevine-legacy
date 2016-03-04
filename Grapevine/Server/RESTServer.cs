@@ -371,6 +371,7 @@ namespace Grapevine.Server
                 {
                     this.IsListening = false;
                     EventLogger.Log(e);
+                    throw;
                 }
             }
         }
@@ -400,6 +401,7 @@ namespace Grapevine.Server
             catch (Exception e)
             {
                 EventLogger.Log(e);
+                throw;
             }
         }
 
