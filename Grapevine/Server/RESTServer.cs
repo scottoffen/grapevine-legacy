@@ -456,7 +456,8 @@ namespace Grapevine.Server
 
             try
             {
-                var route = this._routes.FirstOrDefault(mi => mi.GetCustomAttributes(true).Any(attr => context.Request.RawUrl.Matches(((RESTRoute)attr).PathInfo) && context.Request.HttpMethod.ToUpper().Equals(((RESTRoute)attr).Method.ToString())));
+                var rpath = (context.Request.RawUrl.Split('?'))[0];
+                var route = this._routes.FirstOrDefault(mi => mi.GetCustomAttributes(true).Any(attr => rpath.Matches(((RESTRoute)attr).PathInfo) && context.Request.HttpMethod.ToUpper().Equals(((RESTRoute)attr).Method.ToString())));
                 if (!object.ReferenceEquals(route, null))
                 {
                     route.Invoke(this._resources[route.ReflectedType.Name], new object[] { context });
