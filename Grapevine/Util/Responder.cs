@@ -39,7 +39,7 @@ namespace Grapevine
         /// </summary>
         protected virtual void InternalServerError(HttpListenerContext context, Exception e)
         {
-            this.InternalServerError(context, EventLogger.ExceptionToString(e), ContentType.HTML);
+            this.InternalServerError (context, e.ToString());
         }
 
         /// <summary>
@@ -94,15 +94,16 @@ namespace Grapevine
 
             var buffer = this.GetFileBytes(path, type.IsText());
             var length = buffer.Length;
-
-            var lastModified = File.GetLastWriteTimeUtc(path).ToString("R");
-            var expireDate = File.GetLastWriteTimeUtc(path).AddHours(23).ToString("R");
+            var lastWriteTime = File.GetLastWriteTimeUtc(path);
+            var lastModified = lastWriteTime.ToString("R");
+            var maxAge = (long)((DateTime.UtcNow - lastWriteTime).TotalSeconds + 86400);
 
             context.Response.AddHeader("Last-Modified", lastModified);
-            context.Response.AddHeader("Expires", expireDate);
+            context.Response.AddHeader("max-age", maxAge.ToString());
             context.Response.ContentType = type.ToValue();
 
-            if (context.Request.Headers.AllKeys.Contains("If-Modified-Since") && context.Request.Headers["If-Modified-Since"].Equals(lastModified))
+            var ifModified = context.Request.Headers["If-Modified-Since"];
+            if (null != ifModified && ifModified == lastModified)
             {
                 context.Response.StatusCode = (int)HttpStatusCode.NotModified;
                 context.Response.Close();
