@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace Grapevine
+namespace Grapevine.Util
 {
-    public static class Extensions
+    public static class InternalExtensions
     {
         /// <summary>
         /// Capitalizes the first letter in the string and lower-cases the remainder

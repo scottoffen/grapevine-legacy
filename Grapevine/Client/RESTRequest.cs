@@ -4,6 +4,7 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
+using Grapevine.Util;
 
 namespace Grapevine.Client
 {
