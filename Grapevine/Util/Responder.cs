@@ -96,7 +96,7 @@ namespace Grapevine
             var length = buffer.Length;
 
             var lastModified = File.GetLastWriteTimeUtc(path).ToString("R");
-            var expireDate = File.GetLastWriteTimeUtc(path).AddHours(23).ToString("R");
+            var expireDate = DateTime.Now.AddHours(23).ToString("R");
 
             context.Response.AddHeader("Last-Modified", lastModified);
             context.Response.AddHeader("Expires", expireDate);
