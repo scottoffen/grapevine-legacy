@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading;
+using Grapevine.Util;
 
 namespace Grapevine.Server
 {
@@ -76,7 +77,8 @@ namespace Grapevine.Server
             Dictionary<string, RESTResource> resources = new Dictionary<string, RESTResource>();
             foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                if (assembly.FullName.Matches(@"^(microsoft|mscorlib|vshost|system|grapevine)")) { continue; }
+                if ((assembly.GlobalAssemblyCache) || (Enum.IsDefined(typeof(AssembliesToIgnore), assembly.GetName().Name))) continue;
+
                 foreach (Type type in assembly.GetTypes())
                 {
                     if ((!type.IsAbstract) && (type.IsSubclassOf(typeof(RESTResource))))
@@ -370,6 +372,7 @@ namespace Grapevine.Server
                 {
                     this.IsListening = false;
                     EventLogger.Log(e);
+                    throw;
                 }
             }
         }
@@ -399,6 +402,7 @@ namespace Grapevine.Server
             catch (Exception e)
             {
                 EventLogger.Log(e);
+                throw;
             }
         }
 
@@ -453,7 +457,8 @@ namespace Grapevine.Server
 
             try
             {
-                var route = this._routes.FirstOrDefault(mi => mi.GetCustomAttributes(true).Any(attr => context.Request.RawUrl.Matches(((RESTRoute)attr).PathInfo) && context.Request.HttpMethod.ToUpper().Equals(((RESTRoute)attr).Method.ToString())));
+                var rpath = (context.Request.RawUrl.Split('?'))[0];
+                var route = this._routes.FirstOrDefault(mi => mi.GetCustomAttributes(true).Any(attr => rpath.Matches(((RESTRoute)attr).PathInfo) && context.Request.HttpMethod.ToUpper().Equals(((RESTRoute)attr).Method.ToString())));
                 if (!object.ReferenceEquals(route, null))
                 {
                     route.Invoke(this._resources[route.ReflectedType.Name], new object[] { context });
@@ -562,4 +567,6 @@ namespace Grapevine.Server
 
         #endregion
     }
+
+    enum AssembliesToIgnore { vshost32, Grapevine, GrapevinePlus }
 }

@@ -25,13 +25,13 @@ If you have a great idea for an enhancement, but don't know how to implement it,
 
 Whether you're contributing code or just an idea, providing a clear and detailed use case and usage examples is going to be paramount in deciding if and when your contribution makes it into the core library.
 
->Depending on my availability, sometimes pull requests will sit in the queue until I can get around to reviewing them and merging them into the master branch. I appreciate your patience with my time as I endeavor to ensure that Grapevine remains a stable, high-quality and reliable solution.
+Depending on our availability, sometimes pull requests will sit in the queue until we can get around to reviewing them and merging them into the master branch. I appreciate your patience with my time as I endeavor to ensure that Grapevine remains a stable, high-quality and reliable solution.
 
 ### Geek For Hire ###
 
-Let me be **very clear** about this: I did not create Grapevine and offer it as open source with the intention of making money off of it, nor am I making this suggestion in an attempt to monetize my efforts after-the-fact. Not that I'd turn down the opportunity to benefit from my hard work here, but I'd be just fine if this option were never exercised.
+> Let me be **very clear** about this: I did not create Grapevine and offer it as open source with the intention of making money off of it, nor am I making this suggestion in an *ex post facto* attempt to monetize. Not that I'd turn down the opportunity to benefit from my hard work here, but I'd be just fine if this option were never exercised. That being said...
 
-That being said, **if you'd like to pay** for my time and expenses to:
+**If you'd like to pay** for my time and expenses to:
 
 - Provide consulting services on your project
 - Train your team on REST and/or Grapevine

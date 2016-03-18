@@ -59,7 +59,8 @@
     <Compile Include="Util\ContentType.cs" />
     <Compile Include="Util\EventLogger.cs" />
     <Compile Include="Util\Exceptions.cs" />
-    <Compile Include="Util\Extensions.cs" />
+    <Compile Include="Util\ExportedExtensions.cs" />
+    <Compile Include="Util\InternalExtensions.cs" />
     <Compile Include="Util\HttpMethod.cs" />
     <Compile Include="Util\Responder.cs" />
   </ItemGroup>
