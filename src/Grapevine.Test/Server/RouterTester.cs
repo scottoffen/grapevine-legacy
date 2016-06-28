@@ -290,7 +290,8 @@ namespace Grapevine.Test.Server
             router.RoutingTable[2].Name.ShouldBe($"{typeof(RouterTestingHelperTwo).FullName}.RouteOne");
             router.RoutingTable[3].Name.ShouldBe($"{typeof(RouterTestingHelperTwo).FullName}.StaticRoute");
             router.RoutingTable[2].Name.ShouldBe($"{typeof(RouterTestingHelperTwo).FullName}.RouteOne");
-            router.RoutingTable[4].Name.ShouldBe($"{typeof(MyRouter).FullName}+<>c.<.ctor>b__0_0");
+            router.RoutingTable[4].Name.StartsWith(typeof(MyRouter).FullName).ShouldBe(true);
+            router.RoutingTable[4].Name.EndsWith(myrouter.AnonName).ShouldBe(true);
             router.RoutingTable[5].Name.ShouldBe($"{typeof(RouterTestingHelperThree).FullName}.RouteOne");
             router.RoutingTable[6].Name.ShouldBe($"{typeof(RouterTestingHelperThree).FullName}.StaticRoute");
         }
@@ -299,6 +300,7 @@ namespace Grapevine.Test.Server
         public void router_imports_routes_from_type_of_router()
         {
             var router = new Router();
+            var myrouter = new MyRouter();
 
             router.Import(typeof(MyRouter));
 
@@ -308,7 +310,8 @@ namespace Grapevine.Test.Server
             router.RoutingTable[2].Name.ShouldBe($"{typeof(RouterTestingHelperTwo).FullName}.RouteOne");
             router.RoutingTable[3].Name.ShouldBe($"{typeof(RouterTestingHelperTwo).FullName}.StaticRoute");
             router.RoutingTable[2].Name.ShouldBe($"{typeof(RouterTestingHelperTwo).FullName}.RouteOne");
-            router.RoutingTable[4].Name.ShouldBe($"{typeof(MyRouter).FullName}+<>c.<.ctor>b__0_0");
+            router.RoutingTable[4].Name.StartsWith(typeof(MyRouter).FullName).ShouldBe(true);
+            router.RoutingTable[4].Name.EndsWith(myrouter.AnonName).ShouldBe(true);
             router.RoutingTable[5].Name.ShouldBe($"{typeof(RouterTestingHelperThree).FullName}.RouteOne");
             router.RoutingTable[6].Name.ShouldBe($"{typeof(RouterTestingHelperThree).FullName}.StaticRoute");
         }
@@ -317,6 +320,7 @@ namespace Grapevine.Test.Server
         public void router_imports_routes_from_generic_type_of_router()
         {
             var router = new Router();
+            var myrouter = new MyRouter();
 
             router.Import<MyRouter>();
 
@@ -326,7 +330,8 @@ namespace Grapevine.Test.Server
             router.RoutingTable[2].Name.ShouldBe($"{typeof(RouterTestingHelperTwo).FullName}.RouteOne");
             router.RoutingTable[3].Name.ShouldBe($"{typeof(RouterTestingHelperTwo).FullName}.StaticRoute");
             router.RoutingTable[2].Name.ShouldBe($"{typeof(RouterTestingHelperTwo).FullName}.RouteOne");
-            router.RoutingTable[4].Name.ShouldBe($"{typeof(MyRouter).FullName}+<>c.<.ctor>b__0_0");
+            router.RoutingTable[4].Name.StartsWith(typeof(MyRouter).FullName).ShouldBe(true);
+            router.RoutingTable[4].Name.EndsWith(myrouter.AnonName).ShouldBe(true);
             router.RoutingTable[5].Name.ShouldBe($"{typeof(RouterTestingHelperThree).FullName}.RouteOne");
             router.RoutingTable[6].Name.ShouldBe($"{typeof(RouterTestingHelperThree).FullName}.StaticRoute");
         }

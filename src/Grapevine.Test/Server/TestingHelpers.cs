@@ -1,5 +1,8 @@
-﻿using Grapevine.Server;
+﻿using System;
+using System.Runtime.Remoting.Contexts;
+using Grapevine.Server;
 using Grapevine.Util;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhino.Mocks;
 
 namespace Grapevine.Test.Server
@@ -121,11 +124,16 @@ namespace Grapevine.Test.Server
 
     public class MyRouter : Router
     {
+        public string AnonName { get; }
+
         public MyRouter()
         {
+            Func<IHttpContext, IHttpContext> function = context => context;
+            AnonName = function.Method.Name;
+
             Register<RouterTestingHelperOne>();
             Register<RouterTestingHelperTwo>();
-            Register(context => context);
+            Register(function);
             Register<RouterTestingHelperTwo>();
             Register<RouterTestingHelperThree>();
         }
