@@ -2,7 +2,7 @@ language: csharp
 solution: ./src/Grapevine.sln
 install:
   - nuget restore ./src/Grapevine.sln
-  - nuget install xunit.runners -Version 1.9.2 -OutputDirectory testrunner
+  - nuget install xunit.runners -Version 2.0.0 -OutputDirectory testrunner
 script:
   - xbuild /p:Configuration=Release ./src/Grapevine.sln
-  - mono ./testrunner/xunit.runners.1.9.2/tools/xunit.console.clr4.exe ./src/Grapevine.Test/bin/Release/Grapevine.Test.dll
+  - mono ./testrunner/xunit.runners.2.0.0/tools/xunit.console.clr4.exe ./src/Grapevine.Test/bin/Release/Grapevine.Test.dll
