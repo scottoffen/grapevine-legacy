@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Runtime.Remoting.Contexts;
 using Grapevine.Server;
 using Grapevine.Util;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rhino.Mocks;
 
 namespace Grapevine.Test.Server
