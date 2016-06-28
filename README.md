@@ -4,6 +4,8 @@
 
 ### Introduction ###
 
+[![Join the chat at https://gitter.im/sukona/Grapevine](https://badges.gitter.im/sukona/Grapevine.svg)](https://gitter.im/sukona/Grapevine?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Grapevine is a .NET class library focused on solving two problems:
 
 1. Easily embedding a REST/HTTP servers in your application
