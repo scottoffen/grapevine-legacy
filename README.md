@@ -1,10 +1,12 @@
 ![](https://raw.githubusercontent.com/sukona/Grapevine/master/img/grapevine.png)
 
+[![Build Status](https://travis-ci.org/sukona/Grapevine.svg?branch=master)](https://travis-ci.org/sukona/Grapevine)
+[![Join the chat at https://gitter.im/sukona/Grapevine](https://badges.gitter.im/sukona/Grapevine.svg)](https://gitter.im/sukona/Grapevine?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+
 *The best solutions are the simplest to implement*. Embedding a REST/HTTP server in your application should be **simple**. Consuming REST resources from inside your application should be **simple**. If what you've been using *doesn't feel simple*, try **Grapevine**. It doesn't get any simpler than this.
 
 ### Introduction ###
-
-[![Join the chat at https://gitter.im/sukona/Grapevine](https://badges.gitter.im/sukona/Grapevine.svg)](https://gitter.im/sukona/Grapevine?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Grapevine is a .NET class library focused on solving two problems:
 
