@@ -66,6 +66,7 @@
     <Compile Include="Util\InternalExtensions.cs" />
     <Compile Include="Util\HttpMethod.cs" />
     <Compile Include="Util\ParamParser.cs" />
+    <Compile Include="Util\PortFinder.cs" />
     <Compile Include="Util\ReadOnlyDictionary.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

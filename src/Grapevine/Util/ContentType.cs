@@ -2976,7 +2976,7 @@ namespace Grapevine.Util
         DEFAULT
     }
 
-    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Field)]
     class ContentTypeMetadata : Attribute
     {
         public string Value { get; set; }
@@ -3005,23 +3005,17 @@ namespace Grapevine.Util
         private static object GetMetadata(ContentType ct)
         {
             var type = ct.GetType();
-            MemberInfo[] info = type.GetMember(ct.ToString());
+            var info = type.GetMember(ct.ToString());
 
-            if (info != null && info.Length > 0)
-            {
-                object[] attrs = info[0].GetCustomAttributes(typeof(ContentTypeMetadata), false);
-                if (attrs != null && attrs.Length > 0)
-                {
-                    return attrs[0];
-                }
-            }
-            return null;
+            if (info.Length <= 0) return null;
+            var attrs = info[0].GetCustomAttributes(typeof(ContentTypeMetadata), false);
+            return attrs.Length > 0 ? attrs[0] : null;
         }
 
         public static string ToValue(this ContentType ct)
         {
             var metadata = GetMetadata(ct);
-            return (!Object.ReferenceEquals(metadata, null)) ? ((ContentTypeMetadata)metadata).Value : ct.ToString();
+            return metadata != null ? ((ContentTypeMetadata)metadata).Value : ct.ToString();
         }
 
         public static bool IsText(this ContentType ct)

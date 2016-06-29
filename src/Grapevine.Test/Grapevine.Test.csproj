@@ -69,6 +69,7 @@
     <Compile Include="Server\TestingHelpers.cs" />
     <Compile Include="Util\CamelCaseTester.cs" />
     <Compile Include="Util\PatternParserTester.cs" />
+    <Compile Include="Util\PortFinderTester.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
