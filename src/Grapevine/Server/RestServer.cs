@@ -377,7 +377,7 @@ namespace Grapevine.Server
                         HttpListenerContext ctx;
                         _queue.TryDequeue(out ctx);
                         if (ctx == null) continue;
-                        context = new HttpContext(ctx);
+                        context = new HttpContext(ctx, this);
                     }
                     else { _ready.Reset(); continue; }
                 }
@@ -388,7 +388,7 @@ namespace Grapevine.Server
                 }
                 catch (RouteNotFound e)
                 {
-                    context.Response.SendResponse(HttpStatusCode.NotFound, e);
+                    context.Response.SendResponse(HttpStatusCode.NotFound);
                 }
                 catch (NotImplementedException)
                 {
