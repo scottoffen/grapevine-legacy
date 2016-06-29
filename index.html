@@ -13,6 +13,9 @@
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <link href="./css/ie10-viewport-bug-workaround.css" rel="stylesheet">
 
+    <!-- Prism Syntax Highlighting -->
+    <link href="./css/prism.min.css" rel="stylesheet">
+
     <!-- Custom styles for this template -->
     <link href="./css/styles.css" rel="stylesheet">
 
@@ -72,11 +75,18 @@
         </p>
       </div>
 
+      <div class="row">
+        <div class="col-lg-12">
+          <pre><code class="language-csharp">var route = Route.For(HttpMethod.ALL).To("/path/to/resource").Use(method);</code></pre>
+        </div>
+      </div>
+
     </div>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="js/bootstrap.min.js"></script>
+    <script src="./js/bootstrap.min.js"></script>
+    <script src="./js/prism.min.js"></script>
   </body>
 </html>
