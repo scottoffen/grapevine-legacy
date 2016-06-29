@@ -9,6 +9,7 @@ namespace Grapevine.Server
         IHttpRequest Request { get; }
         IHttpResponse Response { get; }
         IPrincipal User { get; }
+        IRestServer Server { get; }
 
         bool WasRespondedTo();
     }
@@ -18,14 +19,14 @@ namespace Grapevine.Server
         public IHttpRequest Request { get; }
         public IHttpResponse Response { get; }
         public IPrincipal User { get; }
+        public IRestServer Server { get; protected internal set; }
 
-        internal bool IsMock { get; set; }
-
-        internal HttpContext (HttpListenerContext context)
+        internal HttpContext (HttpListenerContext context, IRestServer server)
         {
             Request = new HttpRequest(context.Request);
             Response = new HttpResponse(context.Response, context.Request.Headers);
             User = context.User;
+            Server = server;
         }
 
         public bool WasRespondedTo()
