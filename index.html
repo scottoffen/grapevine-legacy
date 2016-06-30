@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
@@ -7,17 +7,16 @@
 
 		<title>Grapevine | C# Embeddable Rest Server</title>
 
-		<!-- Bootstrap -->
-		<link href="./css/bootstrap.min.css" rel="stylesheet">
+		<link href="/grapevine/assets/css/bootstrap.min.css" rel="stylesheet">
+		<link href="/grapevine/assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+		<link href="/grapevine/assets/css/prism.min.css" rel="stylesheet">
+		<link href="/grapevine/assets/css/styles.css" rel="stylesheet">
+		<link href="/grapevine/assets/css/affix.css" rel="stylesheet" type="text/css" />
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" />
 
-		<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-		<link href="./css/ie10-viewport-bug-workaround.css" rel="stylesheet">
-
-		<!-- Prism Syntax Highlighting -->
-		<link href="./css/prism.min.css" rel="stylesheet">
-
-		<!-- Custom styles for this template -->
-		<link href="./css/styles.css" rel="stylesheet">
+        <link rel="apple-touch-icon" href="/bootstrap/img/apple-touch-icon.png">
+        <link rel="apple-touch-icon" sizes="72x72" href="/bootstrap/img/apple-touch-icon-72x72.png">
+        <link rel="apple-touch-icon" sizes="114x114" href="/bootstrap/img/apple-touch-icon-114x114.png">
 
 		<!--[if lt IE 9]>
 			<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
@@ -25,7 +24,6 @@
 		<![endif]-->
 	</head>
 	<body>
-
 		<nav class="navbar navbar-default navbar-static-top">
 			<div class="container">
 				<div class="navbar-header">
@@ -38,30 +36,21 @@
 					<a class="navbar-brand" href="#">Grapevine</a>
 				</div>
 				<div id="navbar" class="navbar-collapse collapse">
-					<!-- <ul class="nav navbar-nav">
-						<li class="active"><a href="#">Home</a></li>
-						<li><a href="#about">About</a></li>
-						<li><a href="#contact">Contact</a></li>
-						<li class="dropdown">
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
-							<ul class="dropdown-menu">
-								<li><a href="#">Action</a></li>
-								<li><a href="#">Another action</a></li>
-								<li><a href="#">Something else here</a></li>
-								<li role="separator" class="divider"></li>
-								<li class="dropdown-header">Nav header</li>
-								<li><a href="#">Separated link</a></li>
-								<li><a href="#">One more separated link</a></li>
-							</ul>
-						</li>
-					</ul> -->
 					<ul class="nav navbar-nav navbar-right">
-						<li><a href="#">About</a></li>
-						<li><a href="#">Contact</a></li>
-						<li><a href="https://gitter.im/sukona/Grapevine?utm_source=share-link&utm_medium=link&utm_campaign=share-link">Gitter</a></li>
+						<li><a href="getting_started">Getting Started</a></li>
+						<li><a href="documentation">Documentation</a></li>
+						<li><a href="https://gitter.im/sukona/Grapevine?utm_source=share-link&utm_medium=link&utm_campaign=share-link">https://badges.gitter.im/sukona/Grapevine.svg</a></li>
 					</ul>
 				</div>
+
+				<div class="navbar-form navbar-left" role="search">
+					<div class="form-group">
+						<input id="search" type="search" class="form-control" placeholder="Search">
+					</div>
+				</div>
 			</div>
+      </div>
+
 		</nav>
 
 		<div class="container">
@@ -72,27 +61,27 @@
 
 		<div class="container">
 
-			<!-- Main component for a primary marketing message or call to action -->
-			<div class="jumbotron">
-				<h1>Grapevine 4.0 Is In Alpha</h1>
-				<p>Grapevine is an open source, embeddable REST server for .NET written in C#. Documentation here is for for 4.x; documentation for 3.x versions is available <a href="https://github.com/sukona/Grapevine/wiki">on the wiki</a>.</p>
-				<p>
-					<a class="btn btn-lg btn-primary" href="https://www.nuget.org/packages/Grapevine/4.0.0-alpha0" role="button">Get It Now &raquo;</a>
-				</p>
-			</div>
-
-			<div class="row">
-				<div class="col-lg-12">
-					<pre><code class="language-csharp">var route = Route.For(HttpMethod.ALL).To("/path/to/resource").Use(method);</code></pre>
-				</div>
-			</div>
-
 		</div>
 
-		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-		<!-- Include all compiled plugins (below), or include individual files as needed -->
-		<script src="./js/bootstrap.min.js"></script>
-		<script src="./js/prism.min.js"></script>
+
+		<script src="/grapevine/assets/js/bootstrap.min.js"></script>
+		<script src="/grapevine/assets/js/prism.min.js"></script>
+
+		<script>
+		$('#search').keyup(function(e)
+		{
+			if(e.keyCode == 13)
+			{
+				var search = $('#search').val();
+				var url = 'https://www.google.com/#q=site:sukona.github.io ' + search;
+				window.location.href = encodeURI(url);
+
+				e.stopPropagation();
+				if (e.cancelBubble!=null) e.cancelBubble = true;
+				return false;
+			}
+		});
+		</script>
 	</body>
 </html>
