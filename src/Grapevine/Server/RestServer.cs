@@ -99,7 +99,7 @@ namespace Grapevine.Server
         void Stop();
     }
 
-    public class RestServer : IRestServer, IDisposable
+    public class RestServer : DynamicAspect, IRestServer, IDisposable
     {
         /// <summary>
         /// Action that will be executed before attempting server start
