@@ -9,13 +9,17 @@ namespace Grapevine.Server
     public interface IRoute
     {
         string Name { get; }
+        bool Enabled { get; }
         Func<IHttpContext, IHttpContext> Function { get; }
         HttpMethod HttpMethod { get; }
         string PathInfo { get; }
         Regex PathInfoPattern { get; }
 
-        bool Matches(IHttpContext context);
+        void Enable();
+        void Disable();
         IHttpContext Invoke(IHttpContext context);
+        bool Matches(IHttpContext context);
+        
     }
 
     public class Route : IRoute
@@ -23,6 +27,7 @@ namespace Grapevine.Server
         protected readonly List<string> PatternKeys;
 
         public string Name { get; protected set; }
+        public bool Enabled { get; protected set; }
         public Func<IHttpContext, IHttpContext> Function { get; protected set; }
         public HttpMethod HttpMethod { get; protected set; }
         public string PathInfo { get; protected set; }
@@ -61,6 +66,7 @@ namespace Grapevine.Server
 
         private Route(HttpMethod httpMethod, string pathInfo)
         {
+            Enabled = true;
             HttpMethod = httpMethod;
             PathInfo = (pathInfo != null) ? (!string.IsNullOrWhiteSpace(pathInfo)) ? pathInfo : string.Empty : string.Empty;
             PatternKeys = PatternParser.GeneratePatternKeys(PathInfo);
@@ -77,6 +83,16 @@ namespace Grapevine.Server
             if (context.WasRespondedTo()) return context;
             context.Request.PathParameters = new ReadOnlyDictionary<string, string>(ParseParams(context.Request.PathInfo));
             return Function(context);
+        }
+
+        public void Disable()
+        {
+            Enabled = false;
+        }
+
+        public void Enable()
+        {
+            Enabled = true;
         }
 
         public override bool Equals(object obj)
@@ -128,14 +144,22 @@ namespace Grapevine.Server
             if (pars.Length != 1) throw new RouteMethodArgumentException($"{methodInfo.Name}: must have one and only one argument if it to be used as a {typeof(RestRoute).Name}");
             if (pars[0].ParameterType != typeof(IHttpContext)) throw new RouteMethodArgumentException($"{methodInfo.Name}: first argument must be of type {typeof(IHttpContext).Name}");
 
-            var func = new Func<IHttpContext, IHttpContext>(context =>
-            {
-                var instance = methodInfo.IsStatic ? null
-                    : (methodInfo.ReflectedType != null) ? Activator.CreateInstance(methodInfo.ReflectedType) : null;
-                return (IHttpContext)methodInfo.Invoke(instance, new object[] { context });
-            });
+            Func<IHttpContext, IHttpContext> function;
 
-            return func;
+            if (methodInfo.IsStatic)
+            {
+                function = context => (IHttpContext)methodInfo.Invoke(null, new object[] { context });
+            }
+            else
+            {
+                function = context =>
+                {
+                    var instance = methodInfo.ReflectedType != null ? Activator.CreateInstance(methodInfo.ReflectedType) : null;
+                    return (IHttpContext)methodInfo.Invoke(instance, new object[] { context });
+                };
+            }
+
+            return function;
         }
     }
 

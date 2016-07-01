@@ -174,7 +174,7 @@ namespace Grapevine.Server
 
         public IList<IRoute> RouteFor(IHttpContext context)
         {
-            return _routingTable.Where(r => r.Matches(context)).ToList();
+            return _routingTable.Where(r => r.Matches(context) && r.Enabled).ToList();
         }
 
         public IList<IRoute> RoutingTable => _routingTable.ToList().AsReadOnly();
@@ -195,6 +195,7 @@ namespace Grapevine.Server
 
             foreach (var route in routing)
             {
+                if (!route.Enabled) continue;
                 routeContext = route.Invoke(routeContext);
                 if (routeContext.WasRespondedTo()) break;
             }
