@@ -338,6 +338,11 @@
 
     public static class HttpStatusCodeExenstions
     {
+        /// <summary>
+        /// Returns a string representation of the HttpStatusCode with spaces inserted between camel-cased words
+        /// </summary>
+        /// <param name="sc"></param>
+        /// <returns>string</returns>
         public static string ConvertToString(this HttpStatusCode sc)
         {
             return sc.ToString().ConvertCamelCase();

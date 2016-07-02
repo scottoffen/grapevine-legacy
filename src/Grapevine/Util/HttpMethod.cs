@@ -26,9 +26,15 @@
 
     public static class HttpMethodExenstions
     {
-        public static bool IsEquivalent(this HttpMethod h, HttpMethod other)
+        /// <summary>
+        /// Gets a value indicating whether the HttpMethods are equal OR one of them is HttpMethod.ALL
+        /// </summary>
+        /// <param name="httpMethod"></param>
+        /// <param name="other"></param>
+        /// <returns>bool</returns>
+        public static bool IsEquivalent(this HttpMethod httpMethod, HttpMethod other)
         {
-            return h == HttpMethod.ALL || other == HttpMethod.ALL || h == other;
+            return httpMethod == HttpMethod.ALL || other == HttpMethod.ALL || httpMethod == other;
         }
     }
 }

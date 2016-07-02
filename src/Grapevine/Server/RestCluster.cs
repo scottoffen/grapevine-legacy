@@ -50,7 +50,7 @@ namespace Grapevine.Server
         /// </summary>
         public IRestServer Get(string label)
         {
-            return (_servers.ContainsKey(label)) ? _servers[label] : null;
+            return _servers.ContainsKey(label) ? _servers[label] : null;
         }
 
         /// <summary>

@@ -53,6 +53,9 @@ namespace Grapevine.Server
         }
     }
 
+    /// <summary>
+    /// Provides extension methods for various classes related to Rest attributes
+    /// </summary>
     public static class RestAttributeExtentions
     {
         /// <summary>

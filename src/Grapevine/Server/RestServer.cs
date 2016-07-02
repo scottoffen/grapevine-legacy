@@ -8,39 +8,33 @@ using HttpStatusCode = Grapevine.Util.HttpStatusCode;
 
 namespace Grapevine.Server
 {
+    /// <summary>
+    /// Provides a programatically controlled REST implementation for a single Prefix using HttpListener
+    /// </summary>
     public interface IRestServer
     {
         /// <summary>
-        /// Gets or sets the case insensative URI scheme (protocol) to be used when<br />
-        /// creating the HttpListener prefix; e.g. "http" or "https"
+        /// Gets or sets the case insensative URI scheme (protocol) to be used when creating the HttpListener prefix; e.g. "http" or "https"
         /// <para>&#160;</para>
-        /// Note that if you create an HttpListener using https, you must select a<br />
-        /// Server Certificate for the listener. See the MSDN documentation on the<br />
-        /// HttpListener class for more information.<br />
+        /// Note that if you create an HttpListener using https, you must select a Server Certificate for the listener. See the MSDN documentation on the HttpListener class for more information.<br />
         /// https://msdn.microsoft.com/en-us/library/system.net.httplistener(v=vs.110).aspx
         /// </summary>
         string Protocol { get; set; }
 
         /// <summary>
-        /// Gets or sets the host name used to create the HttpListener prefix, defaults<br />
-        /// to localhost
+        /// Gets or sets the host name used to create the HttpListener prefix, defaults to localhost
         /// <para>&#160;</para>
-        /// Use "*" to indicate that the HttpListener accepts requests sent to the port<br />
-        /// if the requested URI does not match any other prefix. Similarly, to specify that<br />
-        /// the HttpListener accepts all requests sent to a port, replace the host element with<br />
-        /// the "+" character.
+        /// Use "*" to indicate that the HttpListener accepts requests sent to the port if the requested URI does not match any other prefix. Similarly, to specify that the HttpListener accepts all requests sent to a port, replace the host element with the "+" character.
         /// </summary>
         string Host { get; set; }
 
         /// <summary>
-        /// Gets or sets the port number (as a string) used to create the prefix used<br />
-        /// by the HttpListener for incoming traffic
+        /// Gets or sets the port number (as a string) used to create the prefix used by the HttpListener for incoming traffic
         /// </summary>
         string Port { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the default file to return when a directory is<br />
-        /// requested without a file name; defaults to index.html
+        /// Gets or sets the name of the default file to return when a directory is requested without a file name; defaults to index.html
         /// </summary>
         string DirIndex { get; set; }
 
@@ -50,14 +44,12 @@ namespace Grapevine.Server
         string WebRoot { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of HTTP connection threads maintained per processor;<br />
-        /// defaults to 50
+        /// Gets or sets the number of HTTP connection threads maintained per processor; defaults to 50
         /// </summary>
         int Connections { get; set; }
 
         /// <summary>
-        /// Gets the prefix created by combining the Protocol, Host and Port properties<br />
-        /// into a scheme and authority
+        /// Gets the prefix created by combining the Protocol, Host and Port properties into a scheme and authority
         /// </summary>
         string Origin { get; }
 
@@ -67,56 +59,47 @@ namespace Grapevine.Server
         bool IsListening { get; }
 
         /// <summary>
-        /// Gets or sets the instance of IRouter to be used by this server to route<br />
-        /// incoming HTTP requests
+        /// Gets or sets the instance of IRouter to be used by this server to route incoming HTTP requests
         /// </summary>
         IRouter Router { get; set; }
 
         /// <summary>
-        /// Gets or sets the Action that will be executed immediately following server<br />
-        /// start; synonym for OnAfterStart
+        /// Gets or sets the Action that will be executed immediately following server start; synonym for OnAfterStart
         /// </summary>
         Action OnStart { get; set; }
 
         /// <summary>
-        /// Gets or sets the Action that will be executed before attempting to start<br />
-        /// the server
+        /// Gets or sets the Action that will be executed before attempting to start the server
         /// </summary>
         Action OnBeforeStart { get; set; }
 
         /// <summary>
-        /// Gets or sets the Action that will be executed immediately following server<br />
-        /// start
+        /// Gets or sets the Action that will be executed immediately following server start
         /// </summary>
         Action OnAfterStart { get; set; }
 
         /// <summary>
-        /// Gets or sets the Action that will be executed immediately following server<br />
-        /// stop; synonym for OnAfterStop
+        /// Gets or sets the Action that will be executed immediately following server stop; synonym for OnAfterStop
         /// </summary>
         Action OnStop { get; set; }
 
         /// <summary>
-        /// Gets or sets the Action that will be executed before attempting to stop<br />
-        /// the server
+        /// Gets or sets the Action that will be executed before attempting to stop the server
         /// </summary>
         Action OnBeforeStop { get; set; }
 
         /// <summary>
-        /// Gets or sets the Action that will be executed immediately following server<br />
-        /// stops
+        /// Gets or sets the Action that will be executed immediately following server stops
         /// </summary>
         Action OnAfterStop { get; set; }
 
         /// <summary>
-        /// Starts the server: executes OnBeforeStart, starts the HttpListener, then<br />
-        /// executes OnAfterStart if the HttpListener is listening
+        /// Starts the server: executes OnBeforeStart, starts the HttpListener, then executes OnAfterStart if the HttpListener is listening
         /// </summary>
         void Start();
 
         /// <summary>
-        /// Stops the server; executes OnBeforeStop, stops the HttpListener, then<br />
-        /// executes OnAfterStop is the HttpListener is not listening
+        /// Stops the server; executes OnBeforeStop, stops the HttpListener, then executes OnAfterStop is the HttpListener is not listening
         /// </summary>
         void Stop();
     }
@@ -136,9 +119,7 @@ namespace Grapevine.Server
         public bool ThrowErrors { get; private set; }
 
         /// <summary>
-        /// Provides direct access to selected methods and properties on the internal<br />
-        /// HttpListener instance in use; do not used unless you are fully aware of what<br />
-        /// you are doing and the consequences involved
+        /// Provides direct access to selected methods and properties on the internal HttpListener instance in use; do not used unless you are fully aware of what you are doing and the consequences involved.
         /// </summary>
         public AdvancedRestServer Advanced { get; }
 
@@ -299,7 +280,7 @@ namespace Grapevine.Server
         public void Dispose() { Stop(); }
 
         /// <summary>
-        /// Not entirely sure what this is going to do yet, but it will involve the new logger
+        /// Sets ThrowErrors to true
         /// </summary>
         public RestServer EnableThrowingExceptions()
         {
@@ -308,8 +289,7 @@ namespace Grapevine.Server
         }
 
         /// <summary>
-        /// For use in routes that want to stop the server; starts a new thread and<br />
-        /// then calls Stop on the server
+        /// For use in routes that want to stop the server; starts a new thread and then calls Stop on the server
         /// </summary>
         public void ThreadSafeStop()
         {
@@ -361,7 +341,7 @@ namespace Grapevine.Server
                 {
                     if (!Router.Route(_contentRoot.ReturnFile(context))) throw new RouteNotFound(context);
                 }
-                catch (RouteNotFound e)
+                catch (RouteNotFound)
                 {
                     context.Response.SendResponse(HttpStatusCode.NotFound);
                 }
@@ -377,6 +357,9 @@ namespace Grapevine.Server
         }
     }
 
+    /// <summary>
+    /// Provides direct access to selected methods and properties on the internal HttpListener instance in use. This class cannot be inherited.
+    /// </summary>
     public sealed class AdvancedRestServer
     {
         private readonly HttpListener _listener;
