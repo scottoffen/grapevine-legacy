@@ -6,10 +6,18 @@ using System.Text.RegularExpressions;
 
 namespace Grapevine.Util
 {
+    /// <summary>
+    /// Provides methods for parsing PathInfo patterns
+    /// </summary>
     public static class PatternParser
     {
         private static readonly Regex ParseForParams = new Regex(@"\[(\w+)\]", RegexOptions.IgnoreCase);
 
+        /// <summary>
+        /// Returns a list of keys parsed from the specified PathInfo pattern
+        /// </summary>
+        /// <param name="pathinfo"></param>
+        /// <returns>List&lt;string&gt;</returns>
         public static List<string> GeneratePatternKeys(string pathinfo)
         {
             var captured = new List<string>();
@@ -24,6 +32,11 @@ namespace Grapevine.Util
             return captured;
         }
 
+        /// <summary>
+        /// Returns a Regex object that matches the specified PathInfo pattern
+        /// </summary>
+        /// <param name="pathinfo"></param>
+        /// <returns>Regexfs</returns>
         public static Regex GenerateRegEx(string pathinfo)
         {
             if (string.IsNullOrEmpty(pathinfo)) return new Regex(@"^.*$");

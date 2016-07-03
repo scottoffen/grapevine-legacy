@@ -5,13 +5,48 @@ using System.Threading;
 
 namespace Grapevine.Util
 {
-    public class PortFinder
+    /// <summary>
+    /// Provides synchronous and asynchronous methods to detect available ports
+    /// </summary>
+    public interface IPortFinder
     {
-        public static int FirstPort { get; } = 1;
-        public static int LastPort { get; } = 65535;
-        public static string OutOfRangeMsg { get; } = $"must be an integer between {FirstPort} and {LastPort}.";
+        /// <summary>
+        /// Synchronously scans for an avilable port in the specified range and returns to result as a string
+        /// </summary>
+        /// <returns>stringo</returns>
+        string Run();
 
+        /// <summary>
+        /// Begins an asynchronous scan for an available port in the specified range; will fire the PortFound event when one is detected, or the PortNotFound event if one is not detected
+        /// </summary>
+        void RunAsync();
+    }
+
+    /// <summary>
+    /// Provides synchronous and asynchronous methods to detect available ports
+    /// </summary>
+    public class PortFinder : IPortFinder
+    {
+        /// <summary>
+        /// Represents the smallest port number possible
+        /// </summary>
+        public static int FirstPort { get; } = 1;
+
+        /// <summary>
+        /// Represents the largest port number possible
+        /// </summary>
+        public static int LastPort { get; } = 65535;
+
+        private static string OutOfRangeMsg { get; } = $"must be an integer between {FirstPort} and {LastPort}.";
+
+        /// <summary>
+        /// An event that can be used to notify a client when an available port is detected
+        /// </summary>
         public event Action<string> PortFound;
+
+        /// <summary>
+        /// An event that can be used to notify a client when no available port can be found in the specified range
+        /// </summary>
         public event Action PortNotFound;
 
         private int _startIndex;
@@ -29,6 +64,9 @@ namespace Grapevine.Util
             PortNotFound = () => { };
         }
 
+        /// <summary>
+        /// Gets or sets the integer at which to start scanning for ports
+        /// </summary>
         public int StartIndex
         {
             get
@@ -43,6 +81,9 @@ namespace Grapevine.Util
             }
         }
 
+        /// <summary>
+        /// Gets or sets the integer at which to stop scanning for ports
+        /// </summary>
         public int EndIndex
         {
             get
@@ -79,11 +120,20 @@ namespace Grapevine.Util
             t.Start();
         }
 
+        /// <summary>
+        /// Returns a string representation of the next available port
+        /// </summary>
+        /// <returns>string</returns>
         public static string FindNextLocalOpenPort()
         {
             return FindNextLocalOpenPort(FirstPort, LastPort);
         }
 
+        /// <summary>
+        /// Returns a string representation of the next available port after the start index
+        /// </summary>
+        /// <param name="startIndex"></param>
+        /// <returns>string</returns>
         public static string FindNextLocalOpenPort(int startIndex)
         {
             if (startIndex < FirstPort || startIndex > LastPort)
@@ -91,6 +141,12 @@ namespace Grapevine.Util
             return FindNextLocalOpenPort(startIndex, LastPort);
         }
 
+        /// <summary>
+        /// Returns a string representation of the next available port between the start index and end index
+        /// </summary>
+        /// <param name="startIndex"></param>
+        /// <param name="endIndex"></param>
+        /// <returns>string</returns>
         public static string FindNextLocalOpenPort(int startIndex, int endIndex)
         {
             if (startIndex < FirstPort || startIndex > LastPort)
