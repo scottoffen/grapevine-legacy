@@ -64,6 +64,11 @@ namespace Grapevine.Server
         HttpMethod HttpMethod { get; }
 
         /// <summary>
+        /// A value that represents a unique identifier for this request
+        /// </summary>
+        string Id { get; }
+
+        /// <summary>
         /// Gets a Boolean value that indicates whether the client sending this request is authenticated
         /// </summary>
         bool IsAuthenticated { get; }
@@ -87,6 +92,11 @@ namespace Grapevine.Server
         /// Get the server IP address and port number to which the request is directed
         /// </summary>
         IPEndPoint LocalEndPoint { get; }
+
+        /// <summary>
+        /// Gets a representation of the HttpMethod and PathInfo of the request
+        /// </summary>
+        string Name { get; }
 
         /// <summary>
         /// Gets the URL information (without the host, port or query string) requested by the client
@@ -209,6 +219,8 @@ namespace Grapevine.Server
             Request = request;
             HttpMethod = (HttpMethod) Enum.Parse(typeof (HttpMethod), Request.HttpMethod);
             PathInfo = (RawUrl.Split(new[] { '?' }, 2))[0];
+            Name = $"{HttpMethod} {PathInfo}";
+            Id = Guid.NewGuid().ToString();
             Advanced = new AdvancedHttpRequest(request);
         }
 
@@ -230,6 +242,8 @@ namespace Grapevine.Server
 
         public HttpMethod HttpMethod { get; }
 
+        public string Id { get; }
+
         public bool IsAuthenticated => Request.IsAuthenticated;
 
         public bool IsLocal => Request.IsLocal;
@@ -239,6 +253,8 @@ namespace Grapevine.Server
         public bool KeepAlive => Request.KeepAlive;
 
         public IPEndPoint LocalEndPoint => Request.LocalEndPoint;
+
+        public string Name { get; }
 
         public string PathInfo { get; }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using Grapevine.Util;
 
 namespace Grapevine.Server
 {
@@ -84,6 +85,8 @@ namespace Grapevine.Server
         /// </summary>
         public int Connections { get; set; }
 
+        public IGrapevineLogger Logger { get; set; }
+
         public ServerOptions()
         {
             Router = new Router();
@@ -92,6 +95,7 @@ namespace Grapevine.Server
             Protocol = "http";
             DirIndex = "index.html";
             Connections = 50;
+            Logger = new NullLogger();
 
             var path = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
             if (path != null) WebRoot = Path.Combine(path, "webroot");

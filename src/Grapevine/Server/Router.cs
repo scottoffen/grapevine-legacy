@@ -343,19 +343,44 @@ namespace Grapevine.Server
 
         public bool Route(IHttpContext context, IList<IRoute> routing)
         {
+            LogBeginRequestRouting(context, routing.Count);
+
             if (routing == null || !routing.Any()) throw new RouteNotFound(context);
             if (context.WasRespondedTo()) return true;
 
             var routeContext = context;
+            var routeCounter = 0;
 
             foreach (var route in routing)
             {
                 if (!route.Enabled) continue;
+                routeCounter++;
+
+                // Stopwatch starts here
                 routeContext = route.Invoke(routeContext);
+                // Stopwatch stops here
+
+                LogRouteInvoked(context, route, routeCounter);
                 if (routeContext.WasRespondedTo()) break;
             }
 
+            LogEndRequestRouting(context, routing.Count, routeCounter);
             return routeContext.WasRespondedTo();
+        }
+
+        private static void LogBeginRequestRouting(IHttpContext context, int routes)
+        {
+            context.Server.Logger.Info($"Request {context.Request.Id}:{context.Request.Name} has {routes} routes");
+        }
+
+        private static void LogEndRequestRouting(IHttpContext context, int routes, int routesHit)
+        {
+            context.Server.Logger.Trace($"Request {context.Request.Id}:{context.Request.Name} invoked {routes}/{routesHit} routes");
+        }
+
+        private static void LogRouteInvoked(IHttpContext context, IRoute route, int routeIndex)
+        {
+            context.Server.Logger.Trace($"{routeIndex} Request {context.Request.Id}:{context.Request.Name} hit {route.Name}");
         }
 
         /// <summary>

@@ -105,6 +105,18 @@ namespace Grapevine.Util
     }
 
     /// <summary>
+    /// Thrown when the http host is unable to stop.
+    /// </summary>
+    public class CantStopHostException : Exception
+    {
+        public CantStopHostException() { }
+
+        public CantStopHostException(string message) : base(message) { }
+
+        public CantStopHostException(string message, Exception inner) : base(message, inner) { }
+    }
+
+    /// <summary>
     /// Thrown when the http host encounters an exception while running.
     /// </summary>
     public class HostRunningException : Exception

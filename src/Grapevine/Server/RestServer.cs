@@ -48,6 +48,8 @@ namespace Grapevine.Server
         /// </summary>
         int Connections { get; set; }
 
+        IGrapevineLogger Logger { get; }
+
         /// <summary>
         /// Gets the prefix created by combining the Protocol, Host and Port properties into a scheme and authority
         /// </summary>
@@ -114,9 +116,9 @@ namespace Grapevine.Server
         public bool IsListening => _listener?.IsListening ?? false;
 
         /// <summary>
-        /// Returns true if EnableThrowingExceptions method has been called
+        /// Gets or sets a value indicating that route exceptions should be rethrown instead of logged
         /// </summary>
-        public bool ThrowErrors { get; private set; }
+        public bool EnableThrowingExceptions { get; set; }
 
         /// <summary>
         /// Provides direct access to selected methods and properties on the internal HttpListener instance in use; do not used unless you are fully aware of what you are doing and the consequences involved.
@@ -153,6 +155,7 @@ namespace Grapevine.Server
             Connections = options.Connections;
 
             Router = options.Router;
+            Logger = options.Logger;
 
             OnBeforeStart = options.OnBeforeStart;
             OnAfterStart = options.OnAfterStop;
@@ -217,6 +220,8 @@ namespace Grapevine.Server
             set { if (IsListening) throw new ServerStateException(); _connections = value; }
         }
 
+        public IGrapevineLogger Logger { get; set; }
+
         public void Start()
         {
             if (IsListening) return;
@@ -241,7 +246,9 @@ namespace Grapevine.Server
             }
             catch (Exception e)
             {
-                throw new CantStartHostException($"An error occured when trying to start the {GetType().FullName}", e);
+                var cshe = new CantStartHostException($"An error occured when trying to start the {GetType().FullName}", e);
+                Logger.Error(cshe);
+                if (EnableThrowingExceptions) throw cshe;
             }
         }
 
@@ -267,7 +274,9 @@ namespace Grapevine.Server
             }
             catch (Exception e)
             {
-                throw new CantStartHostException($"An error occured while trying to stop {GetType().FullName}", e);
+                var cshe = new CantStopHostException($"An error occured while trying to stop {GetType().FullName}", e);
+                Logger.Error(cshe);
+                if (EnableThrowingExceptions) throw cshe;
             }
         }
 
@@ -278,15 +287,6 @@ namespace Grapevine.Server
         }
 
         public void Dispose() { Stop(); }
-
-        /// <summary>
-        /// Sets ThrowErrors to true
-        /// </summary>
-        public RestServer EnableThrowingExceptions()
-        {
-            ThrowErrors = true;
-            return this;
-        }
 
         /// <summary>
         /// For use in routes that want to stop the server; starts a new thread and then calls Stop on the server
@@ -315,7 +315,10 @@ namespace Grapevine.Server
                     _ready.Set();
                 }
             }
-            catch { /* ignored */ }
+            catch (Exception e)
+            {
+                Logger.Debug(e);
+            }
         }
 
         private void Worker()
@@ -351,6 +354,7 @@ namespace Grapevine.Server
                 }
                 catch (Exception e)
                 {
+                    Logger.Error(e);
                     context.Response.SendResponse(HttpStatusCode.InternalServerError, e);
                 }
             }
