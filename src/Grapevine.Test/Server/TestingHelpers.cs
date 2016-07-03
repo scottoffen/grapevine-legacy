@@ -40,7 +40,7 @@ namespace Grapevine.Test.Server
         }
     }
 
-    [RestResource(BaseUrl = "/one")]
+    [RestResource(BasePath = "/one")]
     public class RouterTestingHelperOne
     {
         public IHttpContext NotARoute(IHttpContext context)

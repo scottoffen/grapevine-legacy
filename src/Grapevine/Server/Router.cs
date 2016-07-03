@@ -359,24 +359,24 @@ namespace Grapevine.Server
         }
 
         /// <summary>
-        /// Generates a list of routes for the RestRoute attributed MethodInfo provided and the baseUrl applied to the PathInfo
+        /// Generates a list of routes for the RestRoute attributed MethodInfo provided and the basePath applied to the PathInfo
         /// </summary>
         /// <param name="method"></param>
-        /// <param name="baseUrl"></param>
+        /// <param name="basePath"></param>
         /// <returns>IList&lt;IRoute&gt;</returns>
-        internal IList<IRoute> GenerateRoutes(MethodInfo method, string baseUrl)
+        internal IList<IRoute> GenerateRoutes(MethodInfo method, string basePath)
         {
             var routes = new List<IRoute>();
 
-            var baseurl = string.IsNullOrWhiteSpace(baseUrl)
+            var basepath = string.IsNullOrWhiteSpace(basePath)
                 ? string.Empty
-                : baseUrl;
+                : basePath;
 
-            if (baseurl != string.Empty && baseurl.EndsWith("/"))
-                baseurl = baseurl.TrimEnd('/');
+            if (basepath != string.Empty && basepath.EndsWith("/"))
+                basepath = basepath.TrimEnd('/');
 
-            if (baseurl != string.Empty && !baseurl.StartsWith("/"))
-                baseurl = $"/{baseurl}";
+            if (basepath != string.Empty && !basepath.StartsWith("/"))
+                basepath = $"/{basepath}";
 
             foreach (var attribute in method.GetCustomAttributes(true).Where(a => a is RestRoute).Cast<RestRoute>())
             {
@@ -391,7 +391,7 @@ namespace Grapevine.Server
 
                 if (!pathinfo.StartsWith("/")) pathinfo = $"/{pathinfo}";
 
-                routes.Add(new Route(method, attribute.HttpMethod, $"{prefix}{baseurl}{pathinfo}"));
+                routes.Add(new Route(method, attribute.HttpMethod, $"{prefix}{basepath}{pathinfo}"));
             }
 
             return routes;
@@ -405,17 +405,17 @@ namespace Grapevine.Server
         internal IList<IRoute> GenerateRoutes(Type type)
         {
             var routes = new List<IRoute>();
-            var baseurl = string.Empty;
+            var basepath = string.Empty;
 
             if (type.IsRestResource())
             {
                 if (!string.IsNullOrWhiteSpace(Scope) && !Scope.Equals(type.RestResource().Scope)) return routes;
-                baseurl = type.RestResource().BaseUrl;
+                basepath = type.RestResource().BasePath;
             }
 
             foreach (var method in type.GetMethods().Where(m => m.IsRestRoute()))
             {
-                routes.AddRange(GenerateRoutes(method, baseurl));
+                routes.AddRange(GenerateRoutes(method, basepath));
             }
 
             return routes;
@@ -432,9 +432,7 @@ namespace Grapevine.Server
 
             foreach (var type in assembly.GetTypes().Where(t => t.IsRestResource()))
             {
-                if (Exclusions.Types.Contains(type)
-                    || Exclusions.NameSpaces.Contains(type.Namespace))
-                    continue;
+                if (Exclusions.IsExcluded(type)) continue;
                 routes.AddRange(GenerateRoutes(type));
             }
 
@@ -447,7 +445,7 @@ namespace Grapevine.Server
         /// <param name="route"></param>
         private void AddToRoutingTable(IRoute route)
         {
-            if (route.Function == null) throw new ArgumentNullException();
+            if (route.Function == null) throw new ArgumentNullException(nameof(route));
             if (!_routingTable.Contains(route)) _routingTable.Add(route);
         }
 
@@ -480,6 +478,13 @@ namespace Grapevine.Server
         /// Gets a read only representation of the IExclusion instance
         /// </summary>
         IExclusions AsReadOnly();
+
+        /// <summary>
+        /// Gets a value that indicates whether the supplied Type is excluded by Type or namespace
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        bool IsExcluded(Type type);
     }
 
     public class Exclusions : IExclusions
@@ -500,6 +505,11 @@ namespace Grapevine.Server
                 NameSpaces = NameSpaces.ToList().AsReadOnly(),
                 Types = Types.ToList().AsReadOnly()
             };
+        }
+
+        public bool IsExcluded(Type type)
+        {
+            return Types.Contains(type) || NameSpaces.Contains(type.Namespace);
         }
     }
 }
