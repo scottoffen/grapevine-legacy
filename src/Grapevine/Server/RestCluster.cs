@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Grapevine.Server
 {
@@ -9,6 +10,46 @@ namespace Grapevine.Server
     {
         private readonly Dictionary<string, IRestServer> _servers = new Dictionary<string, IRestServer>();
         private bool _started;
+
+        /// <summary>
+        /// Gets or sets the Action that will be executed immediately before attempting to start the collection of servers
+        /// </summary>
+        public Action OnBeforeStartAll { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Action that will be executed immediately after attempting to start the collection of servers
+        /// </summary>
+        public Action OnAfterStartAll { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Action that will be executed immediately before attempting to stop the collection of servers
+        /// </summary>
+        public Action OnBeforeStopAll { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Action that will be executed immediately after attempting to stop the collection of servers
+        /// </summary>
+        public Action OnAfterStopAll { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Action that will be executed immediately before attempting to start each server
+        /// </summary>
+        public Action OnBeforeStartEach { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Action that will be executed immediately after attempting to start each server
+        /// </summary>
+        public Action OnAfterStartEach { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Action that will be executed immediately before attempting to stop each server
+        /// </summary>
+        public Action OnBeforeStopEach { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Action that will be executed immediately after attempting to stop each server
+        /// </summary>
+        public Action OnAfterStopEach { get; set; }
 
         /// <summary>
         /// Adds a server to the cluster
@@ -24,11 +65,19 @@ namespace Grapevine.Server
         /// </summary>
         public void StartAll()
         {
+            OnBeforeStartAll?.Invoke();
+
             foreach (var server in _servers.Values)
             {
-                if (!server.IsListening) server.Start();
+                if (!server.IsListening)
+                {
+                    OnBeforeStartEach?.Invoke();
+                    server.Start();
+                    OnAfterStartEach?.Invoke();
+                }
             }
 
+            OnAfterStartAll?.Invoke();
             _started = true;
         }
 
@@ -37,11 +86,19 @@ namespace Grapevine.Server
         /// </summary>
         public void StopAll()
         {
+            OnBeforeStopAll?.Invoke();
+
             foreach (var server in _servers.Values)
             {
-                if (server.IsListening) server.Stop();
+                if (server.IsListening)
+                {
+                    OnBeforeStopEach?.Invoke();
+                    server.Stop();
+                    OnAfterStopEach?.Invoke();
+                }
             }
 
+            OnAfterStopAll?.Invoke();
             _started = false;
         }
 
@@ -59,7 +116,11 @@ namespace Grapevine.Server
         public bool Remove(string label)
         {
             if (!_servers.ContainsKey(label)) return true;
+
+            OnBeforeStopEach?.Invoke();
             _servers[label].Stop();
+            OnAfterStopEach?.Invoke();
+
             return _servers.Remove(label);
         }
     }

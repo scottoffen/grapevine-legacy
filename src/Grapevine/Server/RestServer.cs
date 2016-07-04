@@ -129,6 +129,7 @@ namespace Grapevine.Server
         private string _port;
         private string _protocol;
         private int _connections;
+        private bool _stopping;
         private readonly ContentRoot _contentRoot;
         private readonly HttpListener _listener;
         private readonly Thread _listening;
@@ -158,7 +159,7 @@ namespace Grapevine.Server
             Logger = options.Logger;
 
             OnBeforeStart = options.OnBeforeStart;
-            OnAfterStart = options.OnAfterStop;
+            OnAfterStart = options.OnAfterStart;
             OnBeforeStop = options.OnBeforeStop;
             OnAfterStop = options.OnAfterStop;
 
@@ -231,6 +232,7 @@ namespace Grapevine.Server
 
                 OnBeforeStart?.Invoke();
 
+                _stopping = false;
                 _listener.Prefixes.Add(Origin);
                 _listener.Start();
                 _listening.Start();
@@ -265,9 +267,10 @@ namespace Grapevine.Server
             {
                 OnBeforeStop?.Invoke();
 
+                _stopping = true;
                 _stop.Set();
                 _listening.Join();
-                foreach (Thread worker in _workers) worker.Join();
+                foreach (var worker in _workers) worker.Join();
                 _listener.Stop();
 
                 if (!IsListening) OnAfterStop?.Invoke();
@@ -286,7 +289,11 @@ namespace Grapevine.Server
             set { OnAfterStop = value; }
         }
 
-        public void Dispose() { Stop(); }
+        public void Dispose()
+        {
+            Stop();
+            _listener.Close();
+        }
 
         /// <summary>
         /// For use in routes that want to stop the server; starts a new thread and then calls Stop on the server
@@ -315,8 +322,11 @@ namespace Grapevine.Server
                     _ready.Set();
                 }
             }
+            catch (ObjectDisposedException) { /* Intentionally not doing anything with this */ }
             catch (Exception e)
             {
+                /* Ignore exceptions thrown by incomplete asynch methods listening for incoming requests */
+                if (_stopping && e is HttpListenerException && ((HttpListenerException)e).NativeErrorCode == 995) return;
                 Logger.Debug(e);
             }
         }
