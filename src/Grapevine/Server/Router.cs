@@ -356,9 +356,7 @@ namespace Grapevine.Server
                 if (!route.Enabled) continue;
                 routeCounter++;
 
-                // Stopwatch starts here
                 routeContext = route.Invoke(routeContext);
-                // Stopwatch stops here
 
                 LogRouteInvoked(context, route, routeCounter);
                 if (routeContext.WasRespondedTo()) break;
