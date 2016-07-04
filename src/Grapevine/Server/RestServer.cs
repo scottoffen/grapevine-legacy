@@ -5,6 +5,7 @@ using System.Security.Authentication.ExtendedProtection;
 using System.Threading;
 using Grapevine.Util;
 using HttpStatusCode = Grapevine.Util.HttpStatusCode;
+using ExtendedProtectionSelector = System.Net.HttpListener.ExtendedProtectionSelector;
 
 namespace Grapevine.Server
 {
@@ -413,7 +414,7 @@ namespace Grapevine.Server
         /// <summary>
         /// Get or set the delegate called to determine the ExtendedProtectionPolicy to use for each request
         /// </summary>
-        public HttpListener.ExtendedProtectionSelector ExtendedProtectionSelectorDelegate
+        public ExtendedProtectionSelector ExtendedProtectionSelectorDelegate
         {
             get { return _listener.ExtendedProtectionSelectorDelegate; }
             set { _listener.ExtendedProtectionSelectorDelegate = value; }
