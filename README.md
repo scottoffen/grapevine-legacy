@@ -1,6 +1,7 @@
 ![](https://raw.githubusercontent.com/sukona/Grapevine/master/img/grapevine.png)
 
-[![](https://ci.appveyor.com/api/projects/status/github/sukona/Grapevine?svg=true&retina=true)](https://ci.appveyor.com/project/sukona/grapevine)
+[![Build status](https://ci.appveyor.com/api/projects/status/wnn2r520922eex78/branch/master?svg=true&retina=true&passingText=master%20-%20passing&pendingText=master%20-%20pending&failingText=master%20-%20failing)](https://ci.appveyor.com/project/scottoffen/grapevine/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/wnn2r520922eex78/branch/alpha?svg=true&passingText=alpha%20-%20passing&pendingText=alpha%20-%20pending&failingText=alpha%20-%20failing)](https://ci.appveyor.com/project/scottoffen/grapevine/branch/alpha)
 [![Join the chat at https://gitter.im/sukona/Grapevine](https://badges.gitter.im/sukona/Grapevine.svg)](https://gitter.im/sukona/Grapevine?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 
