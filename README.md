@@ -1,5 +1,7 @@
 ![](https://raw.githubusercontent.com/sukona/Grapevine/master/img/grapevine.png)
 
+[![](https://ci.appveyor.com/api/projects/status/github/sukona/Grapevine?svg=true&retina=true)](https://ci.appveyor.com/project/scottoffen/grapevine)
+
 [![Join the chat at https://gitter.im/sukona/Grapevine](https://badges.gitter.im/sukona/Grapevine.svg)](https://gitter.im/sukona/Grapevine?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 
