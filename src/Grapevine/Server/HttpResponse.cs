@@ -10,79 +10,192 @@ using HttpStatusCode = Grapevine.Util.HttpStatusCode;
 
 namespace Grapevine.Server
 {
+    /// <summary>
+    /// Represents a response to a request being handled by an HttpListener object
+    /// </summary>
     public interface IHttpResponse
     {
+        /// <summary>
+        /// Gets or sets the Encoding for this response's OutputStream
+        /// </summary>
         Encoding ContentEncoding { get; set; }
 
+        /// <summary>
+        /// Gets or sets the number of bytes in the body data included in the response
+        /// </summary>
         long ContentLength64 { get; set; }
 
+        /// <summary>
+        /// Gets or sets the MIME type of the content returned
+        /// </summary>
         string ContentType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the collection of cookies returned with the response
+        /// </summary>
         CookieCollection Cookies { get; set; }
 
+        /// <summary>
+        /// Gets the dynamic object available for run-time extension
+        /// </summary>
         dynamic Dynamic { get; }
 
+        /// <summary>
+        /// Gets or sets the collection of header name/value pairs returned by the server
+        /// </summary>
         WebHeaderCollection Headers { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the server requests a persistent connection
+        /// </summary>
         bool KeepAlive { get; set; }
 
-        Stream OutputStream { get; }
-
+        /// <summary>
+        /// Gets or sets the HTTP version used for the response
+        /// </summary>
         Version ProtocolVersion { get; set; }
 
+        /// <summary>
+        /// Gets or sets the value of the HTTP Location header in this response
+        /// </summary>
         string RedirectLocation { get; set; }
 
+        /// <summary>
+        /// Gets a value indicating whether a response has been sent to this request
+        /// </summary>
         bool ResponseSent { get; }
 
+        /// <summary>
+        /// Gets or sets whether the response uses chunked transfer encoding
+        /// </summary>
         bool SendChunked { get; set; }
 
+        /// <summary>
+        /// Gets or sets the HTTP status code to be returned to the client
+        /// </summary>
         int StatusCode { get; set; }
 
+        /// <summary>
+        /// Gets or sets a text description of the HTTP status code returned to the client
+        /// </summary>
         string StatusDescription { get; set; }
 
+        /// <summary>
+        /// Closes the connection to the client without sending a response.
+        /// </summary>
         void Abort();
 
+        /// <summary>
+        /// Adds the specified header and value to the HTTP headers for this response
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
         void AddHeader(string name, string value);
 
+        /// <summary>
+        /// Adds the specified Cookie to the collection of cookies for this response
+        /// </summary>
+        /// <param name="cookie"></param>
         void AppendCookie(Cookie cookie);
 
+        /// <summary>
+        /// Appends a value to the specified HTTP header to be sent with this response
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
         void AppendHeader(string name, string value);
 
-        void Close();
-
-        void Close(byte[] responseEntity, bool willBlock);
-
+        /// <summary>
+        /// Copies properties from the specified HttpListenerResponse to this response
+        /// </summary>
+        /// <param name="templateResponse"></param>
         void CopyFrom(HttpResponse templateResponse);
 
+        /// <summary>
+        /// Configures the response to redirect the client to the specified URL
+        /// </summary>
+        /// <param name="Url"></param>
         void Redirect(string Url);
 
+        /// <summary>
+        /// Sends the specified response to the client and closes the response
+        /// </summary>
+        /// <param name="response"></param>
+        /// <param name="isFilePath"></param>
         void SendResponse(string response, bool isFilePath = false);
 
+        /// <summary>
+        /// Sends the specified string response to the client using the specified encoding and closes the response
+        /// </summary>
+        /// <param name="response"></param>
+        /// <param name="encoding"></param>
         void SendResponse(string response, Encoding encoding);
 
+        /// <summary>
+        /// Sends the specified binary response to the client and closes the response
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="filepath"></param>
         void SendResponse(FileStream stream, string filepath);
 
+        /// <summary>
+        /// Sends the specified binary response with the specifed content type to the client and closes the response; sets the attachment header on the response with the provided filename if asAttachment is true
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="type"></param>
+        /// <param name="filename"></param>
+        /// <param name="asAttachment"></param>
         void SendResponse(FileStream stream, ContentType type, string filename, bool asAttachment);
 
+        /// <summary>
+        /// Sends the specified status code and exception as a response to the client and closes the response
+        /// </summary>
+        /// <param name="statusCode"></param>
+        /// <param name="exception"></param>
         void SendResponse(HttpStatusCode statusCode, Exception exception);
 
+        /// <summary>
+        /// Sends the specified response to the client with the given response and closes the response
+        /// </summary>
+        /// <param name="statusCode"></param>
+        /// <param name="response"></param>
         void SendResponse(HttpStatusCode statusCode, string response = null);
 
+        /// <summary>
+        /// Adds or updates a Cookie in the collection of cookies sent with this response
+        /// </summary>
+        /// <param name="cookie"></param>
         void SetCookie(Cookie cookie);
     }
 
     public class HttpResponse : DynamicAspect, IHttpResponse
     {
-        protected const int HoursToExpire = 23;
+        /// <summary>
+        /// Used to set the umber of hours before sent content expires on the Expires response header
+        /// </summary>
+        protected int HoursToExpire = 23;
 
-        internal readonly HttpListenerResponse Response;
-        internal readonly NameValueCollection RequestHeaders;
+        /// <summary>
+        /// The underlying HttpListenerResponse for this instance
+        /// </summary>
+        protected internal readonly HttpListenerResponse Response;
+
+        /// <summary>
+        /// The Request headers corresponding to this response
+        /// </summary>
+        protected internal readonly NameValueCollection RequestHeaders;
+
+        /// <summary>
+        /// Provides direct access to selected methods and properties on the internal HttpListenerResponse instance in use; do not used unless you are fully aware of what you are doing and the consequences involved.
+        /// </summary>
+        public AdvancedHttpResponse Advanced { get; }
 
         internal HttpResponse(HttpListenerResponse response, NameValueCollection requestHeaders)
         {
             Response = response;
             RequestHeaders = requestHeaders;
             ResponseSent = false;
+            Advanced = new AdvancedHttpResponse(this);
         }
 
         public Encoding ContentEncoding
@@ -121,8 +234,6 @@ namespace Grapevine.Server
             set { Response.KeepAlive = value; }
         }
 
-        public Stream OutputStream => Response.OutputStream;
-
         public Version ProtocolVersion
         {
             get { return Response.ProtocolVersion; }
@@ -135,7 +246,7 @@ namespace Grapevine.Server
             set { Response.RedirectLocation = value; }
         }
 
-        public bool ResponseSent { get; protected set; }
+        public bool ResponseSent { get; protected internal set; }
 
         public bool SendChunked
         {
@@ -173,18 +284,6 @@ namespace Grapevine.Server
         public void AppendHeader(string name, string value)
         {
             Response.AppendHeader(name, value);
-        }
-
-        public void Close()
-        {
-            Response.Close();
-            ResponseSent = true;
-        }
-
-        public void Close(byte[] responseEntity, bool willBlock)
-        {
-            Response.Close(responseEntity, willBlock);
-            ResponseSent = true;
         }
 
         public void CopyFrom(HttpResponse templateResponse)
@@ -226,7 +325,7 @@ namespace Grapevine.Server
                 if (RequestHeaders["If-Modified-Since"].Equals(lastModified))
                 {
                     Response.StatusCode = (int)HttpStatusCode.NotModified;
-                    Close();
+                    Advanced.Close();
                 }
             }
 
@@ -240,7 +339,7 @@ namespace Grapevine.Server
 
         public void SendResponse(FileStream stream, ContentType type, string filename, bool asAttachment = false)
         {
-            if (!Response.Headers.AllKeys.Contains("Expires")) Response.AddHeader("Expires", DateTime.Now.AddHours(23).ToString("R"));
+            if (!Response.Headers.AllKeys.Contains("Expires")) Response.AddHeader("Expires", DateTime.Now.AddHours(HoursToExpire).ToString("R"));
             if (asAttachment) Response.AddHeader("Content-Disposition", $"attachment; filename=\"{filename}\"");
             Response.ContentType = type.ToValue();
 
@@ -271,6 +370,10 @@ namespace Grapevine.Server
             Response.SetCookie(cookie);
         }
 
+        /// <summary>
+        /// Write the content to and closes the OutputStream, then closes the response
+        /// </summary>
+        /// <param name="buffer"></param>
         protected void FlushResponse(byte[] buffer)
         {
             if (RequestHeaders.AllKeys.Contains("Accept-Encoding") && RequestHeaders["Accept-Encoding"].Contains("gzip") && buffer.Length > 1024)
@@ -289,9 +392,15 @@ namespace Grapevine.Server
             Response.ContentLength64 = buffer.Length;
             Response.OutputStream.Write(buffer, 0, buffer.Length);
             Response.OutputStream.Close();
-            Close();
+            Advanced.Close();
         }
 
+        /// <summary>
+        /// Returns a byte array representation of the data in the file referenced by the stream
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="istext"></param>
+        /// <returns></returns>
         protected byte[] GetFileBytes(FileStream stream, bool istext)
         {
             byte[] buffer;
@@ -312,6 +421,44 @@ namespace Grapevine.Server
             }
 
             return buffer;
+        }
+    }
+
+    /// <summary>
+    /// Provides direct access to selected methods and properties on the internal HttpListenerResponse instance. This class cannot be inherited.
+    /// </summary>
+    public sealed class AdvancedHttpResponse
+    {
+        private readonly HttpResponse _response;
+
+        internal AdvancedHttpResponse(HttpResponse response)
+        {
+            _response = response;
+        }
+
+        /// <summary>
+        /// Gets a Stream object to which a response can be written
+        /// </summary>
+        public Stream OutputStream => _response.Response.OutputStream;
+
+        /// <summary>
+        /// Sends the response to the client and releases the resources held by this HttpListenerResponse instance
+        /// </summary>
+        public void Close()
+        {
+            _response.Response.Close();
+            _response.ResponseSent = true;
+        }
+
+        /// <summary>
+        /// Returns the specified byte array to the client and releases the resources held by this HttpListenerResponse instance
+        /// </summary>
+        /// <param name="responseEntity"></param>
+        /// <param name="willBlock"></param>
+        public void Close(byte[] responseEntity, bool willBlock)
+        {
+            _response.Response.Close(responseEntity, willBlock);
+            _response.ResponseSent = true;
         }
     }
 }

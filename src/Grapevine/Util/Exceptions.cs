@@ -4,11 +4,11 @@ using Grapevine.Server;
 namespace Grapevine.Util
 {
     /// <summary>
-    /// Thrown when there is an attempt to modify the Protocol, Host, Port or MaxThreads property of a running instance of RestServer.
+    /// Thrown when there is an attempt to modify the Protocol, Host, Port or Connections property of a running instance of RestServer.
     /// </summary>
     public class ServerStateException : Exception
     {
-        public ServerStateException() : base("Protocol, Host, Port and MaxThreads cannot be modified while the server is running.") { }
+        public ServerStateException() : base("Protocol, Host, Port and Connections properties cannot be modified while the server is running.") { }
 
         public ServerStateException(string message) : base(message) { }
 
@@ -102,6 +102,18 @@ namespace Grapevine.Util
         public CantStartHostException(string message) : base(message) { }
 
         public CantStartHostException(string message, Exception inner) : base(message, inner) { }
+    }
+
+    /// <summary>
+    /// Thrown when the http host is unable to stop.
+    /// </summary>
+    public class CantStopHostException : Exception
+    {
+        public CantStopHostException() { }
+
+        public CantStopHostException(string message) : base(message) { }
+
+        public CantStopHostException(string message, Exception inner) : base(message, inner) { }
     }
 
     /// <summary>

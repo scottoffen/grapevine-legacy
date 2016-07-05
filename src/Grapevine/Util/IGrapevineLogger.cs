@@ -4,32 +4,125 @@ namespace Grapevine.Util
 {
     public interface IGrapevineLogger
     {
+        /// <summary>
+        /// Writes the diagnostic message at the <c>Trace</c> level
+        /// </summary>
+        /// <param name="obj"></param>
         void Trace(object obj);
+
+        /// <summary>
+        /// Writes the diagnostic message at the <c>Trace</c> level
+        /// </summary>
+        /// <param name="message"></param>
         void Trace(string message);
+
+        /// <summary>
+        /// Writes the diagnostic message at the <c>Trace</c> level
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="ex"></param>
         void Trace(string message, Exception ex);
 
+        /// <summary>
+        /// Writes the diagnostic message at the <c>Debug</c> level
+        /// </summary>
+        /// <param name="obj"></param>
         void Debug(object obj);
+
+        /// <summary>
+        /// Writes the diagnostic message at the <c>Debug</c> level
+        /// </summary>
+        /// <param name="message"></param>
         void Debug(string message);
+
+        /// <summary>
+        /// Writes the diagnostic message at the <c>Debug</c> level
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="ex"></param>
         void Debug(string message, Exception ex);
 
+        /// <summary>
+        /// Writes the diagnostic message at the <c>Info</c> level
+        /// </summary>
+        /// <param name="obj"></param>
         void Info(object obj);
+
+        /// <summary>
+        /// Writes the diagnostic message at the <c>Info</c> level
+        /// </summary>
+        /// <param name="message"></param>
         void Info(string message);
+
+        /// <summary>
+        /// Writes the diagnostic message at the <c>Info</c> level
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="ex"></param>
         void Info(string message, Exception ex);
 
+        /// <summary>
+        /// Writes the diagnostic message at the <c>Warn</c> level
+        /// </summary>
+        /// <param name="obj"></param>
         void Warn(object obj);
+
+        /// <summary>
+        /// Writes the diagnostic message at the <c>Warn</c> level
+        /// </summary>
+        /// <param name="message"></param>
         void Warn(string message);
+
+        /// <summary>
+        /// Writes the diagnostic message at the <c>Warn</c> level
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="ex"></param>
         void Warn(string message, Exception ex);
 
+        /// <summary>
+        /// Writes the diagnostic message at the <c>Error</c> level
+        /// </summary>
+        /// <param name="obj"></param>
         void Error(object obj);
+
+        /// <summary>
+        /// Writes the diagnostic message at the <c>Error</c> level
+        /// </summary>
+        /// <param name="message"></param>
         void Error(string message);
+
+        /// <summary>
+        /// Writes the diagnostic message at the <c>Error</c> level
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="ex"></param>
         void Error(string message, Exception ex);
 
+        /// <summary>
+        /// Writes the diagnostic message at the <c>Fatal</c> level
+        /// </summary>
+        /// <param name="obj"></param>
         void Fatal(object obj);
+
+        /// <summary>
+        /// Writes the diagnostic message at the <c>Error</c> level
+        /// </summary>
+        /// <param name="message"></param>
         void Fatal(string message);
+
+        /// <summary>
+        /// Writes the diagnostic message at the <c>Error</c> level
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="ex"></param>
         void Fatal(string message, Exception ex);
     }
 
-    public class ConsoleLogger : IGrapevineLogger
+    /// <summary>
+    /// Console based implementation of IGrapevineLogger; this class cannot be inherited
+    /// </summary>
+    public sealed class ConsoleLogger : IGrapevineLogger
     {
         private readonly LogLevel _level;
 
@@ -137,6 +230,51 @@ namespace Grapevine.Util
         }
     }
 
+    /// <summary>
+    /// No-op implementation of IGrapevineLogger; this class cannot be inherited
+    /// </summary>
+    public sealed class NullLogger : IGrapevineLogger
+    {
+        public void Debug(string message) { }
+
+        public void Debug(object obj) { }
+
+        public void Debug(string message, Exception ex) { }
+
+        public void Error(string message) { }
+
+        public void Error(object obj) { }
+
+        public void Error(string message, Exception ex) { }
+
+        public void Fatal(string message) { }
+
+        public void Fatal(object obj) { }
+
+        public void Fatal(string message, Exception ex) { }
+
+        public void Info(string message) { }
+
+        public void Info(object obj) { }
+
+        public void Info(string message, Exception ex) { }
+
+        public void Trace(string message) { }
+
+        public void Trace(object obj) { }
+
+        public void Trace(string message, Exception ex) { }
+
+        public void Warn(string message) { }
+
+        public void Warn(object obj) { }
+
+        public void Warn(string message, Exception ex) { }
+    }
+
+    /// <summary>
+    /// Enumeration of a standard set of logging levels
+    /// </summary>
     public enum LogLevel
     {
         Trace = 5,

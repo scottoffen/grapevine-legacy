@@ -27,11 +27,17 @@ namespace Grapevine.Util
             return _dictionary.GetEnumerator();
         }
 
+        /// <summary>
+        /// This class is read only; this method will throw a NotSupportedException
+        /// </summary>
         public void Add(KeyValuePair<TKey, TValue> item)
         {
             ThrowNotSupportedException();
         }
 
+        /// <summary>
+        /// This class is read only; this method will throw a NotSupportedException
+        /// </summary>
         public void Clear()
         {
             ThrowNotSupportedException();
@@ -47,6 +53,9 @@ namespace Grapevine.Util
             _dictionary.CopyTo(array, arrayIndex);
         }
 
+        /// <summary>
+        /// This class is read only; this method will throw a NotSupportedException
+        /// </summary>
         public bool Remove(KeyValuePair<TKey, TValue> item)
         {
             ThrowNotSupportedException();
@@ -93,11 +102,17 @@ namespace Grapevine.Util
             return _dictionary.ContainsKey(key);
         }
 
+        /// <summary>
+        /// This class is read only; this method will throw a NotSupportedException
+        /// </summary>
         public void Add(TKey key, TValue value)
         {
             ThrowNotSupportedException();
         }
 
+        /// <summary>
+        /// This class is read only; this method will throw a NotSupportedException
+        /// </summary>
         public bool Remove(TKey key)
         {
             ThrowNotSupportedException();
@@ -109,6 +124,10 @@ namespace Grapevine.Util
             return _dictionary.TryGetValue(key, out value);
         }
 
+
+        /// <summary>
+        /// Gets the element with the specified key
+        /// </summary>
         public TValue this[TKey key]
         {
             get { return _dictionary[key]; }

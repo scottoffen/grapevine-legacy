@@ -40,7 +40,7 @@ namespace Grapevine.Test.Server
         }
     }
 
-    [RestResource(BaseUrl = "/one")]
+    [RestResource(BasePath = "/one")]
     public class RouterTestingHelperOne
     {
         public IHttpContext NotARoute(IHttpContext context)
@@ -112,9 +112,13 @@ namespace Grapevine.Test.Server
 
             var response = MockRepository.Mock<IHttpResponse>();
 
+            var server = MockRepository.Mock<IRestServer>();
+            server.Stub(x => x.Logger).Return(new NullLogger());
+
             var context = MockRepository.Mock<IHttpContext>();
             context.Stub(x => x.Request).Return(request);
             context.Stub(x => x.Response).Return(response);
+            context.Stub(x => x.Server).Return(server);
 
             return context;
         }

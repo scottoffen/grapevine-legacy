@@ -8,166 +8,328 @@ using System.IO;
 
 namespace Grapevine.Server
 {
+    /// <summary>
+    /// Describes an incoming HTTP request to an HttpListener object
+    /// </summary>
     public interface IHttpRequest
     {
+        /// <summary>
+        /// Gets the MIME types accepted by the client
+        /// </summary>
         string[] AcceptTypes { get; }
 
+        /// <summary>
+        /// Gets an error code that identifies a problem with the X509Certificate provided by the client
+        /// </summary>
         int ClientCertificateError { get; }
 
+        /// <summary>
+        /// Gets the content encoding that can be used with data sent with the request
+        /// </summary>
         Encoding ContentEncoding { get; }
 
+        /// <summary>
+        /// Gets the length of the body data included in the request
+        /// </summary>
         long ContentLength64 { get; }
 
+        /// <summary>
+        /// Gets the MIME type of the body data included in the request
+        /// </summary>
         string ContentType { get; }
 
+        /// <summary>
+        /// Gets the cookies sent with the request
+        /// </summary>
         CookieCollection Cookies { get; }
 
+        /// <summary>
+        /// Gets the dynamic object available for run-time extension
+        /// </summary>
         dynamic Dynamic { get; }
 
+        /// <summary>
+        /// Gets a Boolean value that indicates whether the request has associated body data
+        /// </summary>
         bool HasEntityBody { get; }
 
+        /// <summary>
+        /// Gets the collection of header name/value pairs sent in the request
+        /// </summary>
         NameValueCollection Headers { get; }
 
+        /// <summary>
+        /// Gets the HTTPMethod specified by the client
+        /// </summary>
         HttpMethod HttpMethod { get; }
 
+        /// <summary>
+        /// A value that represents a unique identifier for this request
+        /// </summary>
+        string Id { get; }
+
+        /// <summary>
+        /// Gets a Boolean value that indicates whether the client sending this request is authenticated
+        /// </summary>
         bool IsAuthenticated { get; }
 
+        /// <summary>
+        /// Gets a Boolean value that indicates whether the request is sent from the local computer
+        /// </summary>
         bool IsLocal { get; }
 
+        /// <summary>
+        /// Gets a Boolean value that indicates whether the TCP connection used to send the request is using the Secure Sockets Layer (SSL) protocol
+        /// </summary>
         bool IsSecureConnection { get; }
 
+        /// <summary>
+        /// Gets a Boolean value that indicates whether the client requests a persistent connection
+        /// </summary>
         bool KeepAlive { get; }
 
+        /// <summary>
+        /// Get the server IP address and port number to which the request is directed
+        /// </summary>
         IPEndPoint LocalEndPoint { get; }
 
+        /// <summary>
+        /// Gets a representation of the HttpMethod and PathInfo of the request
+        /// </summary>
+        string Name { get; }
+
+        /// <summary>
+        /// Gets the URL information (without the host, port or query string) requested by the client
+        /// </summary>
         string PathInfo { get; }
 
+        /// <summary>
+        /// Gets or sets a dictionary of parameters provided in the PathInfo as identified by the processing route
+        /// </summary>
         ReadOnlyDictionary<string, string> PathParameters { get; set; }
 
+        /// <summary>
+        /// Reads the HttpListenerRequest InputStream into a string and returns it
+        /// </summary>
         string Payload { get; }
 
+        /// <summary>
+        /// Gets the HTTP version used by the requesting client
+        /// </summary>
         Version ProtocolVersion { get; }
 
+        /// <summary>
+        /// Gets the query string included in the request
+        /// </summary>
         NameValueCollection QueryString { get; }
 
+        /// <summary>
+        /// Gets the URL information (without the host and port) requested by the client.
+        /// </summary>
         string RawUrl { get; }
 
+        /// <summary>
+        /// Gets the client IP address and port number from which the request originated
+        /// </summary>
         IPEndPoint RemoteEndPoint { get; }
 
+        /// <summary>
+        /// Gets the request identifier of the incoming HTTP request
+        /// </summary>
         Guid RequestTraceIdentifier { get; }
 
+        /// <summary>
+        /// Gets the Service Provider Name (SPN) that the client sent on the request
+        /// </summary>
         string ServiceName { get; }
 
+        /// <summary>
+        /// Gets the TransportContext for the client request
+        /// </summary>
         TransportContext TransportContext { get; }
 
+        /// <summary>
+        /// Gets the Uri object requested by the client
+        /// </summary>
         Uri Url { get; }
 
+        /// <summary>
+        /// Gets the Uniform Resource Identifier (URI) of the resource that referred the client to the server
+        /// </summary>
         Uri UrlReferrer { get; }
 
+        /// <summary>
+        /// Gets the user agent presented by the client
+        /// </summary>
         string UserAgent { get; }
 
+        /// <summary>
+        /// Gets the server IP address and port number to which the request is directed
+        /// </summary>
         string UserHostAddress { get; }
 
+        /// <summary>
+        /// Gets the DNS name and, if provided, the port number specified by the client
+        /// </summary>
         string UserHostname { get; }
 
+        /// <summary>
+        /// Gets the natural languages that are preferred for the response
+        /// </summary>
         string[] UserLanguages { get; }
 
+        /// <summary>
+        /// Begins an asynchronous request for the client's X.509 v.3 certificate
+        /// </summary>
+        /// <param name="requestCallback"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
         IAsyncResult BeginGetClientCertificate(AsyncCallback requestCallback, object state);
 
+        /// <summary>
+        /// Ends an asynchronous request for the client's X.509 v.3 certificate
+        /// </summary>
+        /// <param name="asyncResult"></param>
+        /// <returns></returns>
         X509Certificate2 EndGetClientCertificate(IAsyncResult asyncResult);
 
+        /// <summary>
+        /// Retrieves the client's X.509 v.3 certificate
+        /// </summary>
+        /// <returns></returns>
         X509Certificate2 GetClientCertificate();
     }
 
     public class HttpRequest : DynamicAspect, IHttpRequest
     {
-        private readonly HttpListenerRequest _request;
+        private string _payload;
 
-        internal HttpRequest(HttpListenerRequest request)
+        /// <summary>
+        /// The underlying HttpListenerResponse for this instance
+        /// </summary>
+        protected internal readonly HttpListenerRequest Request;
+
+        /// <summary>
+        /// Provides direct access to selected methods and properties on the internal HttpListenerRequest instance in use; do not used unless you are fully aware of what you are doing and the consequences involved.
+        /// </summary>
+        public AdvancedHttpRequest Advanced { get; }
+
+        protected internal HttpRequest(HttpListenerRequest request)
         {
-            _request = request;
-            HttpMethod = (HttpMethod) Enum.Parse(typeof (HttpMethod), _request.HttpMethod);
+            Request = request;
+            HttpMethod = (HttpMethod) Enum.Parse(typeof (HttpMethod), Request.HttpMethod);
             PathInfo = (RawUrl.Split(new[] { '?' }, 2))[0];
-
-            using (var reader = new StreamReader(_request.InputStream, _request.ContentEncoding))
-            {
-                Payload = reader.ReadToEnd();
-            }
+            Name = $"{HttpMethod} {PathInfo}";
+            Id = Guid.NewGuid().ToString();
+            Advanced = new AdvancedHttpRequest(request);
         }
 
-        public string[] AcceptTypes => _request.AcceptTypes;
+        public string[] AcceptTypes => Request.AcceptTypes;
 
-        public int ClientCertificateError => _request.ClientCertificateError;
+        public int ClientCertificateError => Request.ClientCertificateError;
 
-        public Encoding ContentEncoding => _request.ContentEncoding;
+        public Encoding ContentEncoding => Request.ContentEncoding;
 
-        public long ContentLength64 => _request.ContentLength64;
+        public long ContentLength64 => Request.ContentLength64;
 
-        public string ContentType => _request.ContentType;
+        public string ContentType => Request.ContentType;
 
-        public CookieCollection Cookies => _request.Cookies;
+        public CookieCollection Cookies => Request.Cookies;
 
-        public bool HasEntityBody => _request.HasEntityBody;
+        public bool HasEntityBody => Request.HasEntityBody;
 
-        public NameValueCollection Headers => _request.Headers;
+        public NameValueCollection Headers => Request.Headers;
 
         public HttpMethod HttpMethod { get; }
 
-        public bool IsAuthenticated => _request.IsAuthenticated;
+        public string Id { get; }
 
-        public bool IsLocal => _request.IsLocal;
+        public bool IsAuthenticated => Request.IsAuthenticated;
 
-        public bool IsSecureConnection => _request.IsSecureConnection;
+        public bool IsLocal => Request.IsLocal;
 
-        public bool KeepAlive => _request.KeepAlive;
+        public bool IsSecureConnection => Request.IsSecureConnection;
 
-        public IPEndPoint LocalEndPoint => _request.LocalEndPoint;
+        public bool KeepAlive => Request.KeepAlive;
+
+        public IPEndPoint LocalEndPoint => Request.LocalEndPoint;
+
+        public string Name { get; }
 
         public string PathInfo { get; }
 
         public ReadOnlyDictionary<string, string> PathParameters { get; set; }
 
-        public string Payload { get; }
+        public string Payload
+        {
+            get
+            {
+                if (_payload != null) return _payload;
+                using (var reader = new StreamReader(Request.InputStream, Request.ContentEncoding))
+                {
+                    _payload = reader.ReadToEnd();
+                }
+                return _payload;
+            }
+        }
 
-        public Version ProtocolVersion => _request.ProtocolVersion;
+        public Version ProtocolVersion => Request.ProtocolVersion;
 
-        public NameValueCollection QueryString => _request.QueryString;
+        public NameValueCollection QueryString => Request.QueryString;
 
-        public string RawUrl => _request.RawUrl;
+        public string RawUrl => Request.RawUrl;
 
-        public IPEndPoint RemoteEndPoint => _request.RemoteEndPoint;
+        public IPEndPoint RemoteEndPoint => Request.RemoteEndPoint;
 
-        public Guid RequestTraceIdentifier => _request.RequestTraceIdentifier;
+        public Guid RequestTraceIdentifier => Request.RequestTraceIdentifier;
 
-        public string ServiceName => _request.ServiceName;
+        public string ServiceName => Request.ServiceName;
 
-        public TransportContext TransportContext => _request.TransportContext;
+        public TransportContext TransportContext => Request.TransportContext;
 
-        public Uri Url => _request.Url;
+        public Uri Url => Request.Url;
 
-        public Uri UrlReferrer => _request.UrlReferrer;
+        public Uri UrlReferrer => Request.UrlReferrer;
 
-        public string UserAgent => _request.UserAgent;
+        public string UserAgent => Request.UserAgent;
 
-        public string UserHostAddress => _request.UserHostAddress;
+        public string UserHostAddress => Request.UserHostAddress;
 
-        public string UserHostname => _request.UserHostName;
+        public string UserHostname => Request.UserHostName;
 
-        public string[] UserLanguages => _request.UserLanguages;
+        public string[] UserLanguages => Request.UserLanguages;
 
         public IAsyncResult BeginGetClientCertificate(AsyncCallback requestCallback, object state)
         {
-            return _request.BeginGetClientCertificate(requestCallback, state);
+            return Request.BeginGetClientCertificate(requestCallback, state);
         }
 
         public X509Certificate2 EndGetClientCertificate(IAsyncResult asyncResult)
         {
-            return _request.EndGetClientCertificate(asyncResult);
+            return Request.EndGetClientCertificate(asyncResult);
         }
 
         public X509Certificate2 GetClientCertificate()
         {
-            return _request.GetClientCertificate();
+            return Request.GetClientCertificate();
         }
+    }
+
+    /// <summary>
+    /// Provides direct access to selected methods and properties on the internal HttpListenerRequest instance. This class cannot be inherited.
+    /// </summary>
+    public sealed class AdvancedHttpRequest
+    {
+        private readonly HttpListenerRequest _request;
+
+        internal AdvancedHttpRequest(HttpListenerRequest request)
+        {
+            _request = request;
+        }
+
+        /// <summary>
+        /// Gets a stream that contains the body data sent by the client; use Payload instead
+        /// </summary>
+        public Stream InputStream => _request.InputStream;
     }
 }

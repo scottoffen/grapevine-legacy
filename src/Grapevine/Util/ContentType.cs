@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 
 namespace Grapevine.Util
 {
@@ -2976,21 +2975,30 @@ namespace Grapevine.Util
         DEFAULT
     }
 
+    /// <summary>
+    /// <para>Attribute for ContentType enumeration</para>
+    /// <para>Targets: Field</para>
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
     class ContentTypeMetadata : Attribute
     {
+        /// <summary>
+        /// String representation of the MIME type and subtype
+        /// </summary>
         public string Value { get; set; }
+
+        /// <summary>
+        /// A value that indicates whether this mime type represents a text file
+        /// </summary>
         public bool IsText { get; set; }
+
+        /// <summary>
+        /// A value that indicates whether this mime type represents a binary file
+        /// </summary>
         public bool IsBinary
         {
-            get
-            {
-                return !IsText;
-            }
-            set
-            {
-                IsText = !value;
-            }
+            get { return !IsText; }
+            set { IsText = !value; }
         }
 
         public ContentTypeMetadata()
@@ -3002,28 +3010,47 @@ namespace Grapevine.Util
 
     public static class ContentTypeExtensions
     {
-        private static object GetMetadata(ContentType ct)
+        /// <summary>
+        /// Returns the ContentTypeMetadata for the given content type
+        /// </summary>
+        /// <param name="ct"></param>
+        /// <returns>ContentTypeMetadata</returns>
+        private static ContentTypeMetadata GetMetadata(ContentType ct)
         {
-            var type = ct.GetType();
-            var info = type.GetMember(ct.ToString());
-
+            var info = ct.GetType().GetMember(ct.ToString());
             if (info.Length <= 0) return null;
+
             var attrs = info[0].GetCustomAttributes(typeof(ContentTypeMetadata), false);
-            return attrs.Length > 0 ? attrs[0] : null;
+            return attrs.Length > 0 ? attrs[0] as ContentTypeMetadata : null;
         }
 
+        /// <summary>
+        /// Returns the mime type and subtype string from the Value property of the ContentTypeMetadata
+        /// </summary>
+        /// <param name="ct"></param>
+        /// <returns>string</returns>
         public static string ToValue(this ContentType ct)
         {
             var metadata = GetMetadata(ct);
-            return metadata != null ? ((ContentTypeMetadata)metadata).Value : ct.ToString();
+            return metadata != null ? metadata.Value : ct.ToString();
         }
 
+        /// <summary>
+        /// Gets a value that indicates whether this mime type represents a text file
+        /// </summary>
+        /// <param name="ct"></param>
+        /// <returns>bool</returns>
         public static bool IsText(this ContentType ct)
         {
             var metadata = GetMetadata(ct);
             return metadata != null ? ((ContentTypeMetadata)metadata).IsText : true;
         }
 
+        /// <summary>
+        /// Gets a value that indicates whether this mime type represents a binary file
+        /// </summary>
+        /// <param name="ct"></param>
+        /// <returns>bool</returns>
         public static bool IsBinary(this ContentType ct)
         {
             var metadata = GetMetadata(ct);

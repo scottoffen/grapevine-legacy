@@ -5,35 +5,53 @@ using Grapevine.Util;
 
 namespace Grapevine.Server
 {
+    /// <summary>
+    /// Adds an ExpandoObject called Dynamic to a class
+    /// </summary>
     public interface IDynamicAspect
     {
+        /// <summary>
+        /// Dynamic object for run-time extension
+        /// </summary>
         dynamic Dynamic { get; }
-
-        T GetDynamicValue<T>(string propertyName);
-
-        bool HasDynamicKey(string keyName);
     }
 
     public abstract class DynamicAspect : IDynamicAspect
     {
         public dynamic Dynamic { get; } = new ExpandoObject();
+    }
 
-        public T GetDynamicValue<T>(string propertyName)
+    public static class ExpandoObjectExtensions
+    {
+        /// <summary>
+        /// Gets the value of the specified key name in the ExpandoObject and casts it to the type specifed by <c>T</c>.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="expando"></param>
+        /// <param name="keyName"></param>
+        /// <returns></returns>
+        public static T GetValueAs<T>(this ExpandoObject expando, string keyName)
         {
-            if (string.IsNullOrWhiteSpace(propertyName)) throw new ArgumentNullException(nameof(propertyName));
+            if (string.IsNullOrWhiteSpace(keyName)) throw new ArgumentNullException(nameof(keyName));
 
-            var properties = Dynamic as IDictionary<string, object>;
-            if (properties == null || !properties.ContainsKey(propertyName)) throw new DynamicValueNotFoundException(propertyName);
+            var properties = expando as IDictionary<string, object>;
+            if (properties == null || !properties.ContainsKey(keyName)) throw new DynamicValueNotFoundException(keyName);
 
-            var property = properties[propertyName];
-            if (property is T) return (T) property;
+            var property = properties[keyName];
+            if (property is T) return (T)property;
 
-            throw new DynamicPropertyTypeMismatch(propertyName, property.GetType().Name, typeof(T).Name);
+            throw new DynamicPropertyTypeMismatch(keyName, property.GetType().Name, typeof(T).Name);
         }
 
-        public bool HasDynamicKey(string keyName)
+        /// <summary>
+        /// Gets a value indicating whether or not the ExpandoObject has a property with the given key name.
+        /// </summary>
+        /// <param name="expando"></param>
+        /// <param name="keyName"></param>
+        /// <returns></returns>
+        public static bool HasKey(this ExpandoObject expando, string keyName)
         {
-            var dictionary = Dynamic as IDictionary<string, object>;
+            var dictionary = expando as IDictionary<string, object>;
             return dictionary != null && dictionary.ContainsKey(keyName);
         }
     }
