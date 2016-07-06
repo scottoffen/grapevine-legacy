@@ -9,18 +9,38 @@ namespace Grapevine.Client
     /// <summary>
     /// Represents a server exposing resources to interact with
     /// </summary>
-    public class RESTClient
+    public interface IRestClient
     {
-        public RESTClient(string baseUrl)
-        {
-            this.BaseUrl = Regex.Replace(baseUrl, "/$", "");
-            this.Cookies = new CookieContainer();
-        }
-
         /// <summary>
         /// Sends RESTRequest to server represented by RESTClient and returns the RESTResponse received
         /// </summary>
-        public RESTResponse Execute(RESTRequest request)
+        IRestResponse Execute(IRestRequest request);
+
+        /// <summary>
+        /// The base URL of the server exposing resources
+        /// </summary>
+        string BaseUrl { get; }
+
+        /// <summary>
+        /// The cookies sent with and updated by each request
+        /// </summary>
+        CookieContainer Cookies { get; }
+
+        /// <summary>
+        /// Optional credentials needed to interact with server resources
+        /// </summary>
+        NetworkCredential NetworkCredentials { get; set; }
+    }
+
+    public class RestClient : IRestClient
+    {
+        public RestClient(string baseUrl)
+        {
+            BaseUrl = Regex.Replace(baseUrl, "/$", "");
+            Cookies = new CookieContainer();
+        }
+
+        public IRestResponse Execute(IRestRequest request)
         {
             var querystr = request.QueryString;
             var url = (object.ReferenceEquals(querystr, null)) ? this.BaseUrl + "/" + request.PathInfo : this.BaseUrl + "/" + request.PathInfo + "?" + querystr;
@@ -35,7 +55,7 @@ namespace Grapevine.Client
 
             client.ContentType = request.ContentType.ToValue();
 
-            if (!Object.ReferenceEquals(request.Payload, null))
+            if (request.Payload != null)
             {
                 var content = request.Encoding.GetBytes(request.Payload);
                 client.ContentLength = content.Length;
@@ -65,38 +85,24 @@ namespace Grapevine.Client
             stopwatch.Stop();
             request.Reset();
 
-            var response = new RESTResponse(httpresponse, stopwatch.ElapsedMilliseconds, error, errorStatus);
+            var response = new RestResponse(httpresponse, stopwatch.ElapsedMilliseconds, error, errorStatus);
             if (response.Cookies != null)
                 this.Cookies.Add(response.Cookies);
 
             return response;
         }
 
+        public string BaseUrl { get; }
+
+        public CookieContainer Cookies { get; }
+
+        public NetworkCredential NetworkCredentials { get; set; }
+
         private HttpWebRequest CreateRequest(string url)
         {
             var request = (HttpWebRequest)WebRequest.Create(url);
-
-            if (!Object.ReferenceEquals(this.NetworkCredentials, null))
-            {
-                request.Credentials = this.NetworkCredentials;
-            }
-
+            if (NetworkCredentials != null) request.Credentials = NetworkCredentials;
             return request;
         }
-
-        /// <summary>
-        /// The base URL of the server exposing resources
-        /// </summary>
-        public string BaseUrl { get; private set; }
-
-        /// <summary>
-        /// The cookies sent with and updated by each request
-        /// </summary>
-        public CookieContainer Cookies { get; private set; }
-
-        /// <summary>
-        /// Optional credentials needed to interact with server resources
-        /// </summary>
-        public NetworkCredential NetworkCredentials { get; set; }
     }
 }
