@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+    <metadata>
+        <id>Grapevine</id>
+        <version>4.0.0-alpha1</version>
+        <title>Grapevine Rest Server</title>
+        <authors>Scott Offen</authors>
+        <owners>Scott Offen</owners>
+        <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
+        <projectUrl>http://sukona.github.io/Grapevine/</projectUrl>
+        <iconUrl>https://raw.githubusercontent.com/sukona/Grapevine/master/img/grapevine-ico.png</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>The best solutions are the simplest to implement. Embedding a REST/HTTP server in your application should be simple. Consuming REST resources from inside your application should be simple. If what you've been using doesn't feel simple, try Grapevine. It doesn't get any simpler than this.
+
+Introduction
+
+Grapevine is a .NET class library focused on solving two problems:
+
+1. Easily embedding a REST/HTTP servers in your application
+2. Easily consume REST resources in your application
+
+The focus is on simplicity, and Grapevine is intended for use in applications for which being a REST or HTTP client or server is not the primary function or purpose of the application - however many people are using it as a lightweight alternative to IIS or Apache.
+
+Features
+
+- Grapevine can serve both static files and dynamic resources
+- Grapevine can both produce and consume REST services
+- Grapevine has minimal configuration requirements
+- Grapevine allows you to map specific methods to HTTP Method and URL patterns
+- Grapevine supports using regular expressions
+- Grapevine streamlines connecting and communicating with REST servers using simple patterns and placeholders
+- Grapevine can listen on multiple ports, and scope REST resources to those ports</description>
+        <summary>Embedding A REST Server In Your Application Should Be Simple</summary>
+        <releaseNotes>See https://github.com/sukona/Grapevine/releases/tag/v4.0.0-alpha.1</releaseNotes>
+        <copyright>Copyright 2014 - 2016 Scott Offen</copyright>
+        <language>en-US</language>
+        <tags>REST HTTP API WEB ROUTER CLIENT SERVER EXPRESS JSON XML</tags>
+        <frameworkAssemblies>
+            <frameworkAssembly assemblyName="System.Net" targetFramework="" />
+        </frameworkAssemblies>
+    </metadata>
+</package>
