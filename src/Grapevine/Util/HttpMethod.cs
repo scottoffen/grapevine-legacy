@@ -24,7 +24,7 @@
         UNLOCK
     };
 
-    public static class HttpMethodExenstions
+    public static class HttpMethodExtensions
     {
         /// <summary>
         /// Gets a value indicating whether the HttpMethods are equal OR one of them is HttpMethod.ALL
@@ -36,5 +36,7 @@
         {
             return httpMethod == HttpMethod.ALL || other == HttpMethod.ALL || httpMethod == other;
         }
+
+
     }
 }

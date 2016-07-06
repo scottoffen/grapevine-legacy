@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Cache;
 using System.Text.RegularExpressions;
-using Grapevine.Util;
 
 namespace Grapevine.Client
 {
@@ -11,11 +11,6 @@ namespace Grapevine.Client
     /// </summary>
     public interface IRestClient
     {
-        /// <summary>
-        /// Sends RESTRequest to server represented by RESTClient and returns the RESTResponse received
-        /// </summary>
-        IRestResponse Execute(IRestRequest request);
-
         /// <summary>
         /// The base URL of the server exposing resources
         /// </summary>
@@ -29,80 +24,92 @@ namespace Grapevine.Client
         /// <summary>
         /// Optional credentials needed to interact with server resources
         /// </summary>
-        NetworkCredential NetworkCredentials { get; set; }
+        ICredentials Credentials { get; set; }
+
+        /// <summary>
+        /// Sends RESTRequest to server represented by RESTClient and returns the RESTResponse received
+        /// </summary>
+        IRestResponse Execute(IRestRequest restRequest);
     }
 
     public class RestClient : IRestClient
     {
+        public string BaseUrl { get; }
+        public CookieContainer Cookies { get; }
+        public ICredentials Credentials { get; set; }
+
         public RestClient(string baseUrl)
         {
+            if (baseUrl == null) throw new ArgumentNullException(nameof(baseUrl));
             BaseUrl = Regex.Replace(baseUrl, "/$", "");
             Cookies = new CookieContainer();
         }
 
-        public IRestResponse Execute(IRestRequest request)
+        /// <summary>
+        /// Gets or sets the default cache policy for this request
+        /// </summary>
+        public static RequestCachePolicy DefaultCachePolicy
         {
-            var querystr = request.QueryString;
-            var url = (object.ReferenceEquals(querystr, null)) ? this.BaseUrl + "/" + request.PathInfo : this.BaseUrl + "/" + request.PathInfo + "?" + querystr;
-            var client = CreateRequest(url);
+            get { return HttpWebRequest.DefaultCachePolicy; }
+            set { HttpWebRequest.DefaultCachePolicy = value; }
+        }
 
-            var stopwatch = new Stopwatch();
-            client.Timeout = request.Timeout;
+        /// <summary>
+        /// Gets or sets the default maximum length of an HTTP error response
+        /// </summary>
+        public static int DefaultMaximumErrorResponseLength
+        {
+            get { return HttpWebRequest.DefaultMaximumErrorResponseLength; }
+            set { HttpWebRequest.DefaultMaximumErrorResponseLength = value; }
+        }
 
-            client.CookieContainer = this.Cookies;
-            client.Method = request.Method.ToString();
-            client.Headers = request.Headers;
+        /// <summary>
+        /// Gets or sets the default for the MaximumResponseHeadersLength property
+        /// </summary>
+        public static int DefaultMaximumResponseHeadersLength
+        {
+            get { return HttpWebRequest.DefaultMaximumResponseHeadersLength; }
+            set { HttpWebRequest.DefaultMaximumResponseHeadersLength = value; }
+        }
 
-            client.ContentType = request.ContentType.ToValue();
+        /// <summary>
+        /// Gets or sets the global HTTP proxy
+        /// </summary>
+        public static IWebProxy DefaultWebProxy
+        {
+            get { return WebRequest.DefaultWebProxy; }
+            set { WebRequest.DefaultWebProxy = value; }
+        }
 
-            if (request.Payload != null)
-            {
-                var content = request.Encoding.GetBytes(request.Payload);
-                client.ContentLength = content.Length;
-                client.GetRequestStream().Write(content, 0, content.Length);
-                client.GetRequestStream().Close();
-            }
-            else
-            {
-                client.ContentLength = 0;
-            }
-                
-            HttpWebResponse httpresponse;
-            string error = "";
-            WebExceptionStatus errorStatus = WebExceptionStatus.Success;
+        public IRestResponse Execute(IRestRequest restRequest)
+        {
+            var request = restRequest.ToHttpWebRequest(BaseUrl);
+            if (request.Credentials == null) request.Credentials = Credentials;
+            request.CookieContainer.Add(Cookies.GetCookies(request.RequestUri));
 
-            stopwatch.Start();
+            RestResponse response;
+            var stopwatch = Stopwatch.StartNew();
+
             try
             {
-                httpresponse = (HttpWebResponse)client.GetResponse();
+                var httpresponse = (HttpWebResponse) request.GetResponse();
+                var elapsed = stopwatch.ElapsedMilliseconds;
+                response = new RestResponse(httpresponse) {ElapsedTime = elapsed};
             }
             catch (WebException e)
             {
-                httpresponse = (HttpWebResponse)e.Response;
-                error = e.Message;
-                errorStatus = e.Status;
+                var elapsed = stopwatch.ElapsedMilliseconds;
+                var httpresponse = (HttpWebResponse) e.Response;
+                response = new RestResponse(httpresponse)
+                {
+                    ElapsedTime = elapsed,
+                    Error = e.Message,
+                    ErrorStatus = e.Status
+                };
             }
-            stopwatch.Stop();
-            request.Reset();
 
-            var response = new RestResponse(httpresponse, stopwatch.ElapsedMilliseconds, error, errorStatus);
-            if (response.Cookies != null)
-                this.Cookies.Add(response.Cookies);
-
+            if (response.Cookies != null) Cookies.Add(response.Cookies);
             return response;
-        }
-
-        public string BaseUrl { get; }
-
-        public CookieContainer Cookies { get; }
-
-        public NetworkCredential NetworkCredentials { get; set; }
-
-        private HttpWebRequest CreateRequest(string url)
-        {
-            var request = (HttpWebRequest)WebRequest.Create(url);
-            if (NetworkCredentials != null) request.Credentials = NetworkCredentials;
-            return request;
         }
     }
 }
