@@ -308,7 +308,11 @@ namespace Grapevine.Client
             Advanced = new AdvancedRestRequest(this);
             ContentType = ContentType.TXT;
             Encoding = Encoding.UTF8;
-            Headers = new WebHeaderCollection();
+            Headers = new WebHeaderCollection
+            {
+                {HttpRequestHeader.CacheControl, "no-store, must-revalidate"},
+                {HttpRequestHeader.AcceptEncoding, "gzip"}
+            };
             HttpMethod = HttpMethod.GET;
             PathParams = new PathParams();
             QueryString = new QueryString();
