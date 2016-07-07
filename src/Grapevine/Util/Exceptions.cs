@@ -46,7 +46,8 @@ namespace Grapevine.Util
     {
         public DynamicValueNotFoundException() { }
 
-        public DynamicValueNotFoundException(string propertyName) : base(string.Format("Key '{0}' not found; use HasDynamicKey to determine if property exists first", propertyName)) { }
+        public DynamicValueNotFoundException(string propertyName)
+        : base($"Key '{propertyName}' not found; use HasDynamicKey to determine if property exists first") { }
 
         public DynamicValueNotFoundException(string message, Exception inner) : base(message, inner) { }
     }
@@ -59,7 +60,7 @@ namespace Grapevine.Util
         public DynamicPropertyTypeMismatch() { }
 
         public DynamicPropertyTypeMismatch(string propertyName, string propertyType, string expectedType)
-        : base(string.Format("Value for key {0} of type {1} is not of type {2}", propertyName, propertyType, expectedType)) { }
+        : base($"Value for key {propertyName} of type {propertyType} is not of type {expectedType}") { }
 
         public DynamicPropertyTypeMismatch(string message) : base(message) { }
 

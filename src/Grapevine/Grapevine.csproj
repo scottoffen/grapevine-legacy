@@ -43,10 +43,11 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Client\CollectionWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Client\RESTClient.cs" />
-    <Compile Include="Client\RESTRequest.cs" />
-    <Compile Include="Client\RESTResponse.cs" />
+    <Compile Include="Client\RestClient.cs" />
+    <Compile Include="Client\RestRequest.cs" />
+    <Compile Include="Client\RestResponse.cs" />
     <Compile Include="Server\DynamicAspect.cs" />
     <Compile Include="Server\HttpContext.cs" />
     <Compile Include="Server\HttpRequest.cs" />

@@ -72,6 +72,9 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="Client\CollectionWrapperTester.cs" />
+    <Compile Include="Client\RestClientTester.cs" />
+    <Compile Include="Client\RestRequestTester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\ContentRootTester.cs" />
     <Compile Include="Server\RestServerTester.cs" />
