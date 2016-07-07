@@ -250,7 +250,7 @@ namespace Grapevine.Client
 
     public class RestRequest : IRestRequest
     {
-        public static int GlobalTimeout = 2000;
+        public static int GlobalTimeout = 100000;
 
         private string _resource;
 
@@ -303,18 +303,37 @@ namespace Grapevine.Client
         /// </summary>
         public AdvancedRestRequest Advanced { get; }
 
-        public RestRequest()
+        public RestRequest() : this(string.Empty) { }
+
+        public RestRequest(string resource)
         {
-            Advanced = new AdvancedRestRequest(this);
-            ContentType = ContentType.TXT;
-            Encoding = Encoding.UTF8;
+            Resource = resource;
+
             Headers = new WebHeaderCollection
             {
                 {HttpRequestHeader.CacheControl, "no-store, must-revalidate"},
                 {HttpRequestHeader.AcceptEncoding, "gzip"}
             };
+
+            Advanced = new AdvancedRestRequest(this);
+            AllowAutoRedirect = true;
+            AllowWriteStreamBuffering = true;
+            AuthenticationLevel = AuthenticationLevel.MutualAuthRequested;
+            AutomaticDecompression = DecompressionMethods.None;
+            CachePolicy = new RequestCachePolicy(RequestCacheLevel.BypassCache);
+            ClientCertificates = new X509Certificate2Collection();
+            ContentLength = 0;
+            ContentType = ContentType.TXT;
+            Encoding = Encoding.UTF8;
             HttpMethod = HttpMethod.GET;
+            ImpersonationLevel = TokenImpersonationLevel.Delegation;
+            KeepAlive = true;
+            MaximumAutomaticRedirections = 50;
+            MaximumResponseHeadersLength = 64;
             PathParams = new PathParams();
+            Pipelined = true;
+            ProtocolVersion = new Version(1, 1);
+            ReadWriteTimeout = 300000;
             QueryString = new QueryString();
             Timeout = GlobalTimeout;
         }
@@ -328,9 +347,9 @@ namespace Grapevine.Client
             set
             {
                 var r = Regex.Replace(value, "^/", "");
-                if (_resource.Equals(r)) return;
+                if (r.Equals(_resource)) return;
                 _resource = r;
-                PathParams.Clear();
+                PathParams?.Clear();
             }
         }
 
@@ -369,6 +388,8 @@ namespace Grapevine.Client
             var url = $"{baseUrl}/{_request.PathInfo}{(_request.QueryString.Count > 0 ? $"?{_request.QueryString}" : "")}";
             var request = (HttpWebRequest) WebRequest.Create(url);
 
+            request.Headers = _request.Headers;
+
             request.Accept = _request.Accept;
             request.AllowAutoRedirect = _request.AllowAutoRedirect;
             request.AllowWriteStreamBuffering = _request.AllowWriteStreamBuffering;
@@ -384,8 +405,7 @@ namespace Grapevine.Client
             request.Credentials = _request.Credentials;
             request.Date = _request.Date;
             request.Expect = _request.Expect;
-            request.Headers = _request.Headers;
-            request.Host = _request.Host;
+            if (_request.Host != null) request.Host = _request.Host;
             request.IfModifiedSince = _request.IfModifiedSince;
             request.ImpersonationLevel = _request.ImpersonationLevel;
             request.KeepAlive = _request.KeepAlive;
@@ -396,7 +416,7 @@ namespace Grapevine.Client
             request.Pipelined = _request.Pipelined;
             request.PreAuthenticate = _request.PreAuthenticate;
             request.ProtocolVersion = _request.ProtocolVersion;
-            request.Proxy = _request.Proxy;
+            if (_request.Proxy != null) request.Proxy = _request.Proxy;
             request.ReadWriteTimeout = _request.ReadWriteTimeout;
             request.Referer = _request.Referer;
             request.SendChunked = _request.SendChunked;

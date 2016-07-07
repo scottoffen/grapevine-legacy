@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grapevine", "Grapevine\Grapevine.csproj", "{C79E6853-F7A0-426F-883C-169651123256}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grapevine.Tests", "Grapevine.Test\Grapevine.Tests.csproj", "{286B5DFD-1AE6-4478-9650-5DE4C348B0F2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grapevine.Integration", "Grapevine.Console\Grapevine.Integration.csproj", "{6C505735-10D7-41D9-822E-081DA9451729}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grapevine.Integration", "Grapevine.Integration\Grapevine.Integration.csproj", "{6C505735-10D7-41D9-822E-081DA9451729}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
