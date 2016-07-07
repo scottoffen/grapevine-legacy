@@ -12,22 +12,22 @@ namespace Grapevine.Client
     public interface IRestClient
     {
         /// <summary>
-        /// The base URL of the server exposing resources
+        /// Gets the base URL of the server exposing resources
         /// </summary>
         string BaseUrl { get; }
 
         /// <summary>
-        /// The cookies sent with and updated by each request
+        /// Gets the cookies sent with and updated by each request
         /// </summary>
         CookieContainer Cookies { get; }
 
         /// <summary>
-        /// Optional credentials needed to interact with server resources
+        /// Gets or sets optional credentials needed to interact with server resources
         /// </summary>
         ICredentials Credentials { get; set; }
 
         /// <summary>
-        /// Sends RESTRequest to server represented by RESTClient and returns the RESTResponse received
+        /// Gets an IRestResponse returned from sending an IRestRequest to the server represented by the IRestClient
         /// </summary>
         IRestResponse Execute(IRestRequest restRequest);
     }

@@ -10,29 +10,52 @@ namespace Grapevine.Client
     {
         protected NameValueCollection Collection = new NameValueCollection();
 
-        public void Add(string key, string value)
+        /// <summary>
+        /// Adds and entry with the specified name and value to the collection
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
+        public void Add(string name, string value)
         {
-            Collection.Add(key, value);
+            Collection.Add(name, value);
         }
 
+        /// <summary>
+        /// Gets the number of key/value pairs in the collection
+        /// </summary>
         public int Count => Collection.Count;
 
-        public string Get(string key)
+        /// <summary>
+        /// Gets the value of the specified name from the collection
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns>string</returns>
+        public string Get(string name)
         {
-            return Collection[key];
+            return Collection[name];
         }
 
-        public void Remove(string key)
+        /// <summary>
+        /// Removes the entries with the specified key from the collection
+        /// </summary>
+        /// <param name="name"></param>
+        public void Remove(string name)
         {
-            Collection.Remove(key);
+            Collection.Remove(name);
         }
 
+        /// <summary>
+        /// Invalidates all cached arrays and removes all entries from the collection
+        /// </summary>
         public void Clear()
         {
             Collection.Clear();
         }
     }
 
+    /// <summary>
+    /// Provides simplified access the key/value pairs of the query string of the request
+    /// </summary>
     public class QueryString : CollectionWrapper
     {
         public override string ToString()
@@ -41,8 +64,14 @@ namespace Grapevine.Client
         }
     }
 
+    /// <summary>
+    /// Provides simplified assignment of values to placeholders in the PathInfo of the request
+    /// </summary>
     public class PathParams : CollectionWrapper
     {
+        /// <summary>
+        /// Gets a copy of the resource with placeholders replaced by values in the collection
+        /// </summary>
         public string ParseResource(string resource)
         {
             var pathinfo = Collection.AllKeys.Aggregate(resource, (current, key) => Regex.Replace(current, $@"\[{key}\]", Collection.Get(key)));

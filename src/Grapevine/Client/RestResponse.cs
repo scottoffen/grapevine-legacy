@@ -126,11 +126,6 @@ namespace Grapevine.Client
         private readonly HttpWebResponse _response;
         private string _content;
 
-        /// <summary>
-        /// Provides direct access to selected methods and properties on the internal HttpWebResponse instance in use; do not used unless you are fully aware of what you are doing and the consequences involved.
-        /// </summary>
-        public AdvancedRestResponse Advanced { get; }
-
         public string CharacterSet => _response.CharacterSet;
         public string ContentEncoding => _response.ContentEncoding;
         public long ContentLength => _response.ContentLength;
@@ -150,6 +145,11 @@ namespace Grapevine.Client
         public string Server => _response.Server;
         public HttpStatusCode StatusCode { get; }
         public string StatusDescription => _response.StatusDescription;
+
+        /// <summary>
+        /// Provides direct access to selected methods and properties on the internal HttpWebResponse instance in use; do not used unless you are fully aware of what you are doing and the consequences involved.
+        /// </summary>
+        public AdvancedRestResponse Advanced { get; }
 
         internal RestResponse(HttpWebResponse response)
         {

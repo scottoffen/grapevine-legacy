@@ -11,7 +11,7 @@ using Grapevine.Util;
 namespace Grapevine.Client
 {
     /// <summary>
-    /// Reuseable collection of all data required to send a request to a RestClient
+    /// Reuseable collection of data required to create an HttpWebRequest to send to a RestClient
     /// </summary>
     public interface IRestRequest
     {
@@ -151,7 +151,7 @@ namespace Grapevine.Client
         PathParams PathParams { get; }
 
         /// <summary>
-        /// Get or set the data payload
+        /// Get or set the data payload for the request
         /// </summary>
         string Payload { get; set; }
 
@@ -191,14 +191,14 @@ namespace Grapevine.Client
         string Referer { get; set; }
 
         /// <summary>
-        /// Get or set the optionally-tokenized string that represents the path to the desired resource; when changed, all parameters are cleared
+        /// Gets or sets the optionally-tokenized string that represents the path to the desired resource; when changed, all parameters are cleared
         /// </summary>
         string Resource { get; set; }
 
         /// <summary>
         /// Gets the original Uniform Resource Identifier (URI) of the request
         /// </summary>
-        Uri RequestUri { get; set; }
+        Uri RequestUri { get; }
 
         /// <summary>
         /// Gets or sets a value that indicates whether to send data in segments to the Internet resource
@@ -328,7 +328,7 @@ namespace Grapevine.Client
             set
             {
                 var r = Regex.Replace(value, "^/", "");
-                if (value.Equals(r)) return;
+                if (_resource.Equals(r)) return;
                 _resource = r;
                 PathParams.Clear();
             }
@@ -364,7 +364,7 @@ namespace Grapevine.Client
         /// </summary>
         /// <param name="baseUrl"></param>
         /// <returns>HttpWebRequest</returns>
-        public HttpWebRequest ToHttpWebRequest(string baseUrl)
+        internal HttpWebRequest ToHttpWebRequest(string baseUrl)
         {
             var url = $"{baseUrl}/{_request.PathInfo}{(_request.QueryString.Count > 0 ? $"?{_request.QueryString}" : "")}";
             var request = (HttpWebRequest) WebRequest.Create(url);
