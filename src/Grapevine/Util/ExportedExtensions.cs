@@ -4,7 +4,7 @@ using System.ComponentModel;
 
 namespace Grapevine.Util
 {
-    public static class NameValueCollectionExtensions
+    public static class ExportedExtensions
     {
         /// <summary>
         /// Gets the value for the specified key cast the type specified

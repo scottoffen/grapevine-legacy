@@ -61,7 +61,7 @@
     <Compile Include="Server\Router.cs" />
     <Compile Include="Util\ContentType.cs" />
     <Compile Include="Util\Exceptions.cs" />
-    <Compile Include="Util\NameValueCollectionExtensions.cs" />
+    <Compile Include="Util\ExportedExtensions.cs" />
     <Compile Include="Util\HttpStatusCode.cs" />
     <Compile Include="Util\IGrapevineLogger.cs" />
     <Compile Include="Util\InternalExtensions.cs" />
