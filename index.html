@@ -50,7 +50,7 @@
 								<li><a href="rest_client">Rest Client</a></li>
 								<li><a href="rest_server">Rest Server</a></li>
 								<li><a href="misc">Miscellaneous</a></li>
-								<li><a href="about">About This Project</a></li>
+								<li><a href="about">About Grapevine</a></li>
 							</ul>
 						</li>
 						<li><a href="https://github.com/sukona/Grapevine" class="text-muted pull-right"><i class="fa fa-github"></i> Fork on GitHub</a></li>
@@ -66,6 +66,7 @@
 			</nav>
 		</div>
 
+		<!--
 		<div class="container">
 			<div class="row">
 				<div class="col-lg-12 text-center">
@@ -93,16 +94,17 @@
 				</div>
 			</div>
 		</div>
+		-->
 
 		<div class="container">
 			<pre>
 				<code class="language-csharp">
-server.Router.Register(Route.For(HttpMethod.GET).To("/special/api").Use(context =>
-{
-    context.Response.ContentType = ContentType.TEXT.ToValue();
-    context.Response.SendResponse(context.Dynamic.UserName);
-    return context;
-}));
+				server.Router.Register(Route.For(HttpMethod.GET).To("/special/api").Use(context =>
+				{
+				    context.Response.ContentType = ContentType.TEXT.ToValue();
+				    context.Response.SendResponse(context.Dynamic.UserName);
+				    return context;
+				}));
 				</code>
 			</pre>
 		</div>
