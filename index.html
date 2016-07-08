@@ -124,11 +124,55 @@
 
 						<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur nisl lorem, tincidunt vitae accumsan a, cursus vestibulum lacus. Integer porta mi at orci facilisis suscipit. Ut volutpat ligula non faucibus consequat. Maecenas imperdiet nunc quis urna varius, vel lacinia lacus ornare. Pellentesque porta lorem tristique feugiat mattis. Nulla facilisi. Vivamus cursus mauris semper mi sollicitudin finibus. Duis convallis eleifend nisi ut pellentesque. Etiam rhoncus faucibus risus at ultrices. Nullam consequat metus nibh, vitae finibus magna tincidunt mollis. Vestibulum suscipit justo ut nulla congue, sit amet congue ex facilisis.</p>
 
+						<pre>
+							<code class="language-csharp">
+							server.Router.Register(Route.For(HttpMethod.GET).To("/special/api").Use(context =>
+							{
+							    context.Response.ContentType = ContentType.TEXT.ToValue();
+							    context.Response.SendResponse(context.Dynamic.UserName);
+							    return context;
+							}));
+							</code>
+						</pre>
+
 						<p>Donec eu diam laoreet, posuere libero vitae, molestie dolor. Nullam luctus vehicula odio ut efficitur. Donec elit ex, tincidunt nec mi ac, euismod maximus sem. Nulla tincidunt dolor a eleifend volutpat. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Aenean dolor diam, gravida non tellus id, dignissim porta ipsum. Aliquam eleifend ligula non imperdiet porta. Curabitur ultricies consectetur est, vitae scelerisque neque condimentum fermentum. Aliquam porta elementum libero at sagittis. Mauris interdum molestie rutrum. Integer vitae purus sit amet risus faucibus volutpat vitae vel lectus. Nullam ante turpis, finibus at purus sit amet, condimentum dapibus turpis. Sed fermentum quam eget egestas ultrices. Pellentesque accumsan vel orci in ullamcorper.</p>
+
+						<pre>
+							<code class="language-csharp">
+							server.Router.Register(Route.For(HttpMethod.GET).To("/special/api").Use(context =>
+							{
+							    context.Response.ContentType = ContentType.TEXT.ToValue();
+							    context.Response.SendResponse(context.Dynamic.UserName);
+							    return context;
+							}));
+							</code>
+						</pre>
 
 						<p>Fusce fermentum dolor eget pellentesque ullamcorper. Nullam semper ligula nec libero venenatis pretium. Curabitur congue hendrerit fermentum. Morbi ac venenatis nisi, nec varius quam. Donec euismod ac nibh malesuada auctor. Quisque pretium nisi varius ligula faucibus, in tristique eros luctus. Etiam massa velit, vestibulum vitae quam quis, bibendum maximus ligula. In eleifend odio massa. Etiam a egestas nisi. Nullam et risus laoreet, fringilla erat hendrerit, fringilla elit. Sed vulputate ex eget quam semper vestibulum. Cras pharetra euismod neque, in consectetur diam tincidunt nec.</p>
 
+						<pre>
+							<code class="language-csharp">
+							server.Router.Register(Route.For(HttpMethod.GET).To("/special/api").Use(context =>
+							{
+							    context.Response.ContentType = ContentType.TEXT.ToValue();
+							    context.Response.SendResponse(context.Dynamic.UserName);
+							    return context;
+							}));
+							</code>
+						</pre>
+
 						<p>Quisque dictum consequat massa at scelerisque. Integer hendrerit mollis ultrices. Aliquam laoreet ac nulla sit amet egestas. Etiam efficitur nulla eu augue sodales, non pellentesque orci faucibus. Sed vulputate metus eu diam fringilla dignissim. Vivamus bibendum vel felis eget rutrum. Nam sit amet mauris venenatis, fermentum ante id, maximus nisl. Aliquam vulputate orci purus, vitae dignissim nisi convallis id. Morbi dignissim in felis dignissim pellentesque. Morbi tristique euismod nisi a consectetur.</p>
+
+						<pre>
+							<code class="language-csharp">
+							server.Router.Register(Route.For(HttpMethod.GET).To("/special/api").Use(context =>
+							{
+							    context.Response.ContentType = ContentType.TEXT.ToValue();
+							    context.Response.SendResponse(context.Dynamic.UserName);
+							    return context;
+							}));
+							</code>
+						</pre>
 
 						<p>Sed sagittis mauris eget accumsan scelerisque. Phasellus placerat convallis ipsum at pretium. Aliquam ac convallis dolor. Donec finibus est finibus bibendum ultrices. Cras viverra tincidunt tellus, et tempor purus egestas vitae. Vestibulum eleifend, tortor sed tempus ultricies, nisi neque pretium urna, at ullamcorper nisl lectus in nunc. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Praesent consectetur tincidunt ultrices.</p>
 
