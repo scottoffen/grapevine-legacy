@@ -94,6 +94,19 @@
 			</div>
 		</div>
 
+		<div class="container">
+			<pre>
+				<code class="language-csharp">
+server.Router.Register(Route.For(HttpMethod.GET).To("/special/api").Use(context =>
+{
+    context.Response.ContentType = ContentType.TEXT.ToValue();
+    context.Response.SendResponse(context.Dynamic.UserName);
+    return context;
+}));
+				</code>
+			</pre>
+		</div>
+
 		<!--[if lt IE 9]>
 		<script src="/Grapevine/assets/js/jquery-1.12.4.min.js"></script>
 		<![endif]-->
