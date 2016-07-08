@@ -3,19 +3,22 @@
 	<head>
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="description" content="Grapevine is an embeddable REST server written is C# for the .NET platform, based on the HttpListener class. It also contains a powerful yet easy to use REST client.">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 
-		<title>Grapevine | C# Embeddable Rest Server</title>
+		<title>Grapevine | .NET Embeddable Rest Server</title>
 
-		<link href="/Grapevine/assets/css/bootstrap.min.css" rel="stylesheet">
-		<link href="/Grapevine/assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
-		<link href="/Grapevine/assets/css/prism.min.css" rel="stylesheet">
-		<link href="/Grapevine/assets/css/styles.css" rel="stylesheet">
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" />
+		<link rel="stylesheet" href="/Grapevine/assets/css/bootstrap.min.css">
+		<link rel="stylesheet" href="/Grapevine/assets/css/ie10-viewport-bug-workaround.css">
+		<link rel="stylesheet" href="/Grapevine/assets/css/prism.min.css">
+		<link rel="stylesheet" href="/Grapevine/assets/css/styles.css">
+		<link rel="stylesheet" href="/Grapevine/assets/css/font-awesome.min.css">
 
-		<link rel="apple-touch-icon" href="/bootstrap/img/apple-touch-icon.png">
-		<link rel="apple-touch-icon" sizes="72x72" href="/bootstrap/img/apple-touch-icon-72x72.png">
-		<link rel="apple-touch-icon" sizes="114x114" href="/bootstrap/img/apple-touch-icon-114x114.png">
+		<!--
+	 	<link rel="apple-touch-icon" href="/Grapevine/assets/img/apple-touch-icon.png">
+		<link rel="apple-touch-icon" sizes="72x72" href="/Grapevine/assets/img/apple-touch-icon-72x72.png">
+		<link rel="apple-touch-icon" sizes="114x114" href="/Grapevine/assets/img/apple-touch-icon-114x114.png">
+		-->
 
 		<!--[if lt IE 9]>
 			<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
@@ -78,25 +81,49 @@
 			</div>
 		</div>
 
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-		<script type='text/javascript' src="http://netdna.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+		<!--[if lt IE 9]>
+		<script src="/Grapevine/assets/js/jquery-1.12.4.min.js"></script>
+		<![endif]-->
+		<!--[if gte IE 9]><!-->
+		<script src="/Grapevine/assets/js/jquery-3.0.0.min.js"></script>
+		<!--<![endif]-->
 
+		<script src="/Grapevine/assets/js/bootstrap.min.js"></script>
 		<script src="/Grapevine/assets/js/prism.min.js"></script>
 
-		<script>
-		$('#search').keyup(function(e)
-		{
-			if(e.keyCode == 13)
-			{
-				var search = $('#search').val();
-				var url = 'https://www.google.com/#q=site:sukona.github.io ' + search;
-				window.location.href = encodeURI(url);
+		<!-- [if IE 10]>
+		<script src="/Grapevine/assets/js/ie10-viewport-bug-workaround.js"></script>
+		<![endif]-->
 
-				e.stopPropagation();
-				if (e.cancelBubble!=null) e.cancelBubble = true;
-				return false;
-			}
-		});
+		<!-- [if IE]>
+		<script src="/Grapevine/assets/js/console.js"></script>
+		<![endif]-->
+
+		<script>
+			$('#search').keyup(function(e)
+			{
+				if(e.keyCode == 13)
+				{
+					var search = $('#search').val();
+					var url = 'https://www.google.com/#q=site:sukona.github.io ' + search;
+					window.location.href = encodeURI(url);
+
+					e.stopPropagation();
+					if (e.cancelBubble!=null) e.cancelBubble = true;
+					return false;
+				}
+			});
 		</script>
+
+		<!-- Google Analytics: change UA-XXXXX-X to be your site's ID.
+		<script>
+			(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+			function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+			e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+			e.src='https://www.google-analytics.com/analytics.js';
+			r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+			ga('create','UA-XXXXX-X','auto');ga('send','pageview');
+		</script>
+		-->
 	</body>
 </html>

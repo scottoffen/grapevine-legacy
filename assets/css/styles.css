@@ -7,3 +7,31 @@ body
 {
 	margin-bottom: 19px;
 }
+
+/***********************************************************************************
+* Opinionated Defaults                                                             *
+***********************************************************************************/
+
+/* A better looking default horizontal rule */
+hr
+{
+	display: block;
+	height: 1px;
+	border: 0;
+	border-top: 1px solid #ccc;
+	margin: 1em 0;
+	padding: 0;
+}
+
+/* Remove the gap between these elements and the bottom of their containers */
+audio, canvas, iframe, img, svg, video
+{
+	vertical-align: middle;
+}
+
+
+/* Allow only vertical resizing of textareas */
+textarea
+{
+	resize: vertical;
+}
