@@ -97,16 +97,33 @@
 		-->
 
 		<div class="container">
-			<pre>
-				<code class="language-csharp">
-				server.Router.Register(Route.For(HttpMethod.GET).To("/special/api").Use(context =>
-				{
-				    context.Response.ContentType = ContentType.TEXT.ToValue();
-				    context.Response.SendResponse(context.Dynamic.UserName);
-				    return context;
-				}));
-				</code>
-			</pre>
+			<div class="row">
+				<div class="col-md-3" id="left-side">
+					<h4>Rest Server</h4>
+			      	<br>
+					<ul class="nav nav-stacked affix" id="sidebar"></ul>
+				</div>
+				<div class="col-md-9" id="right-side">
+					<h1>Getting Started</h1>
+					<hr>
+					<div id="main-section">
+
+						<h2>Code Samples</h2>
+						<pre>
+							<code class="language-csharp">
+							server.Router.Register(Route.For(HttpMethod.GET).To("/special/api").Use(context =>
+							{
+							    context.Response.ContentType = ContentType.TEXT.ToValue();
+							    context.Response.SendResponse(context.Dynamic.UserName);
+							    return context;
+							}));
+							</code>
+						</pre>
+
+						<h2>Explainations</h2>
+					</div>
+				</div>
+			</div>
 		</div>
 
 		<!--[if lt IE 9]>
@@ -128,18 +145,53 @@
 		<![endif]-->
 
 		<script>
-			$('#search').keyup(function(e)
+			$(document).ready(function()
 			{
-				if(e.keyCode == 13)
-				{
-					var search = $('#search').val();
-					var url = 'https://www.google.com/#q=site:sukona.github.io ' + search;
-					window.location.href = encodeURI(url);
+				var sidebar = $('#sidebar');
 
-					e.stopPropagation();
-					if (e.cancelBubble!=null) e.cancelBubble = true;
-					return false;
-				}
+				$('#main-section h2').each(function(i, h2)
+				{
+					var id = 'sec' + i.toString();
+					$(h2).attr('id', id);
+
+					$('<li class=""><a href="#' + id + '">' + $(h2).html() + '</a></li>').appendTo(sidebar);
+				});
+
+				$('#sidebar').affix({ offset: { top: 235 } });
+
+				var $body   = $(document.body);
+				var navHeight = $('.navbar').outerHeight(true) + 10;
+
+				$body.scrollspy({ target: '#left-side', offset: navHeight });
+
+
+				$('a[href*=#]:not([href=#])').click(function()
+				{
+					if (location.pathname.replace(/^\//,'') == this.pathname.replace(/^\//,'') && location.hostname == this.hostname)
+					{
+						var target = $(this.hash);
+						target = target.length ? target : $('[name=' + this.hash.slice(1) +']');
+						if (target.length)
+						{
+							$('html,body').animate({ scrollTop: target.offset().top - 50 }, 1000);
+							return false;
+						}
+					}
+				});
+
+				$('#search').keyup(function(e)
+				{
+					if(e.keyCode == 13)
+					{
+						var search = $('#search').val();
+						var url = 'https://www.google.com/#q=site:sukona.github.io ' + search;
+						window.location.href = encodeURI(url);
+
+						e.stopPropagation();
+						if (e.cancelBubble!=null) e.cancelBubble = true;
+						return false;
+					}
+				});
 			});
 		</script>
 
