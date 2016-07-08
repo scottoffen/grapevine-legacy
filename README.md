@@ -40,7 +40,7 @@ The focus is on simplicity, and Grapevine is intended for use in applications fo
 
 - Grapevine does not do any script parsing (**PHP**, **Perl**, **Python**, **Ruby**, etc.) by default - but feel free to fork this project and hack away! I'm pretty sure it could be done, I just haven't encountered a need for it (yet).
 
-- You will likely be required to [open a port in your firewall](http://www.lmgtfy.com/?q=how+to+open+a+port+on+windows) for remote computers to be able to send requests to your application. Grapevine will not [automatically](http://msdn.microsoft.com/en-us/library/aa366418%28VS.85%29.aspx) do that for you.  You might want to do that during the [installation of your application](http://www.codeproject.com/Articles/14906/Open-Windows-Firewall-During-Installation).
+- You will likely be required to [open a port in your firewall](http://www.dummies.com/how-to/content/how-to-open-a-port-in-the-windows-7-firewall.html) for remote computers to be able to send requests to your application. Grapevine will not (yet) automatically do that for you, but it's on our roadmap.
 
 ### Support ###
 
