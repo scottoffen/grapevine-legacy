@@ -1,12 +1,42 @@
 body
 {
 	position: relative;
+	padding-top: 70px;
 }
 
-/*.navbar-static-top
+.navbar-bright
 {
-	margin-bottom: 19px;
-}*/
+	background-color:#111155;
+	color:#fff;
+}
+
+.affix-top,.affix
+{
+	position: static;
+}
+
+@media (min-width: 979px)
+{
+	#sidebar.affix-top
+	{
+		position: static;
+		margin-top:30px;
+		width:228px;
+	}
+
+	#sidebar.affix
+	{
+		position: fixed;
+		top:70px;
+		width:228px;
+	}
+}
+
+#sidebar li.active
+{
+	border:0 #eee solid;
+	border-right-width:5px;
+}
 
 /***********************************************************************************
 * Opinionated Defaults                                                             *
@@ -28,7 +58,6 @@ audio, canvas, iframe, img, svg, video
 {
 	vertical-align: middle;
 }
-
 
 /* Allow only vertical resizing of textareas */
 textarea
