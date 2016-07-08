@@ -1,13 +1,12 @@
 body
 {
-	min-height: 2000px;
 	position: relative;
 }
 
-.navbar-static-top
+/*.navbar-static-top
 {
 	margin-bottom: 19px;
-}
+}*/
 
 /***********************************************************************************
 * Opinionated Defaults                                                             *
