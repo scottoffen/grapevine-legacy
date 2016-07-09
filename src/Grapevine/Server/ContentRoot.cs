@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.Dynamic;
+using System.IO;
 using System.Reflection;
 using Grapevine.Util;
 
@@ -9,6 +11,7 @@ namespace Grapevine.Server
     /// </summary>
     public class ContentRoot
     {
+        private const bool IsFilePath = true;
         private string _folder;
 
         public ContentRoot()
@@ -34,8 +37,14 @@ namespace Grapevine.Server
         {
             if (context.Request.HttpMethod != HttpMethod.GET || string.IsNullOrWhiteSpace(_folder)) return context;
 
-            var filepath = GetFilePath(context.Request.PathInfo);
-            if (filepath != null) context.Response.SendResponse(filepath, true);
+            var prefix = ((ExpandoObject) context.Request.Dynamic).HasKey("WebRootPrefix")
+                ? ((ExpandoObject) context.Request.Dynamic).GetValueAs<string>("WebRootPrefix")
+                : null;
+            var path = string.IsNullOrWhiteSpace(prefix) ? context.Request.PathInfo : context.Request.PathInfo.Replace(prefix, "");
+            path = path.TrimStart('/', '\\');
+
+            var filepath = GetFilePath(path);
+            if (filepath != null) context.Response.SendResponse(filepath, IsFilePath);
 
             return context;
         }
@@ -69,7 +78,8 @@ namespace Grapevine.Server
         private string GetFilePath(string pathinfo)
         {
             if (string.IsNullOrWhiteSpace(_folder)) return null;
-            var path = Path.Combine(_folder, pathinfo);
+            var path = pathinfo.Replace("/", Path.DirectorySeparatorChar.ToString());
+            path = Path.Combine(_folder, path);
 
             if (File.Exists(path)) return path;
             if (!Directory.Exists(path)) return null;

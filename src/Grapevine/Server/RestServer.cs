@@ -15,12 +15,14 @@ namespace Grapevine.Server
     public interface IRestServer
     {
         /// <summary>
-        /// Gets or sets the case insensative URI scheme (protocol) to be used when creating the HttpListener prefix; e.g. "http" or "https"
-        /// <para>&#160;</para>
-        /// Note that if you create an HttpListener using https, you must select a Server Certificate for the listener. See the MSDN documentation on the HttpListener class for more information.<br />
-        /// https://msdn.microsoft.com/en-us/library/system.net.httplistener(v=vs.110).aspx
+        /// Gets or sets the number of HTTP connection threads maintained per processor; defaults to 50
         /// </summary>
-        string Protocol { get; set; }
+        int Connections { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the default file to return when a directory is requested without a file name; defaults to index.html
+        /// </summary>
+        string DirIndex { get; set; }
 
         /// <summary>
         /// Gets or sets the host name used to create the HttpListener prefix, defaults to localhost
@@ -30,41 +32,11 @@ namespace Grapevine.Server
         string Host { get; set; }
 
         /// <summary>
-        /// Gets or sets the port number (as a string) used to create the prefix used by the HttpListener for incoming traffic
-        /// </summary>
-        string Port { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the default file to return when a directory is requested without a file name; defaults to index.html
-        /// </summary>
-        string DirIndex { get; set; }
-
-        /// <summary>
-        /// Gets or sets the path to the top-level directory containing static files
-        /// </summary>
-        string WebRoot { get; set; }
-
-        /// <summary>
-        /// Gets or sets the number of HTTP connection threads maintained per processor; defaults to 50
-        /// </summary>
-        int Connections { get; set; }
-
-        IGrapevineLogger Logger { get; }
-
-        /// <summary>
-        /// Gets the prefix created by combining the Protocol, Host and Port properties into a scheme and authority
-        /// </summary>
-        string Origin { get; }
-
-        /// <summary>
         /// Gets a value that indicates whether HttpListener has been started
         /// </summary>
         bool IsListening { get; }
 
-        /// <summary>
-        /// Gets or sets the instance of IRouter to be used by this server to route incoming HTTP requests
-        /// </summary>
-        IRouter Router { get; set; }
+        IGrapevineLogger Logger { get; }
 
         /// <summary>
         /// Gets or sets the Action that will be executed immediately following server start; synonym for OnAfterStart
@@ -97,6 +69,39 @@ namespace Grapevine.Server
         Action OnAfterStop { get; set; }
 
         /// <summary>
+        /// Gets the prefix created by combining the Protocol, Host and Port properties into a scheme and authority
+        /// </summary>
+        string Origin { get; }
+
+        /// <summary>
+        /// Gets or sets the port number (as a string) used to create the prefix used by the HttpListener for incoming traffic
+        /// </summary>
+        string Port { get; set; }
+
+        /// <summary>
+        /// Gets or sets the case insensative URI scheme (protocol) to be used when creating the HttpListener prefix; e.g. "http" or "https"
+        /// <para>&#160;</para>
+        /// Note that if you create an HttpListener using https, you must select a Server Certificate for the listener. See the MSDN documentation on the HttpListener class for more information.<br />
+        /// https://msdn.microsoft.com/en-us/library/system.net.httplistener(v=vs.110).aspx
+        /// </summary>
+        string Protocol { get; set; }
+
+        /// <summary>
+        /// Gets or sets the instance of IRouter to be used by this server to route incoming HTTP requests
+        /// </summary>
+        IRouter Router { get; set; }
+
+        /// <summary>
+        /// Gets or sets the path to the top-level directory containing static files
+        /// </summary>
+        string WebRoot { get; set; }
+
+        /// <summary>
+        /// Gets or sets the optional prefix for specifying static content should be returned
+        /// </summary>
+        string WebRootPrefix { get; set; }
+
+        /// <summary>
         /// Starts the server: executes OnBeforeStart, starts the HttpListener, then executes OnAfterStart if the HttpListener is listening
         /// </summary>
         void Start();
@@ -109,12 +114,13 @@ namespace Grapevine.Server
 
     public class RestServer : DynamicAspect, IRestServer, IDisposable
     {
+        public bool IsListening => _listener?.IsListening ?? false;
         public Action OnBeforeStart { get; set; }
         public Action OnAfterStart { get; set; }
         public Action OnBeforeStop { get; set; }
         public Action OnAfterStop { get; set; }
         public IRouter Router { get; set; }
-        public bool IsListening => _listener?.IsListening ?? false;
+        public string WebRootPrefix { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating that route exceptions should be rethrown instead of logged
@@ -353,6 +359,14 @@ namespace Grapevine.Server
 
                 try
                 {
+                    if (!string.IsNullOrWhiteSpace(WebRootPrefix) && context.Request.PathInfo.StartsWith(WebRootPrefix))
+                    {
+                        context.Request.Dynamic.WebRootPrefix = WebRootPrefix;
+                        _contentRoot.ReturnFile(context);
+                        if (!context.WasRespondedTo()) context.Response.SendResponse(HttpStatusCode.NotFound);
+                        return;
+                    }
+
                     if (!Router.Route(_contentRoot.ReturnFile(context))) throw new RouteNotFound(context);
                 }
                 catch (RouteNotFound)

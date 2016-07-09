@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Grapevine.Console")]
+[assembly: AssemblyTitle("Grapevine.Local")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Grapevine.Console")]
+[assembly: AssemblyProduct("Grapevine.Local")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("6c505735-10d7-41d9-822e-081da9451729")]
+[assembly: Guid("4cd3fe83-50da-4e06-9038-438c8101aa7e")]
 
 // Version information for an assembly consists of the following four values:
 //

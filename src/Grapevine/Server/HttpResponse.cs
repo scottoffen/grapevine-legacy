@@ -132,13 +132,6 @@ namespace Grapevine.Server
         void SendResponse(string response, Encoding encoding);
 
         /// <summary>
-        /// Sends the specified binary response to the client and closes the response
-        /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="filepath"></param>
-        void SendResponse(FileStream stream, string filepath);
-
-        /// <summary>
         /// Sends the specified binary response with the specifed content type to the client and closes the response; sets the attachment header on the response with the provided filename if asAttachment is true
         /// </summary>
         /// <param name="stream"></param>
@@ -300,7 +293,9 @@ namespace Grapevine.Server
         {
             if (isFilePath)
             {
-                SendResponse(new FileStream(response, FileMode.Open, FileAccess.Read), response);
+                if (NotModified(response)) return;
+                var type = GetFileType(response);
+                SendResponse(new FileStream(response, FileMode.Open, FileAccess.Read), type, response);
             }
             else
             {
@@ -313,28 +308,6 @@ namespace Grapevine.Server
             Response.ContentEncoding = encoding;
             if (string.IsNullOrWhiteSpace(ContentType)) Response.ContentType = Util.ContentType.TEXT.ToValue();
             FlushResponse(encoding.GetBytes(response));
-        }
-
-        public void SendResponse(FileStream stream, string filepath)
-        {
-            var lastModified = File.GetLastWriteTimeUtc(filepath).ToString("R");
-            Response.AddHeader("Last-Modified", lastModified);
-
-            if (RequestHeaders.AllKeys.Contains("If-Modified-Since"))
-            {
-                if (RequestHeaders["If-Modified-Since"].Equals(lastModified))
-                {
-                    Response.StatusCode = (int)HttpStatusCode.NotModified;
-                    Advanced.Close();
-                }
-            }
-
-            var ext = Path.GetExtension(filepath)?.ToUpper().TrimStart('.');
-            var type = ext != null && Enum.IsDefined(typeof(ContentType), ext)
-                ? (ContentType)Enum.Parse(typeof(ContentType), ext)
-                : Util.ContentType.DEFAULT;
-
-            SendResponse(stream, type, Path.GetFileName(filepath));
         }
 
         public void SendResponse(FileStream stream, ContentType type, string filename, bool asAttachment = false)
@@ -368,6 +341,26 @@ namespace Grapevine.Server
         public void SetCookie(Cookie cookie)
         {
             Response.SetCookie(cookie);
+        }
+
+        protected bool NotModified(string filepath)
+        {
+            var lastModified = File.GetLastWriteTimeUtc(filepath).ToString("R");
+            Response.AddHeader("Last-Modified", lastModified);
+
+            if (!RequestHeaders.AllKeys.Contains("If-Modified-Since")) return false;
+            if (!RequestHeaders["If-Modified-Since"].Equals(lastModified)) return false;
+
+            SendResponse(HttpStatusCode.NotModified);
+            return true;
+        }
+
+        protected ContentType GetFileType(string filepath)
+        {
+            var ext = Path.GetExtension(filepath)?.ToUpper().TrimStart('.');
+            return !string.IsNullOrWhiteSpace(ext) && Enum.IsDefined(typeof(ContentType), ext)
+                ? (ContentType)Enum.Parse(typeof(ContentType), ext)
+                : Util.ContentType.DEFAULT;
         }
 
         /// <summary>

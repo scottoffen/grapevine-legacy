@@ -4,17 +4,29 @@ using System.Net;
 using System.Text;
 using Grapevine.Server;
 using Grapevine.Util;
-using HttpStatusCode = Grapevine.Util.HttpStatusCode;
 
-namespace Grapevine.Console
+namespace Grapevine.Local
 {
     public class Program
     {
         public static void Main(string[] args)
         {
-            UnitOfWork();
-            //NestedClosures();
-            //RunRestCluster();
+            using (var server = new RestServer())
+            {
+                server.WebRoot = @"C:\source\gv-gh-pages";
+                server.WebRootPrefix = "/Grapevine";
+
+                server.Router.Register(context =>
+                {
+                    context.Response.SendResponse($"Requested: {context.Request.PathInfo}", Encoding.ASCII);
+                    return context;
+                });
+
+                server.Start();
+                Console.WriteLine($"Server is running on port {server.Port}");
+                Console.ReadLine();
+                server.Stop();
+            }
         }
 
         public static void UnitOfWork()
@@ -50,9 +62,9 @@ namespace Grapevine.Console
 
                 server.Start();
 
-                System.Console.Write("Running Unit of Work Instance...");
-                System.Console.ReadLine();
-                System.Console.WriteLine("done");
+                Console.Write("Running Unit of Work Instance...");
+                Console.ReadLine();
+                Console.WriteLine("done");
             }
         }
 
@@ -80,11 +92,11 @@ namespace Grapevine.Console
 
             server.Start();
 
-            System.Console.Write("Running Nested Closures Instance...");
-            System.Console.ReadLine();
+            Console.Write("Running Nested Closures Instance...");
+            Console.ReadLine();
 
             server.Stop();
-            System.Console.WriteLine("done");
+            Console.WriteLine("done");
         }
 
         public static void RunRestCluster()
@@ -94,70 +106,70 @@ namespace Grapevine.Console
             var cluster = new RestCluster();
 
             var serverone = RestServer.For(_ =>
-           {
-               var sname = "Server1";
+            {
+                var sname = "Server1";
 
-               _.Port = PortFinder.FindNextLocalOpenPort(5000);
-               _.Logger = new ConsoleLogger();
-               _.Router = Router.For(r =>
-               {
-                   r.Register(Route.For(HttpMethod.ALL).Use(context =>
-                   {
-                       context.Request.Dynamic.UserName = Guid.NewGuid().ToString();
-                       return context;
-                   }));
+                _.Port = PortFinder.FindNextLocalOpenPort(5000);
+                _.Logger = new ConsoleLogger();
+                _.Router = Router.For(r =>
+                {
+                    r.Register(Route.For(HttpMethod.ALL).Use(context =>
+                    {
+                        context.Request.Dynamic.UserName = Guid.NewGuid().ToString();
+                        return context;
+                    }));
 
-                   r.Register(Route.For(HttpMethod.GET).Use(context =>
-                   {
-                       context.Response.StatusCode = (int)HttpStatusCode.ImATeapot;
-                       return context;
-                   }));
+                    r.Register(Route.For(HttpMethod.GET).Use(context =>
+                    {
+                        context.Response.StatusCode = (int)Util.HttpStatusCode.ImATeapot;
+                        return context;
+                    }));
 
-                   r.Register(Route.For(HttpMethod.POST).Use(context =>
-                   {
-                       context.Response.StatusCode = (int)HttpStatusCode.EnhanceYourCalm;
-                       return context;
-                   }));
+                    r.Register(Route.For(HttpMethod.POST).Use(context =>
+                    {
+                        context.Response.StatusCode = (int)Util.HttpStatusCode.EnhanceYourCalm;
+                        return context;
+                    }));
 
-                   r.Register(Route.For(HttpMethod.POST).Use(context =>
-                   {
-                       context.Response.SendResponse($"{context.Request.Dynamic.UserName}: I'm a post and I'm okay...");
-                       return context;
-                   }));
+                    r.Register(Route.For(HttpMethod.POST).Use(context =>
+                    {
+                        context.Response.SendResponse($"{context.Request.Dynamic.UserName}: I'm a post and I'm okay...");
+                        return context;
+                    }));
 
-                   r.Register(Route.For(HttpMethod.GET).Use(context =>
-                   {
-                       context.Response.SendResponse($"{context.Request.Dynamic.UserName} : Nobody gets me :(");
-                       return context;
-                   }));
-               });
+                    r.Register(Route.For(HttpMethod.GET).Use(context =>
+                    {
+                        context.Response.SendResponse($"{context.Request.Dynamic.UserName} : Nobody gets me :(");
+                        return context;
+                    }));
+                });
 
-               _.OnBeforeStart = () =>
-               {
-                   ThreadCount("BeforeStart");
-                   System.Console.Write($"Starting {sname}...");
-               };
+                _.OnBeforeStart = () =>
+                {
+                    ThreadCount("BeforeStart");
+                    Console.Write($"Starting {sname}...");
+                };
 
-               _.OnAfterStart = () =>
-               {
-                   ThreadCount("AfterStart");
-                   System.Console.WriteLine("done!");
-                   System.Console.WriteLine($"{sname} is listening on port {_.Port}");
-               };
+                _.OnAfterStart = () =>
+                {
+                    ThreadCount("AfterStart");
+                    Console.WriteLine("done!");
+                    Console.WriteLine($"{sname} is listening on port {_.Port}");
+                };
 
-               _.OnBeforeStop = () =>
-               {
-                   ThreadCount("BeforeStop");
-                   System.Console.Write($"Stopping {sname}...");
-               };
+                _.OnBeforeStop = () =>
+                {
+                    ThreadCount("BeforeStop");
+                    Console.Write($"Stopping {sname}...");
+                };
 
-               _.OnAfterStop = () =>
-               {
-                   ThreadCount("AfterStop");
-                   System.Console.WriteLine("done!");
-                   System.Console.WriteLine($"{sname} is stopped");
-               };
-           });
+                _.OnAfterStop = () =>
+                {
+                    ThreadCount("AfterStop");
+                    Console.WriteLine("done!");
+                    Console.WriteLine($"{sname} is stopped");
+                };
+            });
 
             var servertwo = RestServer.For(_ =>
             {
@@ -175,13 +187,13 @@ namespace Grapevine.Console
 
                     r.Register(Route.For(HttpMethod.GET).Use(context =>
                     {
-                        context.Response.StatusCode = (int)HttpStatusCode.ImATeapot;
+                        context.Response.StatusCode = (int)Util.HttpStatusCode.ImATeapot;
                         return context;
                     }));
 
                     r.Register(Route.For(HttpMethod.POST).Use(context =>
                     {
-                        context.Response.StatusCode = (int)HttpStatusCode.EnhanceYourCalm;
+                        context.Response.StatusCode = (int)Util.HttpStatusCode.EnhanceYourCalm;
                         return context;
                     }));
 
@@ -249,7 +261,7 @@ namespace Grapevine.Console
         public static void ThreadCount(string label = "Current Threads")
         {
             var threads = Process.GetCurrentProcess().Threads.Count;
-            System.Console.WriteLine($"{label} : {threads}");
+            Console.WriteLine($"{label} : {threads}");
         }
     }
 }
