@@ -214,23 +214,22 @@
 		<script>
 			$(document).ready(function()
 			{
-				var sidebar = $('#sidebar');
+				var $sidebar = $('#sidebar');
 
 				$('#main-section h2').each(function(i, h2)
 				{
 					var id = 'sec' + i.toString();
 					$(h2).attr('id', id);
 
-					$('<li class=""><a href="#' + id + '">' + $(h2).html() + '</a></li>').appendTo(sidebar);
+					$('<li class=""><a href="#' + id + '">' + $(h2).html() + '</a></li>').appendTo($sidebar);
 				});
 
-				$('#sidebar').affix({ offset: { top: 235 } });
+				$sidebar.affix({ offset: { top: 235 } });
 
 				var $body   = $(document.body);
 				var navHeight = $('.navbar').outerHeight(true) + 10;
 
 				$body.scrollspy({ target: '#left-side', offset: navHeight });
-
 
 				$('a[href*=#]:not([href=#])').click(function()
 				{
