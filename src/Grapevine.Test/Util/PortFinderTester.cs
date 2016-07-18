@@ -1,5 +1,4 @@
-﻿using System.Security.Policy;
-using System.Threading;
+﻿using System.Threading;
 using Grapevine.Util;
 using Shouldly;
 using Xunit;

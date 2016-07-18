@@ -8,7 +8,7 @@ namespace Grapevine.Util
     public class ReadOnlyDictionary<TKey, TValue> : IDictionary<TKey, TValue>, ICollection
     {
         private readonly IDictionary<TKey, TValue> _dictionary;
-        private object syncRoot;
+        private object _syncRoot;
 
         public ReadOnlyDictionary(IDictionary<TKey, TValue> dictionaryToWrap)
         {
@@ -74,20 +74,20 @@ namespace Grapevine.Util
         {
             get
             {
-                if (syncRoot != null) return syncRoot;
+                if (_syncRoot != null) return _syncRoot;
 
                 var collection = _dictionary as ICollection;
 
                 if (collection != null)
                 {
-                    syncRoot = collection.SyncRoot;
+                    _syncRoot = collection.SyncRoot;
                 }
                 else
                 {
-                    Interlocked.CompareExchange(ref syncRoot, new object(), null);
+                    Interlocked.CompareExchange(ref _syncRoot, new object(), null);
                 }
 
-                return syncRoot;
+                return _syncRoot;
             }
         }
 

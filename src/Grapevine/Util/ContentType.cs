@@ -2980,7 +2980,7 @@ namespace Grapevine.Util
     /// <para>Targets: Field</para>
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    class ContentTypeMetadata : Attribute
+    internal class ContentTypeMetadata : Attribute
     {
         /// <summary>
         /// String representation of the MIME type and subtype

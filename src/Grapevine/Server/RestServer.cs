@@ -361,7 +361,7 @@ namespace Grapevine.Server
                 {
                     if (!string.IsNullOrWhiteSpace(WebRootPrefix) && context.Request.PathInfo.StartsWith(WebRootPrefix))
                     {
-                        context.Request.Dynamic.WebRootPrefix = WebRootPrefix;
+                        ((dynamic)context.Request.Dynamic).WebRootPrefix = WebRootPrefix;
                         _contentRoot.ReturnFile(context);
                         if (!context.WasRespondedTo()) context.Response.SendResponse(HttpStatusCode.NotFound);
                         return;

@@ -8,16 +8,11 @@ namespace Grapevine.Server
     /// <summary>
     /// Adds an ExpandoObject called Dynamic to a class
     /// </summary>
-    public interface IDynamicAspect
+    public abstract class DynamicAspect
     {
         /// <summary>
         /// Dynamic object for run-time extension
         /// </summary>
-        dynamic Dynamic { get; }
-    }
-
-    public abstract class DynamicAspect : IDynamicAspect
-    {
         public dynamic Dynamic { get; } = new ExpandoObject();
     }
 

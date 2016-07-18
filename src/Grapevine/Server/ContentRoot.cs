@@ -37,8 +37,8 @@ namespace Grapevine.Server
         {
             if (context.Request.HttpMethod != HttpMethod.GET || string.IsNullOrWhiteSpace(_folder)) return context;
 
-            var prefix = ((ExpandoObject) context.Request.Dynamic).HasKey("WebRootPrefix")
-                ? ((ExpandoObject) context.Request.Dynamic).GetValueAs<string>("WebRootPrefix")
+            var prefix = context.Request.Dynamic.HasKey("WebRootPrefix")
+                ? context.Request.Dynamic.GetValueAs<string>("WebRootPrefix")
                 : null;
             var path = string.IsNullOrWhiteSpace(prefix) ? context.Request.PathInfo : context.Request.PathInfo.Replace(prefix, "");
             path = path.TrimStart('/', '\\');

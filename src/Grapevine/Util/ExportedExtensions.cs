@@ -16,7 +16,8 @@ namespace Grapevine.Util
         public static T GetValue<T>(this NameValueCollection collection, string key)
         {
             if (collection == null) throw new ArgumentNullException(nameof(collection), "Missing collection");
-            if (collection[key] == null) throw new ArgumentOutOfRangeException(nameof(key), "Missing key");
+            if (key == null) throw new ArgumentNullException(nameof(key), "Missing key");
+            if (collection[key] == null) throw new ArgumentOutOfRangeException(nameof(key), $"Key {key} not found in collection");
 
             var value = collection[key];
             var converter = TypeDescriptor.GetConverter(typeof(T));
@@ -36,12 +37,13 @@ namespace Grapevine.Util
         public static T GetValue<T>(this NameValueCollection collection, string key, T defaultValue)
         {
             if (collection == null) throw new ArgumentNullException(nameof(collection), "Missing collection");
+            if (key == null) throw new ArgumentNullException(nameof(key), "Missing key");
             if (collection[key] == null) return defaultValue;
 
             var value = collection[key];
             var converter = TypeDescriptor.GetConverter(typeof(T));
 
-            if (!converter.CanConvertFrom(typeof(string))) throw new ArgumentException($"Cannot convert '{value}' to {typeof(T)}");
+            if (!converter.CanConvertFrom(typeof(string))) return defaultValue;
 
             return (T) converter.ConvertFrom(value);
         }

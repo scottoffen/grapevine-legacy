@@ -17,6 +17,11 @@ namespace Grapevine.Server
         string Scope { get; }
 
         /// <summary>
+        /// Gets or sets a value to indicate whether request routing should continue even after a response has been sent.
+        /// </summary>
+        bool ContinueRoutingAfterResponseSent { get; set; }
+
+        /// <summary>
         /// Adds the <c>Type</c> to the list of excluded types when scanning assemblies for routes
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -188,6 +193,7 @@ namespace Grapevine.Server
         private readonly IList<IRoute> _routingTable;
 
         public string Scope { get; protected set; }
+        public bool ContinueRoutingAfterResponseSent { get; set; }
 
         /// <summary>
         /// Returns a new Router object
@@ -359,6 +365,7 @@ namespace Grapevine.Server
                 routeContext = route.Invoke(routeContext);
 
                 LogRouteInvoked(context, route, routeCounter);
+                if (ContinueRoutingAfterResponseSent) continue;
                 if (routeContext.WasRespondedTo()) break;
             }
 
