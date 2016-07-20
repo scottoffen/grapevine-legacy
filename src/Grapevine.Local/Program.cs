@@ -107,7 +107,7 @@ namespace Grapevine.Local
 
             var serverone = RestServer.For(_ =>
             {
-                var sname = "Server1";
+                var serverName = "Server1";
 
                 _.Port = PortFinder.FindNextLocalOpenPort(5000);
                 _.Logger = new ConsoleLogger();
@@ -147,33 +147,33 @@ namespace Grapevine.Local
                 _.OnBeforeStart = () =>
                 {
                     ThreadCount("BeforeStart");
-                    Console.Write($"Starting {sname}...");
+                    Console.Write($"Starting {serverName}...");
                 };
 
                 _.OnAfterStart = () =>
                 {
                     ThreadCount("AfterStart");
                     Console.WriteLine("done!");
-                    Console.WriteLine($"{sname} is listening on port {_.Port}");
+                    Console.WriteLine($"{serverName} is listening on port {_.Port}");
                 };
 
                 _.OnBeforeStop = () =>
                 {
                     ThreadCount("BeforeStop");
-                    Console.Write($"Stopping {sname}...");
+                    Console.Write($"Stopping {serverName}...");
                 };
 
                 _.OnAfterStop = () =>
                 {
                     ThreadCount("AfterStop");
                     Console.WriteLine("done!");
-                    Console.WriteLine($"{sname} is stopped");
+                    Console.WriteLine($"{serverName} is stopped");
                 };
             });
 
             var servertwo = RestServer.For(_ =>
             {
-                var sname = "Server2";
+                var serverName = "Server2";
 
                 _.Port = PortFinder.FindNextLocalOpenPort(5500);
                 _.Logger = new ConsoleLogger();
@@ -181,7 +181,7 @@ namespace Grapevine.Local
                 {
                     r.Register(Route.For(HttpMethod.ALL).Use(context =>
                     {
-                        context.Properties.UserName = (context.Request.HttpMethod == HttpMethod.GET) ? "Bobby" : "Jimmy";
+                        context.Properties.UserName = context.Request.HttpMethod == HttpMethod.GET ? "Bobby" : "Jimmy";
                         return context;
                     }));
 
@@ -213,27 +213,27 @@ namespace Grapevine.Local
                 _.OnBeforeStart = () =>
                 {
                     ThreadCount("BeforeStart");
-                    Console.Write($"Starting {sname}...");
+                    Console.Write($"Starting {serverName}...");
                 };
 
                 _.OnAfterStart = () =>
                 {
                     ThreadCount("AfterStart");
                     Console.WriteLine("done!");
-                    Console.WriteLine($"{sname} is listening on port {_.Port}");
+                    Console.WriteLine($"{serverName} is listening on port {_.Port}");
                 };
 
                 _.OnBeforeStop = () =>
                 {
                     ThreadCount("BeforeStop");
-                    Console.Write($"Stopping {sname}...");
+                    Console.Write($"Stopping {serverName}...");
                 };
 
                 _.OnAfterStop = () =>
                 {
                     ThreadCount("AfterStop");
                     Console.WriteLine("done!");
-                    Console.WriteLine($"{sname} is stopped");
+                    Console.WriteLine($"{serverName} is stopped");
                 };
             });
 

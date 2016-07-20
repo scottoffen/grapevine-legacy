@@ -36,11 +36,11 @@ namespace Grapevine.Util
         /// Returns a Regex object that matches the specified PathInfo pattern
         /// </summary>
         /// <param name="pathinfo"></param>
-        /// <returns>Regexfs</returns>
+        /// <returns>RegExp</returns>
         public static Regex GenerateRegEx(string pathinfo)
         {
             if (string.IsNullOrEmpty(pathinfo)) return new Regex(@"^.*$");
-            if (pathinfo.StartsWith("^") && IsValidRegex(pathinfo)) return new Regex(pathinfo);
+            if (pathinfo.StartsWith("^")) return new Regex(pathinfo);
 
             var pattern = new StringBuilder();
             if (!pathinfo.StartsWith("^")) pattern.Append("^");
@@ -51,22 +51,7 @@ namespace Grapevine.Util
 
             if (!pathinfo.EndsWith("$")) pattern.Append("$");
 
-            var regex = pattern.ToString();
-            if (IsValidRegex(regex)) return new Regex(regex);
-
-            throw new PatternNotParseableToValidRegex($"\tPathInfo:{pathinfo}{Environment.NewLine}\tExpression:{regex}");
-        }
-
-        private static bool IsValidRegex(string pattern)
-        {
-            try
-            {
-                return (Regex.IsMatch("", pattern)) ? true : true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            return new Regex(pattern.ToString());
         }
     }
 }

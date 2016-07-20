@@ -43,7 +43,7 @@ namespace Grapevine.Server
         IRouter ExcludeNameSpace(string nameSpace);
 
         /// <summary>
-        /// Gets the Exclusions that represents the types and namespaces to be exluded when scanning assemblies for routes
+        /// Gets the Exclusions that represents the types and namespaces to be excluded when scanning assemblies for routes
         /// </summary>
         IExclusions Exclusions { get; }
 

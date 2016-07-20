@@ -155,8 +155,8 @@ namespace Grapevine.Util
             if (endIndex < FirstPort || endIndex > LastPort)
                 throw new ArgumentOutOfRangeException(nameof(endIndex), OutOfRangeMsg);
 
-            var min = (endIndex > startIndex) ? startIndex : endIndex;
-            var max = (endIndex > startIndex) ? endIndex : startIndex;
+            var min = endIndex > startIndex ? startIndex : endIndex;
+            var max = endIndex <= startIndex ? startIndex : endIndex;
 
             var inUse = IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners()
                 .Select(l => l.Port).ToList();

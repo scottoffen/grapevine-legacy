@@ -10,7 +10,7 @@ using ExtendedProtectionSelector = System.Net.HttpListener.ExtendedProtectionSel
 namespace Grapevine.Server
 {
     /// <summary>
-    /// Provides a programatically controlled REST implementation for a single Prefix using HttpListener
+    /// Provides a programmatically controlled REST implementation for a single Prefix using HttpListener
     /// </summary>
     public interface IRestServer : IDynamicProperties
     {
@@ -79,7 +79,7 @@ namespace Grapevine.Server
         string Port { get; set; }
 
         /// <summary>
-        /// Gets or sets the case insensative URI scheme (protocol) to be used when creating the HttpListener prefix; e.g. "http" or "https"
+        /// Gets or sets the case insensitive URI scheme (protocol) to be used when creating the HttpListener prefix; e.g. "http" or "https"
         /// <para>&#160;</para>
         /// Note that if you create an HttpListener using https, you must select a Server Certificate for the listener. See the MSDN documentation on the HttpListener class for more information.<br />
         /// https://msdn.microsoft.com/en-us/library/system.net.httplistener(v=vs.110).aspx
@@ -198,7 +198,7 @@ namespace Grapevine.Server
             set
             {
                 if (IsListening) throw new ServerStateException();
-                _host = (value == "0.0.0.0") ? "+" : value.ToLower();
+                _host = value == "0.0.0.0" ? "+" : value.ToLower();
             }
         }
 
@@ -332,7 +332,7 @@ namespace Grapevine.Server
             catch (ObjectDisposedException) { /* Intentionally not doing anything with this */ }
             catch (Exception e)
             {
-                /* Ignore exceptions thrown by incomplete asynch methods listening for incoming requests */
+                /* Ignore exceptions thrown by incomplete async methods listening for incoming requests */
                 if (_stopping && e is HttpListenerException && ((HttpListenerException)e).NativeErrorCode == 995) return;
                 Logger.Debug(e);
             }

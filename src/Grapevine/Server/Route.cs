@@ -225,7 +225,7 @@ namespace Grapevine.Server
             {
                 if (match.Success)
                 {
-                    var pname = (PatternKeys.Count > 0 && PatternKeys.Count > idx) ? PatternKeys[idx] : $"p{idx}";
+                    var pname = PatternKeys.Count > 0 && PatternKeys.Count > idx ? PatternKeys[idx] : $"p{idx}";
                     parsed.Add(pname, match.Groups[1].Value);
                 }
                 idx++;

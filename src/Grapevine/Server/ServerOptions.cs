@@ -63,7 +63,7 @@ namespace Grapevine.Server
         public string Port { get; set; }
 
         /// <summary>
-        /// Gets or sets the case insensative URI scheme (protocol) to be used when creating the HttpListener prefix; e.g. "http" or "https"
+        /// Gets or sets the case insensitive URI scheme (protocol) to be used when creating the HttpListener prefix; e.g. "http" or "https"
         /// <para>&#160;</para>
         /// Note that if you create an HttpListener using https, you must select a Server Certificate for the listener. See the MSDN documentation on the HttpListener class for more information.<br />
         /// https://msdn.microsoft.com/en-us/library/system.net.httplistener(v=vs.110).aspx

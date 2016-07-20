@@ -323,7 +323,7 @@ namespace Grapevine.Server
         public void SendResponse(HttpStatusCode statusCode, string response = null)
         {
             var description = statusCode.ToString().ConvertCamelCase();
-            var body = (!string.IsNullOrWhiteSpace(response)) ? response : $"<h1>{description}</h1>";
+            var body = !string.IsNullOrWhiteSpace(response) ? response : $"<h1>{description}</h1>";
             var buffer = Encoding.UTF8.GetBytes(body);
 
             StatusDescription = description;
