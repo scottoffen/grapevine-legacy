@@ -12,7 +12,7 @@ namespace Grapevine.Util
         /// <typeparam name="T"></typeparam>
         /// <param name="collection"></param>
         /// <param name="key"></param>
-        /// <returns>object of type &lt;T&gt;</T></returns>
+        /// <returns>object of type &lt;T&gt;</returns>
         public static T GetValue<T>(this NameValueCollection collection, string key)
         {
             if (collection == null) throw new ArgumentNullException(nameof(collection), "Missing collection");
@@ -33,7 +33,7 @@ namespace Grapevine.Util
         /// <param name="collection"></param>
         /// <param name="key"></param>
         /// <param name="defaultValue"></param>
-        /// <returns>object of type &lt;T&gt;</T></returns>
+        /// <returns>object of type &lt;T&gt;</returns>
         public static T GetValue<T>(this NameValueCollection collection, string key, T defaultValue)
         {
             if (collection == null) throw new ArgumentNullException(nameof(collection), "Missing collection");

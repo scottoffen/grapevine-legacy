@@ -1,5 +1,4 @@
-﻿using System;
-using Grapevine.Client;
+﻿using Grapevine.Client;
 using Grapevine.Util;
 using Shouldly;
 using Xunit;

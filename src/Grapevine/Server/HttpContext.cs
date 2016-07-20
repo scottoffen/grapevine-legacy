@@ -1,5 +1,4 @@
-﻿using System.Dynamic;
-using System.Security.Principal;
+﻿using System.Security.Principal;
 using System.Net;
 
 namespace Grapevine.Server

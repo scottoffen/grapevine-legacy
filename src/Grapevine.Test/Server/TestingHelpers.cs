@@ -141,7 +141,7 @@ namespace Grapevine.Test.Server
         }
     }
 
-    public class LoadedRouter : Router, IRouter
+    public class LoadedRouter : Router
     {
         public int PostHits { get; set; }
         public int GetHits { get; set; }

@@ -28,7 +28,7 @@ namespace Grapevine.Client
         /// <summary>
         /// Gets the value of the specified name from the collection
         /// </summary>
-        /// <param name="key"></param>
+        /// <param name="name"></param>
         /// <returns>string</returns>
         public string Get(string name)
         {

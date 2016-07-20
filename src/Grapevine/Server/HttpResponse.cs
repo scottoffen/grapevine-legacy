@@ -109,8 +109,8 @@ namespace Grapevine.Server
         /// <summary>
         /// Configures the response to redirect the client to the specified URL
         /// </summary>
-        /// <param name="Url"></param>
-        void Redirect(string Url);
+        /// <param name="url"></param>
+        void Redirect(string url);
 
         /// <summary>
         /// Sends the specified response to the client and closes the response

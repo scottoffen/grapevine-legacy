@@ -213,27 +213,27 @@ namespace Grapevine.Local
                 _.OnBeforeStart = () =>
                 {
                     ThreadCount("BeforeStart");
-                    System.Console.Write($"Starting {sname}...");
+                    Console.Write($"Starting {sname}...");
                 };
 
                 _.OnAfterStart = () =>
                 {
                     ThreadCount("AfterStart");
-                    System.Console.WriteLine("done!");
-                    System.Console.WriteLine($"{sname} is listening on port {_.Port}");
+                    Console.WriteLine("done!");
+                    Console.WriteLine($"{sname} is listening on port {_.Port}");
                 };
 
                 _.OnBeforeStop = () =>
                 {
                     ThreadCount("BeforeStop");
-                    System.Console.Write($"Stopping {sname}...");
+                    Console.Write($"Stopping {sname}...");
                 };
 
                 _.OnAfterStop = () =>
                 {
                     ThreadCount("AfterStop");
-                    System.Console.WriteLine("done!");
-                    System.Console.WriteLine($"{sname} is stopped");
+                    Console.WriteLine("done!");
+                    Console.WriteLine($"{sname} is stopped");
                 };
             });
 
@@ -245,17 +245,17 @@ namespace Grapevine.Local
 
             ThreadCount("AfterClusterStart");
 
-            System.Console.WriteLine("Servers Started");
-            System.Console.ReadLine();
+            Console.WriteLine("Servers Started");
+            Console.ReadLine();
 
             ThreadCount("BeforeClusterStop");
             cluster.StopAll();
             ThreadCount("AfterClusterStop");
 
-            System.Console.ReadLine();
+            Console.ReadLine();
             ThreadCount("AfterWait");
 
-            System.Console.ReadLine();
+            Console.ReadLine();
         }
 
         public static void ThreadCount(string label = "Current Threads")

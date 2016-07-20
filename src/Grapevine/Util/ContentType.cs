@@ -3043,7 +3043,7 @@ namespace Grapevine.Util
         public static bool IsText(this ContentType ct)
         {
             var metadata = GetMetadata(ct);
-            return metadata != null ? ((ContentTypeMetadata)metadata).IsText : true;
+            return metadata?.IsText ?? true;
         }
 
         /// <summary>
@@ -3054,7 +3054,7 @@ namespace Grapevine.Util
         public static bool IsBinary(this ContentType ct)
         {
             var metadata = GetMetadata(ct);
-            return metadata != null ? ((ContentTypeMetadata)metadata).IsBinary : false;
+            return metadata?.IsBinary ?? false;
         }
     }
 }

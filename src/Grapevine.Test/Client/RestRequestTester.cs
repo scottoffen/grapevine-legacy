@@ -51,41 +51,41 @@ namespace Grapevine.Test.Client
         [Fact]
         public void rest_request_default_can_convert_to_httpwebrequest()
         {
-            var rest_request = new RestRequest();
-            var http_request = rest_request.ToHttpWebRequest("http://localhost:1234");
+            var restRequest = new RestRequest();
+            var httpRequest = restRequest.ToHttpWebRequest("http://localhost:1234");
 
-            http_request.Accept.ShouldBeNull();
-            http_request.AllowAutoRedirect.ShouldBeTrue();
-            http_request.AllowWriteStreamBuffering.ShouldBeTrue();
-            http_request.AuthenticationLevel.ShouldBe(AuthenticationLevel.MutualAuthRequested);
-            http_request.AutomaticDecompression.ShouldBe(DecompressionMethods.None);
-            http_request.CachePolicy.Level.ShouldBe(RequestCacheLevel.BypassCache);
-            http_request.ClientCertificates.Count.ShouldBe(0);
-            http_request.Connection.ShouldBeNull();
-            http_request.ConnectionGroupName.ShouldBeNull();
-            http_request.ContentLength.ShouldBe(0);
-            http_request.ContentType.ShouldBe(ContentType.TXT.ToValue());
-            http_request.ContinueDelegate.ShouldBeNull();
-            http_request.Expect.ShouldBeNull();
-            http_request.Headers.Count.ShouldBe(3);
-            http_request.ImpersonationLevel.ShouldBe(TokenImpersonationLevel.Delegation);
-            http_request.KeepAlive.ShouldBeTrue();
-            http_request.MaximumAutomaticRedirections.ShouldBe(50);
-            http_request.MaximumResponseHeadersLength.ShouldBe(64);
-            http_request.MediaType.ShouldBeNull();
-            http_request.Method.ShouldBe(HttpMethod.GET.ToString());
-            http_request.Pipelined.ShouldBeTrue();
-            http_request.PreAuthenticate.ShouldBeFalse();
-            http_request.ProtocolVersion.Major.ShouldBe(1);
-            http_request.ProtocolVersion.Minor.ShouldBe(1);
-            http_request.ReadWriteTimeout.ShouldBe(300000);
-            http_request.Referer.ShouldBeNull();
-            http_request.SendChunked.ShouldBeFalse();
-            http_request.Timeout.ShouldBe(100000);
-            http_request.TransferEncoding.ShouldBeNull();
-            http_request.UnsafeAuthenticatedConnectionSharing.ShouldBeFalse();
-            http_request.UseDefaultCredentials.ShouldBeFalse();
-            http_request.UserAgent.ShouldBeNull();
+            httpRequest.Accept.ShouldBeNull();
+            httpRequest.AllowAutoRedirect.ShouldBeTrue();
+            httpRequest.AllowWriteStreamBuffering.ShouldBeTrue();
+            httpRequest.AuthenticationLevel.ShouldBe(AuthenticationLevel.MutualAuthRequested);
+            httpRequest.AutomaticDecompression.ShouldBe(DecompressionMethods.None);
+            httpRequest.CachePolicy.Level.ShouldBe(RequestCacheLevel.BypassCache);
+            httpRequest.ClientCertificates.Count.ShouldBe(0);
+            httpRequest.Connection.ShouldBeNull();
+            httpRequest.ConnectionGroupName.ShouldBeNull();
+            httpRequest.ContentLength.ShouldBe(0);
+            httpRequest.ContentType.ShouldBe(ContentType.TXT.ToValue());
+            httpRequest.ContinueDelegate.ShouldBeNull();
+            httpRequest.Expect.ShouldBeNull();
+            httpRequest.Headers.Count.ShouldBe(3);
+            httpRequest.ImpersonationLevel.ShouldBe(TokenImpersonationLevel.Delegation);
+            httpRequest.KeepAlive.ShouldBeTrue();
+            httpRequest.MaximumAutomaticRedirections.ShouldBe(50);
+            httpRequest.MaximumResponseHeadersLength.ShouldBe(64);
+            httpRequest.MediaType.ShouldBeNull();
+            httpRequest.Method.ShouldBe(HttpMethod.GET.ToString());
+            httpRequest.Pipelined.ShouldBeTrue();
+            httpRequest.PreAuthenticate.ShouldBeFalse();
+            httpRequest.ProtocolVersion.Major.ShouldBe(1);
+            httpRequest.ProtocolVersion.Minor.ShouldBe(1);
+            httpRequest.ReadWriteTimeout.ShouldBe(300000);
+            httpRequest.Referer.ShouldBeNull();
+            httpRequest.SendChunked.ShouldBeFalse();
+            httpRequest.Timeout.ShouldBe(100000);
+            httpRequest.TransferEncoding.ShouldBeNull();
+            httpRequest.UnsafeAuthenticatedConnectionSharing.ShouldBeFalse();
+            httpRequest.UseDefaultCredentials.ShouldBeFalse();
+            httpRequest.UserAgent.ShouldBeNull();
         }
     }
 }

@@ -74,7 +74,7 @@ namespace Grapevine.Test.Server
         [Fact]
         public void route_ctor_function_only_correctly_sets_properties()
         {
-            Func<IHttpContext, IHttpContext> function = context => { return context; };
+            Func<IHttpContext, IHttpContext> function = context => context;
             var route = new Route(function);
 
             route.HttpMethod.ShouldBe(HttpMethod.ALL);
@@ -85,7 +85,7 @@ namespace Grapevine.Test.Server
         [Fact]
         public void route_ctor_function_and_httpmethod_correctly_sets_properties()
         {
-            Func<IHttpContext, IHttpContext> function = context => { return context; };
+            Func<IHttpContext, IHttpContext> function = context => context;
             var route = new Route(function, HttpMethod.GET);
 
             route.HttpMethod.ShouldBe(HttpMethod.GET);
@@ -96,7 +96,7 @@ namespace Grapevine.Test.Server
         [Fact]
         public void route_ctor_function_and_pathinfo_correctly_sets_properties()
         {
-            Func<IHttpContext, IHttpContext> function = context => { return context; };
+            Func<IHttpContext, IHttpContext> function = context => context;
             var pathinfo = "/path/to/resource";
             var pattern = "^/path/to/resource$";
 
@@ -110,7 +110,7 @@ namespace Grapevine.Test.Server
         [Fact]
         public void route_ctor_function_http_method_and_pathinfo_correctly_sets_properties()
         {
-            Func<IHttpContext, IHttpContext> function = context => { return context; };
+            Func<IHttpContext, IHttpContext> function = context => context;
             var pathinfo = "/path/[param1]/[param2]";
             var pattern = "^/path/(.+)/(.+)$";
 
@@ -124,7 +124,7 @@ namespace Grapevine.Test.Server
         [Fact]
         public void route_ctor_function_and_pathinfo_with_params_correctly_sets_properties()
         {
-            Func<IHttpContext, IHttpContext> function = context => { return context; };
+            Func<IHttpContext, IHttpContext> function = context => context;
             var pathinfo = "/path/[param1]/[param2]";
             var pattern = "^/path/(.+)/(.+)$";
 
@@ -137,7 +137,7 @@ namespace Grapevine.Test.Server
         [Fact]
         public void route_static_ctor_using_for_to_use()
         {
-            Func<IHttpContext, IHttpContext> function = context => { return context; };
+            Func<IHttpContext, IHttpContext> function = context => context;
             var verb = HttpMethod.GET;
             var pathinfo = "/some/route";
 
@@ -151,7 +151,7 @@ namespace Grapevine.Test.Server
         [Fact]
         public void route_static_ctor_using_for_use()
         {
-            Func<IHttpContext, IHttpContext> function = context => { return context; };
+            Func<IHttpContext, IHttpContext> function = context => context;
             var verb = HttpMethod.GET;
 
             var route = Route.For(verb).Use(function);
@@ -205,7 +205,7 @@ namespace Grapevine.Test.Server
         public void route_equality_false_when_routes_created_using_different_underlying_function_and_method()
         {
             var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
-            Func<IHttpContext, IHttpContext> function = context => { return context; };
+            Func<IHttpContext, IHttpContext> function = context => context;
 
             var verb = HttpMethod.GET;
             var pathinfo = "/path/[param1]/[param2]";
@@ -219,8 +219,8 @@ namespace Grapevine.Test.Server
         [Fact]
         public void route_equality_false_when_routes_created_using_identical_but_different_underlying_functions()
         {
-            Func<IHttpContext, IHttpContext> function1 = context => { return context; };
-            Func<IHttpContext, IHttpContext> function2 = context => { return context; };
+            Func<IHttpContext, IHttpContext> function1 = context => context;
+            Func<IHttpContext, IHttpContext> function2 = context => context;
 
             var verb = HttpMethod.GET;
             var pathinfo = "/path/[param1]/[param2]";
@@ -263,7 +263,7 @@ namespace Grapevine.Test.Server
         [Fact]
         public void route_equality_true_when_routes_created_using_same_underlying_function()
         {
-            Func<IHttpContext, IHttpContext> function = context => { return context; };
+            Func<IHttpContext, IHttpContext> function = context => context;
 
             var verb = HttpMethod.GET;
             var pathinfo = "/path/[param1]/[param2]";
@@ -277,7 +277,7 @@ namespace Grapevine.Test.Server
         [Fact]
         public void route_equality_true_when_routes_created_using_equivalent_httpmethods()
         {
-            Func<IHttpContext, IHttpContext> function = context => { return context; };
+            Func<IHttpContext, IHttpContext> function = context => context;
             var pathinfo = "/path/[param1]/[param2]";
 
             var route1 = new Route(function, HttpMethod.ALL, pathinfo);
@@ -310,7 +310,7 @@ namespace Grapevine.Test.Server
         [Fact]
         public void route_tostring_overrides_with_function()
         {
-            Func<IHttpContext, IHttpContext> function = context => { return context; };
+            Func<IHttpContext, IHttpContext> function = context => context;
             var pathinfo = "/path/to/resource";
             var route = new Route(function, HttpMethod.ALL, pathinfo);
 
