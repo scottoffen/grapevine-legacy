@@ -35,14 +35,14 @@ namespace Grapevine.Local
             {
                 server.Router.Register(Route.For(HttpMethod.ALL).Use(context =>
                 {
-                    context.Dynamic.UserName = "Scotty";
+                    context.Properties.UserName = "Scotty";
                     return context;
                 }));
 
                 server.Router.Register(Route.For(HttpMethod.GET).To("/special/api").Use(context =>
                 {
                     context.Response.ContentType = ContentType.TEXT.ToValue();
-                    context.Response.SendResponse(context.Dynamic.UserName);
+                    context.Response.SendResponse(context.Properties.UserName);
                     return context;
                 }));
 
@@ -76,13 +76,13 @@ namespace Grapevine.Local
                 {
                     r.Register(Route.For(HttpMethod.GET).Use(ctx =>
                     {
-                        ctx.Dynamic.Token = "some_token";
+                        ctx.Properties.Token = "some_token";
                         return ctx;
                     }));
 
                     r.Register(Route.For(HttpMethod.GET).To("/api/.*").Use(ctx =>
                     {
-                        ctx.Response.AppendCookie(new Cookie { Name = "Token", Value = ctx.Dynamic.Token });
+                        ctx.Response.AppendCookie(new Cookie { Name = "Token", Value = ctx.Properties.Token });
                         var response = ctx.Request.Headers.Get("SomeKey");
                         ctx.Response.SendResponse(response);
                         return ctx;
@@ -115,7 +115,7 @@ namespace Grapevine.Local
                 {
                     r.Register(Route.For(HttpMethod.ALL).Use(context =>
                     {
-                        context.Request.Dynamic.UserName = Guid.NewGuid().ToString();
+                        context.Properties.UserName = Guid.NewGuid().ToString();
                         return context;
                     }));
 
@@ -133,13 +133,13 @@ namespace Grapevine.Local
 
                     r.Register(Route.For(HttpMethod.POST).Use(context =>
                     {
-                        context.Response.SendResponse($"{context.Request.Dynamic.UserName}: I'm a post and I'm okay...");
+                        context.Response.SendResponse($"{context.Properties.UserName}: I'm a post and I'm okay...");
                         return context;
                     }));
 
                     r.Register(Route.For(HttpMethod.GET).Use(context =>
                     {
-                        context.Response.SendResponse($"{context.Request.Dynamic.UserName} : Nobody gets me :(");
+                        context.Response.SendResponse($"{context.Properties.UserName} : Nobody gets me :(");
                         return context;
                     }));
                 });
@@ -181,7 +181,7 @@ namespace Grapevine.Local
                 {
                     r.Register(Route.For(HttpMethod.ALL).Use(context =>
                     {
-                        context.Request.Dynamic.UserName = (context.Request.HttpMethod == HttpMethod.GET) ? "Bobby" : "Jimmy";
+                        context.Properties.UserName = (context.Request.HttpMethod == HttpMethod.GET) ? "Bobby" : "Jimmy";
                         return context;
                     }));
 
@@ -199,13 +199,13 @@ namespace Grapevine.Local
 
                     r.Register(Route.For(HttpMethod.POST).Use(context =>
                     {
-                        context.Response.SendResponse($"{context.Request.Dynamic.UserName}: I'm a post and I'm okay...");
+                        context.Response.SendResponse($"{context.Properties.UserName}: I'm a post and I'm okay...");
                         return context;
                     }));
 
                     r.Register(Route.For(HttpMethod.GET).Use(context =>
                     {
-                        context.Response.SendResponse($"{context.Request.Dynamic.UserName} : Nobody gets me :(");
+                        context.Response.SendResponse($"{context.Properties.UserName} : Nobody gets me :(");
                         return context;
                     }));
                 });

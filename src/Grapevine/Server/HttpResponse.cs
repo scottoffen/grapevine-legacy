@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Specialized;
-using System.Dynamic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -35,11 +34,6 @@ namespace Grapevine.Server
         /// Gets or sets the collection of cookies returned with the response
         /// </summary>
         CookieCollection Cookies { get; set; }
-
-        /// <summary>
-        /// Gets the dynamic object available for run-time extension
-        /// </summary>
-        dynamic Dynamic { get; }
 
         /// <summary>
         /// Gets or sets the collection of header name/value pairs returned by the server
@@ -162,7 +156,7 @@ namespace Grapevine.Server
         void SetCookie(Cookie cookie);
     }
 
-    public class HttpResponse : DynamicAspect, IHttpResponse
+    public class HttpResponse : IHttpResponse
     {
         /// <summary>
         /// Used to set the umber of hours before sent content expires on the Expires response header

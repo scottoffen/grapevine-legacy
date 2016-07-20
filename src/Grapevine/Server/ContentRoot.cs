@@ -33,13 +33,10 @@ namespace Grapevine.Server
         /// <summary>
         /// If it exists, responds to the request with the requested file
         /// </summary>
-        public IHttpContext ReturnFile(IHttpContext context)
+        public IHttpContext ReturnFile(IHttpContext context, string prefix = null)
         {
             if (context.Request.HttpMethod != HttpMethod.GET || string.IsNullOrWhiteSpace(_folder)) return context;
 
-            var prefix = context.Request.Dynamic.HasKey("WebRootPrefix")
-                ? context.Request.Dynamic.GetValueAs<string>("WebRootPrefix")
-                : null;
             var path = string.IsNullOrWhiteSpace(prefix) ? context.Request.PathInfo : context.Request.PathInfo.Replace(prefix, "");
             path = path.TrimStart('/', '\\');
 

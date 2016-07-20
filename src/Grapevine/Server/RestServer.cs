@@ -12,7 +12,7 @@ namespace Grapevine.Server
     /// <summary>
     /// Provides a programatically controlled REST implementation for a single Prefix using HttpListener
     /// </summary>
-    public interface IRestServer
+    public interface IRestServer : IDynamicProperties
     {
         /// <summary>
         /// Gets or sets the number of HTTP connection threads maintained per processor; defaults to 50
@@ -112,7 +112,7 @@ namespace Grapevine.Server
         void Stop();
     }
 
-    public class RestServer : DynamicAspect, IRestServer, IDisposable
+    public class RestServer : DynamicProperties, IRestServer, IDisposable
     {
         public bool IsListening => _listener?.IsListening ?? false;
         public Action OnBeforeStart { get; set; }
@@ -361,8 +361,7 @@ namespace Grapevine.Server
                 {
                     if (!string.IsNullOrWhiteSpace(WebRootPrefix) && context.Request.PathInfo.StartsWith(WebRootPrefix))
                     {
-                        ((dynamic)context.Request.Dynamic).WebRootPrefix = WebRootPrefix;
-                        _contentRoot.ReturnFile(context);
+                        _contentRoot.ReturnFile(context, WebRootPrefix);
                         if (!context.WasRespondedTo()) context.Response.SendResponse(HttpStatusCode.NotFound);
                         return;
                     }

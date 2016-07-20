@@ -48,10 +48,10 @@
     <Compile Include="Client\RestClient.cs" />
     <Compile Include="Client\RestRequest.cs" />
     <Compile Include="Client\RestResponse.cs" />
-    <Compile Include="Server\DynamicAspect.cs" />
     <Compile Include="Server\HttpContext.cs" />
     <Compile Include="Server\HttpRequest.cs" />
     <Compile Include="Server\HttpResponse.cs" />
+    <Compile Include="Server\DynamicProperties.cs" />
     <Compile Include="Server\ServerOptions.cs" />
     <Compile Include="Server\ContentRoot.cs" />
     <Compile Include="Server\RestCluster.cs" />

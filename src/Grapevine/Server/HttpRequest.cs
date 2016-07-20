@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Specialized;
-using System.Dynamic;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -43,11 +42,6 @@ namespace Grapevine.Server
         /// Gets the cookies sent with the request
         /// </summary>
         CookieCollection Cookies { get; }
-
-        /// <summary>
-        /// Gets the dynamic object available for run-time extension
-        /// </summary>
-        dynamic Dynamic { get; }
 
         /// <summary>
         /// Gets a Boolean value that indicates whether the request has associated body data
@@ -201,7 +195,7 @@ namespace Grapevine.Server
         X509Certificate2 GetClientCertificate();
     }
 
-    public class HttpRequest : DynamicAspect, IHttpRequest
+    public class HttpRequest : IHttpRequest
     {
         private string _payload;
 

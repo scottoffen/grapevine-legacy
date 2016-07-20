@@ -7,7 +7,7 @@ namespace Grapevine.Server
     /// <summary>
     /// Provides modified access to the request and response objects used by the HttpListener class
     /// </summary>
-    public interface IHttpContext
+    public interface IHttpContext : IDynamicProperties
     {
         /// <summary>
         /// Gets the IHttpRequest that represents a client's request for a resource
@@ -30,17 +30,12 @@ namespace Grapevine.Server
         IRestServer Server { get; }
 
         /// <summary>
-        /// Gets the dynamic object available for run-time extension
-        /// </summary>
-        dynamic Dynamic { get; }
-
-        /// <summary>
         /// Returns a value that indicate whether or not the client request has been responded to
         /// </summary>
         bool WasRespondedTo();
     }
 
-    public class HttpContext : DynamicAspect, IHttpContext
+    public class HttpContext : DynamicProperties, IHttpContext
     {
         public IHttpRequest Request { get; }
         public IHttpResponse Response { get; }
