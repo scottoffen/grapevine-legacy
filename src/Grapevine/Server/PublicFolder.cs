@@ -7,25 +7,30 @@ namespace Grapevine.Server
     /// <summary>
     /// Provides methods for working with files and folder for static content
     /// </summary>
-    public class ContentRoot
+    public class PublicFolder
     {
         private const bool IsFilePath = true;
-        private string _folder;
+        private string _folderPath;
 
-        public ContentRoot()
+        public PublicFolder()
         {
             var path = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
-            if (path != null) _folder = Path.Combine(path, "webroot");
-            if (!FolderExists(_folder)) CreateFolder(_folder);
+            if (path != null) _folderPath = Path.Combine(path, "webroot");
+            if (!FolderExists(_folderPath)) CreateFolder(_folderPath);
         }
+
+        /// <summary>
+        /// Gets or sets the default file to return when a directory is requested
+        /// </summary>
+        public string DefaultFileName { get; set; } = "index.html";
 
         /// <summary>
         /// Gets or sets the folder to be scanned for static content requests
         /// </summary>
-        public string Folder
+        public string FolderPath
         {
-            get { return _folder; }
-            set { _folder = FolderExists(value) ? value : CreateFolder(value); }
+            get { return _folderPath; }
+            set { _folderPath = FolderExists(value) ? value : CreateFolder(value); }
         }
 
         /// <summary>
@@ -33,7 +38,7 @@ namespace Grapevine.Server
         /// </summary>
         public IHttpContext ReturnFile(IHttpContext context, string prefix = null)
         {
-            if (context.Request.HttpMethod != HttpMethod.GET || string.IsNullOrWhiteSpace(_folder)) return context;
+            if (context.Request.HttpMethod != HttpMethod.GET || string.IsNullOrWhiteSpace(_folderPath)) return context;
 
             var path = string.IsNullOrWhiteSpace(prefix) ? context.Request.PathInfo : context.Request.PathInfo.Replace(prefix, "");
             path = path.TrimStart('/', '\\');
@@ -43,11 +48,6 @@ namespace Grapevine.Server
 
             return context;
         }
-
-        /// <summary>
-        /// Gets or sets the default file to return when a directory is requested
-        /// </summary>
-        public string DefaultFileName { get; set; } = "index.html";
 
         /// <summary>
         /// Returns true if the specified directory exists
@@ -72,9 +72,9 @@ namespace Grapevine.Server
         /// </summary>
         private string GetFilePath(string pathinfo)
         {
-            if (string.IsNullOrWhiteSpace(_folder)) return null;
+            if (string.IsNullOrWhiteSpace(_folderPath)) return null;
             var path = pathinfo.Replace("/", Path.DirectorySeparatorChar.ToString());
-            path = Path.Combine(_folder, path);
+            path = Path.Combine(_folderPath, path);
 
             if (File.Exists(path)) return path;
             if (!Directory.Exists(path)) return null;

@@ -13,8 +13,8 @@ namespace Grapevine.Local
         {
             using (var server = new RestServer())
             {
-                server.WebRoot = @"C:\source\gv-gh-pages";
-                server.WebRootPrefix = "/Grapevine";
+                server.PublicFolder = @"C:\source\gv-gh-pages";
+                server.PublicFolderPrefix = "/Grapevine";
 
                 server.Router.Register(context =>
                 {

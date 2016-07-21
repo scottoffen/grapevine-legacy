@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.ComponentModel.Design;
 using System.Net;
 using System.Security.Authentication.ExtendedProtection;
 using System.Threading;
@@ -12,94 +13,17 @@ namespace Grapevine.Server
     /// <summary>
     /// Provides a programmatically controlled REST implementation for a single Prefix using HttpListener
     /// </summary>
-    public interface IRestServer : IDynamicProperties
+    public interface IRestServer : IServerProperties, IDynamicProperties, IDisposable
     {
-        /// <summary>
-        /// Gets or sets the number of HTTP connection threads maintained per processor; defaults to 50
-        /// </summary>
-        int Connections { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the default file to return when a directory is requested without a file name; defaults to index.html
-        /// </summary>
-        string DirIndex { get; set; }
-
-        /// <summary>
-        /// Gets or sets the host name used to create the HttpListener prefix, defaults to localhost
-        /// <para>&#160;</para>
-        /// Use "*" to indicate that the HttpListener accepts requests sent to the port if the requested URI does not match any other prefix. Similarly, to specify that the HttpListener accepts all requests sent to a port, replace the host element with the "+" character.
-        /// </summary>
-        string Host { get; set; }
-
         /// <summary>
         /// Gets a value that indicates whether HttpListener has been started
         /// </summary>
         bool IsListening { get; }
 
-        IGrapevineLogger Logger { get; }
-
-        /// <summary>
-        /// Gets or sets the Action that will be executed immediately following server start; synonym for OnAfterStart
-        /// </summary>
-        Action OnStart { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Action that will be executed before attempting to start the server
-        /// </summary>
-        Action OnBeforeStart { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Action that will be executed immediately following server start
-        /// </summary>
-        Action OnAfterStart { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Action that will be executed immediately following server stop; synonym for OnAfterStop
-        /// </summary>
-        Action OnStop { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Action that will be executed before attempting to stop the server
-        /// </summary>
-        Action OnBeforeStop { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Action that will be executed immediately following server stops
-        /// </summary>
-        Action OnAfterStop { get; set; }
-
         /// <summary>
         /// Gets the prefix created by combining the Protocol, Host and Port properties into a scheme and authority
         /// </summary>
         string Origin { get; }
-
-        /// <summary>
-        /// Gets or sets the port number (as a string) used to create the prefix used by the HttpListener for incoming traffic
-        /// </summary>
-        string Port { get; set; }
-
-        /// <summary>
-        /// Gets or sets the case insensitive URI scheme (protocol) to be used when creating the HttpListener prefix; e.g. "http" or "https"
-        /// <para>&#160;</para>
-        /// Note that if you create an HttpListener using https, you must select a Server Certificate for the listener. See the MSDN documentation on the HttpListener class for more information.<br />
-        /// https://msdn.microsoft.com/en-us/library/system.net.httplistener(v=vs.110).aspx
-        /// </summary>
-        string Protocol { get; set; }
-
-        /// <summary>
-        /// Gets or sets the instance of IRouter to be used by this server to route incoming HTTP requests
-        /// </summary>
-        IRouter Router { get; set; }
-
-        /// <summary>
-        /// Gets or sets the path to the top-level directory containing static files
-        /// </summary>
-        string WebRoot { get; set; }
-
-        /// <summary>
-        /// Gets or sets the optional prefix for specifying static content should be returned
-        /// </summary>
-        string WebRootPrefix { get; set; }
 
         /// <summary>
         /// Starts the server: executes OnBeforeStart, starts the HttpListener, then executes OnAfterStart if the HttpListener is listening
@@ -112,63 +36,53 @@ namespace Grapevine.Server
         void Stop();
     }
 
-    public class RestServer : DynamicProperties, IRestServer, IDisposable
+    public class RestServer : DynamicProperties, IRestServer
     {
-        public bool IsListening => _listener?.IsListening ?? false;
-        public Action OnBeforeStart { get; set; }
-        public Action OnAfterStart { get; set; }
-        public Action OnBeforeStop { get; set; }
-        public Action OnAfterStop { get; set; }
-        public IRouter Router { get; set; }
-        public string WebRootPrefix { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating that route exceptions should be rethrown instead of logged
-        /// </summary>
-        public bool EnableThrowingExceptions { get; set; }
-
-        /// <summary>
-        /// Provides direct access to selected methods and properties on the internal HttpListener instance in use; do not used unless you are fully aware of what you are doing and the consequences involved.
-        /// </summary>
-        public AdvancedRestServer Advanced { get; }
-
         private string _host;
         private string _port;
         private string _protocol;
         private int _connections;
         private bool _stopping;
-        private readonly ContentRoot _contentRoot;
+        private readonly PublicFolder _publicFolder;
         private readonly HttpListener _listener;
         private readonly Thread _listening;
         private readonly ConcurrentQueue<HttpListenerContext> _queue;
         private readonly ManualResetEvent _ready, _stop;
         private Thread[] _workers;
 
+        public bool EnableThrowingExceptions { get; set; }
+        public IGrapevineLogger Logger { get; set; }
+        public Action OnBeforeStart { get; set; }
+        public Action OnAfterStart { get; set; }
+        public Action OnBeforeStop { get; set; }
+        public Action OnAfterStop { get; set; }
+        public string PublicFolderPrefix { get; set; }
+        public IRouter Router { get; set; }
+
         public RestServer() : this(new ServerOptions()) { }
 
         public RestServer(ServerOptions options)
         {
-            _contentRoot = new ContentRoot();
+            _publicFolder = new PublicFolder();
             _listener = new HttpListener();
             _listening = new Thread(HandleRequests);
             _queue = new ConcurrentQueue<HttpListenerContext>();
             _ready = new ManualResetEvent(false);
             _stop = new ManualResetEvent(false);
 
-            Host = options.Host;
-            Port = options.Port;
-            Protocol = options.Protocol;
-            DirIndex = options.DirIndex;
-            WebRoot = options.WebRoot;
             Connections = options.Connections;
-
-            Router = options.Router;
+            DefaultPage = options.DefaultPage;
+            Host = options.Host;
             Logger = options.Logger;
-
             OnBeforeStart = options.OnBeforeStart;
             OnAfterStart = options.OnAfterStart;
             OnBeforeStop = options.OnBeforeStop;
             OnAfterStop = options.OnAfterStop;
+            Port = options.Port;
+            Protocol = options.Protocol;
+            PublicFolder = options.PublicFolder;
+            PublicFolderPrefix = options.PublicFolderPrefix;
+            Router = options.Router;
 
             Advanced = new AdvancedRestServer(_listener);
             _listener.IgnoreWriteExceptions = true;
@@ -186,10 +100,25 @@ namespace Grapevine.Server
             return new RestServer(new T());
         }
 
-        public string Protocol
+        /// <summary>
+        /// Provides direct access to selected methods and properties on the internal HttpListener instance in use; do not used unless you are fully aware of what you are doing and the consequences involved.
+        /// </summary>
+        public AdvancedRestServer Advanced { get; }
+
+        public int Connections
         {
-            get { return _protocol; }
-            set { if (IsListening) throw new ServerStateException(); _protocol = value.ToLower(); }
+            get { return _connections; }
+            set
+            {
+                if (IsListening) throw new ServerStateException();
+                _connections = value;
+            }
+        }
+
+        public string DefaultPage
+        {
+            get { return _publicFolder.DefaultFileName; }
+            set { _publicFolder.DefaultFileName = value; }
         }
 
         public string Host
@@ -202,33 +131,47 @@ namespace Grapevine.Server
             }
         }
 
-        public string Port
+        public bool IsListening => _listener?.IsListening ?? false;
+
+        public Action OnStart
         {
-            get { return _port; }
-            set { if (IsListening) throw new ServerStateException(); _port = value; }
+            get { return OnAfterStart; }
+            set { OnAfterStart = value; }
+        }
+
+        public Action OnStop
+        {
+            get { return OnAfterStop; }
+            set { OnAfterStop = value; }
         }
 
         public string Origin => $"{Protocol}://{Host}:{Port}/";
 
-        public string WebRoot
+        public string Port
         {
-            get { return _contentRoot.Folder; }
-            set { _contentRoot.Folder = value; }
+            get { return _port; }
+            set
+            {
+                if (IsListening) throw new ServerStateException();
+                _port = value;
+            }
         }
 
-        public string DirIndex
+        public string Protocol
         {
-            get { return _contentRoot.DefaultFileName; }
-            set { _contentRoot.DefaultFileName = value; }
+            get { return _protocol; }
+            set
+            {
+                if (IsListening) throw new ServerStateException();
+                _protocol = value.ToLower();
+            }
         }
 
-        public int Connections
+        public string PublicFolder
         {
-            get { return _connections; }
-            set { if (IsListening) throw new ServerStateException(); _connections = value; }
+            get { return _publicFolder.FolderPath; }
+            set { _publicFolder.FolderPath = value; }
         }
-
-        public IGrapevineLogger Logger { get; set; }
 
         public void Start()
         {
@@ -244,7 +187,7 @@ namespace Grapevine.Server
                 _listener.Start();
                 _listening.Start();
 
-                _workers = new Thread[_connections*Environment.ProcessorCount];
+                _workers = new Thread[_connections * Environment.ProcessorCount];
                 for (var i = 0; i < _workers.Length; i++)
                 {
                     _workers[i] = new Thread(Worker);
@@ -259,12 +202,6 @@ namespace Grapevine.Server
                 Logger.Error(cshe);
                 if (EnableThrowingExceptions) throw cshe;
             }
-        }
-
-        public Action OnStart
-        {
-            get { return OnAfterStart; }
-            set { OnAfterStart = value; }
         }
 
         public void Stop()
@@ -288,12 +225,6 @@ namespace Grapevine.Server
                 Logger.Error(cshe);
                 if (EnableThrowingExceptions) throw cshe;
             }
-        }
-
-        public Action OnStop
-        {
-            get { return OnAfterStop; }
-            set { OnAfterStop = value; }
         }
 
         public void Dispose()
@@ -359,14 +290,14 @@ namespace Grapevine.Server
 
                 try
                 {
-                    if (!string.IsNullOrWhiteSpace(WebRootPrefix) && context.Request.PathInfo.StartsWith(WebRootPrefix))
+                    if (!string.IsNullOrWhiteSpace(PublicFolderPrefix) && context.Request.PathInfo.StartsWith(PublicFolderPrefix))
                     {
-                        _contentRoot.ReturnFile(context, WebRootPrefix);
+                        _publicFolder.ReturnFile(context, PublicFolderPrefix);
                         if (!context.WasRespondedTo()) context.Response.SendResponse(HttpStatusCode.NotFound);
                         return;
                     }
 
-                    if (!Router.Route(_contentRoot.ReturnFile(context))) throw new RouteNotFound(context);
+                    if (!Router.Route(_publicFolder.ReturnFile(context))) throw new RouteNotFound(context);
                 }
                 catch (RouteNotFound)
                 {

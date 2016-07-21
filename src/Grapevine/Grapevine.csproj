@@ -53,7 +53,7 @@
     <Compile Include="Server\HttpResponse.cs" />
     <Compile Include="Server\DynamicProperties.cs" />
     <Compile Include="Server\ServerOptions.cs" />
-    <Compile Include="Server\ContentRoot.cs" />
+    <Compile Include="Server\PublicFolder.cs" />
     <Compile Include="Server\RestCluster.cs" />
     <Compile Include="Server\RestAttributes.cs" />
     <Compile Include="Server\RestServer.cs" />

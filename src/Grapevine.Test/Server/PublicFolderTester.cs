@@ -5,27 +5,27 @@ using Xunit;
 
 namespace Grapevine.Test.Server
 {
-    public class ContentRootTester
+    public class PublicFolderTester
     {
         [Fact]
         public void default_index_is_index_dot_html()
         {
-            var root = new ContentRoot();
+            var root = new PublicFolder();
             root.DefaultFileName.ShouldBe("index.html");
         }
 
         [Fact]
         public void default_index_can_be_changed()
         {
-            var root = new ContentRoot {DefaultFileName = "default.html"};
+            var root = new PublicFolder {DefaultFileName = "default.html"};
             root.DefaultFileName.ShouldBe("default.html");
         }
 
         [Fact]
         public void default_folder_is_webroot()
         {
-            var root = new ContentRoot();
-            root.Folder.EndsWith("webroot").ShouldBe(true);
+            var root = new PublicFolder();
+            root.FolderPath.EndsWith("webroot").ShouldBe(true);
         }
 
         [Fact]
@@ -34,8 +34,8 @@ namespace Grapevine.Test.Server
             var newdir = "newdir";
             if (Directory.Exists(newdir)) Directory.Delete(newdir);
 
-            var root = new ContentRoot {Folder = newdir};
-            root.Folder.EndsWith(newdir).ShouldBe(true);
+            var root = new PublicFolder {FolderPath = newdir};
+            root.FolderPath.EndsWith(newdir).ShouldBe(true);
         }
 
     }
