@@ -38,7 +38,7 @@ namespace Grapevine.Server
         /// </summary>
         public IHttpContext ReturnFile(IHttpContext context, string prefix = null)
         {
-            if (context.Request.HttpMethod != HttpMethod.GET || string.IsNullOrWhiteSpace(_folderPath)) return context;
+            if ((context.Request.HttpMethod != HttpMethod.GET && context.Request.HttpMethod != HttpMethod.HEAD) || string.IsNullOrWhiteSpace(_folderPath)) return context;
 
             var path = string.IsNullOrWhiteSpace(prefix) ? context.Request.PathInfo : context.Request.PathInfo.Replace(prefix, "");
             path = path.TrimStart('/', '\\');
