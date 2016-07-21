@@ -9,9 +9,9 @@ namespace Grapevine.Server
     public interface IRoute
     {
         /// <summary>
-        /// Gets the unique name for the given route; defaults to true
+        /// Gets or sets an optional description for the route
         /// </summary>
-        string Name { get; }
+        string Description { get; set; }
 
         /// <summary>
         /// Gets a value that indicates whether the route is enabled
@@ -24,9 +24,14 @@ namespace Grapevine.Server
         Func<IHttpContext, IHttpContext> Function { get; }
 
         /// <summary>
-        /// Gets the HttpMethod that this route responds to
+        /// Gets the HttpMethod that this route responds to; defaults to HttpMethod.ALL
         /// </summary>
         HttpMethod HttpMethod { get; }
+
+        /// <summary>
+        /// Gets a unique name for function that will be invoked in the route, internally assigned
+        /// </summary>
+        string Name { get; }
 
         /// <summary>
         /// Get the PathInfo that this method responds to
@@ -34,7 +39,7 @@ namespace Grapevine.Server
         string PathInfo { get; }
 
         /// <summary>
-        /// Get the PathInfo pattern that this method responds to
+        /// Get the PathInfo regular expression used to match this method to requests
         /// </summary>
         Regex PathInfoPattern { get; }
 
@@ -49,17 +54,17 @@ namespace Grapevine.Server
         void Disable();
 
         /// <summary>
-        /// Returns the result of the route Function being executed on the IHttpContext
+        /// Returns the result of the route delegate being executed on the IHttpContext
         /// </summary>
         /// <param name="context"></param>
-        /// <returns></returns>
+        /// <returns>IHttpContext</returns>
         IHttpContext Invoke(IHttpContext context);
 
         /// <summary>
         /// Gets a value indicating whether the route matches the given IHttpContext
         /// </summary>
         /// <param name="context"></param>
-        /// <returns></returns>
+        /// <returns>bool</returns>
         bool Matches(IHttpContext context);
     }
 
@@ -70,22 +75,13 @@ namespace Grapevine.Server
         /// </summary>
         protected readonly List<string> PatternKeys;
 
-        public string Name { get; protected set; }
+        public string Description { get; set; }
         public bool Enabled { get; protected set; }
-        public Func<IHttpContext, IHttpContext> Function { get; protected set; }
-        public HttpMethod HttpMethod { get; protected set; }
-        public string PathInfo { get; protected set; }
-        public Regex PathInfoPattern { get; protected set; }
-
-        /// <summary>
-        /// Fluent interface for route creation
-        /// </summary>
-        /// <param name="httpMethod"></param>
-        /// <returns></returns>
-        public static FluentRouteCreator.ToExpression For(HttpMethod httpMethod)
-        {
-            return new FluentRouteCreator.ToExpression(httpMethod);
-        }
+        public Func<IHttpContext, IHttpContext> Function { get; }
+        public HttpMethod HttpMethod { get; }
+        public string Name { get; }
+        public string PathInfo { get; }
+        public Regex PathInfoPattern { get; }
 
         /// <summary>
         /// Creates a route from the given MethodInfo; defaults to HttpMethod.All and an empty PathInfo
@@ -113,7 +109,7 @@ namespace Grapevine.Server
         /// <param name="methodInfo"></param>
         /// <param name="httpMethod"></param>
         /// <param name="pathInfo"></param>
-        public Route(MethodInfo methodInfo, HttpMethod httpMethod, string pathInfo):this(httpMethod, pathInfo)
+        public Route(MethodInfo methodInfo, HttpMethod httpMethod, string pathInfo) : this(httpMethod, pathInfo)
         {
             if (methodInfo == null) throw new ArgumentNullException(nameof(methodInfo));
             Function = ConvertMethodToFunc(methodInfo);
@@ -131,7 +127,7 @@ namespace Grapevine.Server
         /// </summary>
         /// <param name="func"></param>
         /// <param name="pathInfo"></param>
-        public Route(Func<IHttpContext, IHttpContext> func, string pathInfo):this(func, HttpMethod.ALL, pathInfo) { }
+        public Route(Func<IHttpContext, IHttpContext> func, string pathInfo) : this(func, HttpMethod.ALL, pathInfo) { }
 
         /// <summary>
         /// Creates a route from the given generic delegate and HttpMethod; defaults to an empty PathInfo
@@ -146,11 +142,21 @@ namespace Grapevine.Server
         /// <param name="function"></param>
         /// <param name="httpMethod"></param>
         /// <param name="pathInfo"></param>
-        public Route(Func<IHttpContext, IHttpContext> function, HttpMethod httpMethod, string pathInfo):this(httpMethod, pathInfo)
+        public Route(Func<IHttpContext, IHttpContext> function, HttpMethod httpMethod, string pathInfo) : this(httpMethod, pathInfo)
         {
             if (function == null) throw new ArgumentNullException(nameof(function));
             Function = function;
             Name = $"{Function.Method.ReflectedType}.{Function.Method.Name}";
+        }
+
+        /// <summary>
+        /// Fluent interface for route creation
+        /// </summary>
+        /// <param name="httpMethod"></param>
+        /// <returns></returns>
+        public static FluentRouteCreator.RouteToExpression For(HttpMethod httpMethod)
+        {
+            return new FluentRouteCreator.RouteToExpression(httpMethod);
         }
 
         /// <summary>
@@ -162,21 +168,14 @@ namespace Grapevine.Server
         {
             Enabled = true;
             HttpMethod = httpMethod;
-            PathInfo = pathInfo != null ? !string.IsNullOrWhiteSpace(pathInfo) ? pathInfo : string.Empty : string.Empty;
+            PathInfo = !string.IsNullOrWhiteSpace(pathInfo) ? pathInfo : string.Empty;
             PatternKeys = PatternParser.GeneratePatternKeys(PathInfo);
             PathInfoPattern = PatternParser.GenerateRegEx(PathInfo);
         }
 
-        public bool Matches(IHttpContext context)
+        public void Enable()
         {
-            return HttpMethod.IsEquivalent(context.Request.HttpMethod) && PathInfoPattern.IsMatch(context.Request.PathInfo);
-        }
-
-        public IHttpContext Invoke(IHttpContext context)
-        {
-            if (context.WasRespondedTo()) return context;
-            context.Request.PathParameters = new ReadOnlyDictionary<string, string>(ParseParams(context.Request.PathInfo));
-            return Function(context);
+            Enabled = true;
         }
 
         public void Disable()
@@ -184,9 +183,16 @@ namespace Grapevine.Server
             Enabled = false;
         }
 
-        public void Enable()
+        public IHttpContext Invoke(IHttpContext context)
         {
-            Enabled = true;
+            if (context.WasRespondedTo()) return context;
+            context.Request.PathParameters = ParseParams(context.Request.PathInfo);
+            return Function(context);
+        }
+
+        public bool Matches(IHttpContext context)
+        {
+            return HttpMethod.IsEquivalent(context.Request.HttpMethod) && PathInfoPattern.IsMatch(context.Request.PathInfo);
         }
 
         public override bool Equals(object obj)
@@ -216,7 +222,7 @@ namespace Grapevine.Server
         /// </summary>
         /// <param name="pathinfo"></param>
         /// <returns></returns>
-        protected Dictionary<string, string> ParseParams(string pathinfo)
+        protected ReadOnlyDictionary<string, string> ParseParams(string pathinfo)
         {
             var parsed = new Dictionary<string, string>();
             var idx = 0;
@@ -225,13 +231,13 @@ namespace Grapevine.Server
             {
                 if (match.Success)
                 {
-                    var pname = PatternKeys.Count > 0 && PatternKeys.Count > idx ? PatternKeys[idx] : $"p{idx}";
-                    parsed.Add(pname, match.Groups[1].Value);
+                    var key = PatternKeys.Count > 0 && PatternKeys.Count > idx ? PatternKeys[idx] : $"p{idx}";
+                    parsed.Add(key, match.Groups[1].Value);
                 }
                 idx++;
             }
 
-            return parsed;
+            return new ReadOnlyDictionary<string, string>(parsed);
         }
 
         /// <summary>
@@ -244,9 +250,9 @@ namespace Grapevine.Server
             if (methodInfo == null) throw new ArgumentNullException(nameof(methodInfo));
             if (methodInfo.ReturnType != typeof(IHttpContext)) throw new RouteMethodArgumentException($"{methodInfo.Name}: Return type must be of type {typeof(IHttpContext).Name}");
 
-            var pars = methodInfo.GetParameters();
-            if (pars.Length != 1) throw new RouteMethodArgumentException($"{methodInfo.Name}: must have one and only one argument if it to be used as a {typeof(RestRoute).Name}");
-            if (pars[0].ParameterType != typeof(IHttpContext)) throw new RouteMethodArgumentException($"{methodInfo.Name}: first argument must be of type {typeof(IHttpContext).Name}");
+            var args = methodInfo.GetParameters();
+            if (args.Length != 1) throw new RouteMethodArgumentException($"{methodInfo.Name}: must have one and only one argument to be used as a {typeof(RestRoute).Name}");
+            if (args[0].ParameterType != typeof(IHttpContext)) throw new RouteMethodArgumentException($"{methodInfo.Name}: argument must be of type {typeof(IHttpContext).Name}");
 
             Func<IHttpContext, IHttpContext> function;
 
@@ -275,12 +281,12 @@ namespace Grapevine.Server
         /// <summary>
         /// Fluent interface for specifying the PathInfo and MethodInfo or generic delegate for a new Route
         /// </summary>
-        public class ToExpression : IRouteUseExpression
+        public class RouteToExpression : IRouteUseExpression
         {
             private readonly HttpMethod _httpMethod;
             private string _pathInfo;
 
-            public ToExpression(HttpMethod httpMethod)
+            public RouteToExpression(HttpMethod httpMethod)
             {
                 _httpMethod = httpMethod;
             }
@@ -296,21 +302,11 @@ namespace Grapevine.Server
                 return this;
             }
 
-            /// <summary>
-            /// Provide a MethodInfo for the new Route
-            /// </summary>
-            /// <param name="methodInfo"></param>
-            /// <returns></returns>
             public Route Use(MethodInfo methodInfo)
             {
                 return new Route(methodInfo, _httpMethod);
             }
 
-            /// <summary>
-            /// Provide a generic delegate for the new Route
-            /// </summary>
-            /// <param name="function"></param>
-            /// <returns></returns>
             public Route Use(Func<IHttpContext, IHttpContext> function)
             {
                 return new Route(function, _httpMethod);
