@@ -18,7 +18,7 @@ namespace Grapevine.Test.Server
             options.Host.ShouldBe("localhost");
             options.Port.ShouldBe("1234");
 
-            options.PublicFolder.EndsWith("webroot").ShouldBe(true);
+            options.PublicFolder.EndsWith("public").ShouldBe(true);
             options.DefaultPage.ShouldBe("index.html");
 
             options.OnAfterStart.ShouldBeNull();

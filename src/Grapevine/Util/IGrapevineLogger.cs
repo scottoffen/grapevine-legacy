@@ -273,6 +273,120 @@ namespace Grapevine.Util
     }
 
     /// <summary>
+    /// Buffer implementation of IGrapevineLogger for testing purposes; this class cannot be inherited
+    /// </summary>
+    public sealed class BufferedLogger : IGrapevineLogger
+    {
+        private LogLevel _level;
+        private static string RightNow => DateTime.Now.ToString(@"M/d/yyyy hh:mm:ss tt");
+
+        public BufferedLogger(LogLevel level)
+        {
+            _level = level;
+        }
+
+        public void Trace(object obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Trace(string message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Trace(string message, Exception ex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Debug(object obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Debug(string message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Debug(string message, Exception ex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Info(object obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Info(string message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Info(string message, Exception ex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Warn(object obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Warn(string message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Warn(string message, Exception ex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Error(object obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Error(string message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Error(string message, Exception ex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Fatal(object obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Fatal(string message)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Fatal(string message, Exception ex)
+        {
+            throw new NotImplementedException();
+        }
+
+        private string CreateMessage(LogLevel level, string message)
+        {
+            return $"{RightNow}\t{level}\t{message}";
+        }
+
+        private string ExceptionToString(string message, Exception ex)
+        {
+            return $"{message}:{ex.Message}\r\n{ex.StackTrace}";
+        }
+    }
+
+    /// <summary>
     /// Enumeration of a standard set of logging levels
     /// </summary>
     public enum LogLevel
