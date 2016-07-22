@@ -31,7 +31,7 @@ namespace Grapevine.Server
         /// <summary>
         /// Returns a value that indicate whether or not the client request has been responded to
         /// </summary>
-        bool WasRespondedTo();
+        bool WasRespondedTo { get; }
     }
 
     public class HttpContext : DynamicProperties, IHttpContext
@@ -49,9 +49,6 @@ namespace Grapevine.Server
             Server = server;
         }
 
-        public bool WasRespondedTo()
-        {
-            return Response.ResponseSent;
-        }
+        public bool WasRespondedTo => Response.ResponseSent;
     }
 }

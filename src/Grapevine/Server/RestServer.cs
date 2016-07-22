@@ -293,7 +293,7 @@ namespace Grapevine.Server
                     if (!string.IsNullOrWhiteSpace(PublicFolderPrefix) && context.Request.PathInfo.StartsWith(PublicFolderPrefix))
                     {
                         _publicFolder.ReturnFile(context, PublicFolderPrefix);
-                        if (!context.WasRespondedTo()) context.Response.SendResponse(HttpStatusCode.NotFound);
+                        if (!context.WasRespondedTo) context.Response.SendResponse(HttpStatusCode.NotFound);
                         return;
                     }
 

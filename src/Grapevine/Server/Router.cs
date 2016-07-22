@@ -352,7 +352,7 @@ namespace Grapevine.Server
             LogBeginRequestRouting(context, routing.Count);
 
             if (routing == null || !routing.Any()) throw new RouteNotFound(context);
-            if (context.WasRespondedTo()) return true;
+            if (context.WasRespondedTo) return true;
 
             var routeContext = context;
             var routeCounter = 0;
@@ -366,11 +366,11 @@ namespace Grapevine.Server
 
                 LogRouteInvoked(context, route, routeCounter);
                 if (ContinueRoutingAfterResponseSent) continue;
-                if (routeContext.WasRespondedTo()) break;
+                if (routeContext.WasRespondedTo) break;
             }
 
             LogEndRequestRouting(context, routing.Count, routeCounter);
-            return routeContext.WasRespondedTo();
+            return routeContext.WasRespondedTo;
         }
 
         private static void LogBeginRequestRouting(IHttpContext context, int routes)
