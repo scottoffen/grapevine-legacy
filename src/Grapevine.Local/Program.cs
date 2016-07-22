@@ -13,8 +13,8 @@ namespace Grapevine.Local
         {
             using (var server = new RestServer())
             {
-                server.PublicFolder = @"C:\source\gv-gh-pages";
-                server.PublicFolderPrefix = "/Grapevine";
+                server.PublicFolder.FolderPath = @"C:\source\gv-gh-pages";
+                server.PublicFolder.Prefix = "/Grapevine";
 
                 server.Router.Register(context =>
                 {
@@ -41,7 +41,7 @@ namespace Grapevine.Local
 
                 server.Router.Register(Route.For(HttpMethod.GET).To("/special/api").Use(context =>
                 {
-                    context.Response.ContentType = ContentType.TEXT.ToValue();
+                    context.Response.ContentType = ContentType.TEXT;
                     context.Response.SendResponse(context.Properties.UserName);
                     return context;
                 }));
@@ -50,7 +50,7 @@ namespace Grapevine.Local
                 {
                     var response = new StringBuilder();
 
-                    context.Response.ContentType = ContentType.TEXT.ToValue();
+                    context.Response.ContentType = ContentType.TEXT;
 
                     response.Append($"Method   : {context.Request.HttpMethod}\n");
                     response.Append($"PathInfo : {context.Request.PathInfo}\n");
@@ -121,13 +121,13 @@ namespace Grapevine.Local
 
                     r.Register(Route.For(HttpMethod.GET).Use(context =>
                     {
-                        context.Response.StatusCode = (int)Util.HttpStatusCode.ImATeapot;
+                        context.Response.StatusCode = Util.HttpStatusCode.ImATeapot;
                         return context;
                     }));
 
                     r.Register(Route.For(HttpMethod.POST).Use(context =>
                     {
-                        context.Response.StatusCode = (int)Util.HttpStatusCode.EnhanceYourCalm;
+                        context.Response.StatusCode = Util.HttpStatusCode.EnhanceYourCalm;
                         return context;
                     }));
 
@@ -187,13 +187,13 @@ namespace Grapevine.Local
 
                     r.Register(Route.For(HttpMethod.GET).Use(context =>
                     {
-                        context.Response.StatusCode = (int)Util.HttpStatusCode.ImATeapot;
+                        context.Response.StatusCode = Util.HttpStatusCode.ImATeapot;
                         return context;
                     }));
 
                     r.Register(Route.For(HttpMethod.POST).Use(context =>
                     {
-                        context.Response.StatusCode = (int)Util.HttpStatusCode.EnhanceYourCalm;
+                        context.Response.StatusCode = Util.HttpStatusCode.EnhanceYourCalm;
                         return context;
                     }));
 

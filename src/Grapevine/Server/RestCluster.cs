@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Grapevine.Server
 {
@@ -8,8 +9,8 @@ namespace Grapevine.Server
     /// </summary>
     public class RestCluster
     {
-        private readonly Dictionary<string, IRestServer> _servers = new Dictionary<string, IRestServer>();
-        private bool _started;
+        protected readonly Dictionary<string, IRestServer> _servers = new Dictionary<string, IRestServer>();
+        protected bool Started;
 
         /// <summary>
         /// Gets or sets the Action that will be executed immediately before attempting to start the collection of servers
@@ -52,54 +53,34 @@ namespace Grapevine.Server
         public Action OnAfterStopEach { get; set; }
 
         /// <summary>
+        /// Convenience indexer; synonym for Add and Get methods
+        /// </summary>
+        /// <param name="label"></param>
+        /// <returns>Get or set the instance of IRestServer assigned to the label</returns>
+        public IRestServer this[string label]
+        {
+            get { return Get(label); }
+            set { Add(label, value); }
+        }
+
+        /// <summary>
+        /// Adds a server to the cluster
+        /// </summary>
+        /// <param name="server"></param>
+        /// <returns>Assigned labled of the server that was addded</returns>
+        public string Add(IRestServer server)
+        {
+            Add(server.Origin, server);
+            return server.Origin;
+        }
+
+        /// <summary>
         /// Adds a server to the cluster
         /// </summary>
         public void Add(string label, IRestServer server)
         {
-            if (_started) server.Start();
+            if (Started) server.Start();
             _servers.Add(label, server);
-        }
-
-        /// <summary>
-        /// Starts each server in the cluster
-        /// </summary>
-        public void StartAll()
-        {
-            OnBeforeStartAll?.Invoke();
-
-            foreach (var server in _servers.Values)
-            {
-                if (!server.IsListening)
-                {
-                    OnBeforeStartEach?.Invoke();
-                    server.Start();
-                    OnAfterStartEach?.Invoke();
-                }
-            }
-
-            OnAfterStartAll?.Invoke();
-            _started = true;
-        }
-
-        /// <summary>
-        /// Stops each server in the cluster
-        /// </summary>
-        public void StopAll()
-        {
-            OnBeforeStopAll?.Invoke();
-
-            foreach (var server in _servers.Values)
-            {
-                if (server.IsListening)
-                {
-                    OnBeforeStopEach?.Invoke();
-                    server.Stop();
-                    OnAfterStopEach?.Invoke();
-                }
-            }
-
-            OnAfterStopAll?.Invoke();
-            _started = false;
         }
 
         /// <summary>
@@ -122,6 +103,42 @@ namespace Grapevine.Server
             OnAfterStopEach?.Invoke();
 
             return _servers.Remove(label);
+        }
+
+        /// <summary>
+        /// Starts each server in the cluster
+        /// </summary>
+        public void StartAll()
+        {
+            OnBeforeStartAll?.Invoke();
+
+            foreach (var server in _servers.Values.Where(server => !server.IsListening))
+            {
+                OnBeforeStartEach?.Invoke();
+                server.Start();
+                OnAfterStartEach?.Invoke();
+            }
+
+            OnAfterStartAll?.Invoke();
+            Started = true;
+        }
+
+        /// <summary>
+        /// Stops each server in the cluster
+        /// </summary>
+        public void StopAll()
+        {
+            OnBeforeStopAll?.Invoke();
+
+            foreach (var server in _servers.Values.Where(server => server.IsListening))
+            {
+                OnBeforeStopEach?.Invoke();
+                server.Stop();
+                OnAfterStopEach?.Invoke();
+            }
+
+            OnAfterStopAll?.Invoke();
+            Started = false;
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Grapevine.Util;
 using System.IO;
+using System.Linq;
 
 namespace Grapevine.Server
 {
@@ -36,7 +37,7 @@ namespace Grapevine.Server
         /// <summary>
         /// Gets the MIME type of the body data included in the request
         /// </summary>
-        string ContentType { get; }
+        ContentType ContentType { get; }
 
         /// <summary>
         /// Gets the cookies sent with the request
@@ -200,7 +201,7 @@ namespace Grapevine.Server
         private string _payload;
 
         /// <summary>
-        /// The underlying HttpListenerResponse for this instance
+        /// The underlying HttpListenerRequest for this instance
         /// </summary>
         protected internal readonly HttpListenerRequest Request;
 
@@ -227,7 +228,10 @@ namespace Grapevine.Server
 
         public long ContentLength64 => Request.ContentLength64;
 
-        public string ContentType => Request.ContentType;
+        public ContentType ContentType
+        {
+            get { return Enum.GetValues(typeof(ContentType)).Cast<ContentType>().First(t => t.ToValue().Equals(Request.ContentType)); }
+        }
 
         public CookieCollection Cookies => Request.Cookies;
 
@@ -323,8 +327,18 @@ namespace Grapevine.Server
         }
 
         /// <summary>
-        /// Gets a stream that contains the body data sent by the client; use Payload instead
+        /// Gets a stream that contains the body data sent by the client; recommended to use Payload property instead
         /// </summary>
         public Stream InputStream => _request.InputStream;
+
+        /// <summary>
+        /// Get the original ContentType string from the request
+        /// </summary>
+        public string ContentType => _request.ContentType;
+
+        /// <summary>
+        /// Gets the original HttpMethod string from the request
+        /// </summary>
+        public string HttpMethod => _request.HttpMethod;
     }
 }

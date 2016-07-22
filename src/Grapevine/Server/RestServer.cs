@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.ComponentModel.Design;
 using System.Net;
 using System.Security.Authentication.ExtendedProtection;
 using System.Threading;
@@ -42,13 +41,12 @@ namespace Grapevine.Server
         private string _port;
         private string _protocol;
         private int _connections;
-        private bool _stopping;
-        private readonly PublicFolder _publicFolder;
-        private readonly HttpListener _listener;
-        private readonly Thread _listening;
-        private readonly ConcurrentQueue<HttpListenerContext> _queue;
-        private readonly ManualResetEvent _ready, _stop;
-        private Thread[] _workers;
+        protected bool IsStopping;
+        protected readonly HttpListener Listener;
+        protected readonly Thread Listening;
+        protected readonly ConcurrentQueue<HttpListenerContext> Queue;
+        protected readonly ManualResetEvent ReadyEvent, StopEvent;
+        protected Thread[] Workers;
 
         public bool EnableThrowingExceptions { get; set; }
         public IGrapevineLogger Logger { get; set; }
@@ -56,22 +54,19 @@ namespace Grapevine.Server
         public Action OnAfterStart { get; set; }
         public Action OnBeforeStop { get; set; }
         public Action OnAfterStop { get; set; }
-        public string PublicFolderPrefix { get; set; }
         public IRouter Router { get; set; }
 
         public RestServer() : this(new ServerOptions()) { }
 
         public RestServer(ServerOptions options)
         {
-            _publicFolder = new PublicFolder();
-            _listener = new HttpListener();
-            _listening = new Thread(HandleRequests);
-            _queue = new ConcurrentQueue<HttpListenerContext>();
-            _ready = new ManualResetEvent(false);
-            _stop = new ManualResetEvent(false);
+            Listener = new HttpListener();
+            Listening = new Thread(HandleRequests);
+            Queue = new ConcurrentQueue<HttpListenerContext>();
+            ReadyEvent = new ManualResetEvent(false);
+            StopEvent = new ManualResetEvent(false);
 
             Connections = options.Connections;
-            DefaultPage = options.DefaultPage;
             Host = options.Host;
             Logger = options.Logger;
             OnBeforeStart = options.OnBeforeStart;
@@ -81,11 +76,10 @@ namespace Grapevine.Server
             Port = options.Port;
             Protocol = options.Protocol;
             PublicFolder = options.PublicFolder;
-            PublicFolderPrefix = options.PublicFolderPrefix;
             Router = options.Router;
 
-            Advanced = new AdvancedRestServer(_listener);
-            _listener.IgnoreWriteExceptions = true;
+            Advanced = new AdvancedRestServer(Listener);
+            Listener.IgnoreWriteExceptions = true;
         }
 
         public static RestServer For(Action<ServerOptions> configure)
@@ -115,12 +109,6 @@ namespace Grapevine.Server
             }
         }
 
-        public string DefaultPage
-        {
-            get { return _publicFolder.DefaultFileName; }
-            set { _publicFolder.DefaultFileName = value; }
-        }
-
         public string Host
         {
             get { return _host; }
@@ -131,7 +119,7 @@ namespace Grapevine.Server
             }
         }
 
-        public bool IsListening => _listener?.IsListening ?? false;
+        public bool IsListening => Listener?.IsListening ?? false;
 
         public Action OnStart
         {
@@ -167,11 +155,7 @@ namespace Grapevine.Server
             }
         }
 
-        public string PublicFolder
-        {
-            get { return _publicFolder.FolderPath; }
-            set { _publicFolder.FolderPath = value; }
-        }
+        public PublicFolder PublicFolder { get; }
 
         public void Start()
         {
@@ -182,16 +166,16 @@ namespace Grapevine.Server
 
                 OnBeforeStart?.Invoke();
 
-                _stopping = false;
-                _listener.Prefixes.Add(Origin);
-                _listener.Start();
-                _listening.Start();
+                IsStopping = false;
+                Listener.Prefixes.Add(Origin);
+                Listener.Start();
+                Listening.Start();
 
-                _workers = new Thread[_connections * Environment.ProcessorCount];
-                for (var i = 0; i < _workers.Length; i++)
+                Workers = new Thread[_connections * Environment.ProcessorCount];
+                for (var i = 0; i < Workers.Length; i++)
                 {
-                    _workers[i] = new Thread(Worker);
-                    _workers[i].Start();
+                    Workers[i] = new Thread(Worker);
+                    Workers[i].Start();
                 }
 
                 if (IsListening) OnAfterStart?.Invoke();
@@ -211,11 +195,11 @@ namespace Grapevine.Server
             {
                 OnBeforeStop?.Invoke();
 
-                _stopping = true;
-                _stop.Set();
-                _listening.Join();
-                foreach (var worker in _workers) worker.Join();
-                _listener.Stop();
+                IsStopping = true;
+                StopEvent.Set();
+                Listening.Join();
+                foreach (var worker in Workers) worker.Join();
+                Listener.Stop();
 
                 if (!IsListening) OnAfterStop?.Invoke();
             }
@@ -230,7 +214,7 @@ namespace Grapevine.Server
         public void Dispose()
         {
             Stop();
-            _listener.Close();
+            Listener.Close();
         }
 
         /// <summary>
@@ -243,10 +227,10 @@ namespace Grapevine.Server
 
         private void HandleRequests()
         {
-            while (_listener.IsListening)
+            while (Listener.IsListening)
             {
-                var context = _listener.BeginGetContext(ContextReady, null);
-                if (0 == WaitHandle.WaitAny(new[] { _stop, context.AsyncWaitHandle })) return;
+                var context = Listener.BeginGetContext(ContextReady, null);
+                if (0 == WaitHandle.WaitAny(new[] { StopEvent, context.AsyncWaitHandle })) return;
             }
         }
 
@@ -254,50 +238,50 @@ namespace Grapevine.Server
         {
             try
             {
-                lock (_queue)
+                lock (Queue)
                 {
-                    _queue.Enqueue(_listener.EndGetContext(result));
-                    _ready.Set();
+                    Queue.Enqueue(Listener.EndGetContext(result));
+                    ReadyEvent.Set();
                 }
             }
             catch (ObjectDisposedException) { /* Intentionally not doing anything with this */ }
             catch (Exception e)
             {
                 /* Ignore exceptions thrown by incomplete async methods listening for incoming requests */
-                if (_stopping && e is HttpListenerException && ((HttpListenerException)e).NativeErrorCode == 995) return;
+                if (IsStopping && e is HttpListenerException && ((HttpListenerException)e).NativeErrorCode == 995) return;
                 Logger.Debug(e);
             }
         }
 
         private void Worker()
         {
-            WaitHandle[] wait = { _ready, _stop };
+            WaitHandle[] wait = { ReadyEvent, StopEvent };
             while (0 == WaitHandle.WaitAny(wait))
             {
                 HttpContext context;
 
-                lock (_queue)
+                lock (Queue)
                 {
-                    if (_queue.Count > 0)
+                    if (Queue.Count > 0)
                     {
                         HttpListenerContext ctx;
-                        _queue.TryDequeue(out ctx);
+                        Queue.TryDequeue(out ctx);
                         if (ctx == null) continue;
                         context = new HttpContext(ctx, this);
                     }
-                    else { _ready.Reset(); continue; }
+                    else { ReadyEvent.Reset(); continue; }
                 }
 
                 try
                 {
-                    if (!string.IsNullOrWhiteSpace(PublicFolderPrefix) && context.Request.PathInfo.StartsWith(PublicFolderPrefix))
+                    if (!string.IsNullOrWhiteSpace(PublicFolder.Prefix) && context.Request.PathInfo.StartsWith(PublicFolder.Prefix))
                     {
-                        _publicFolder.ReturnFile(context, PublicFolderPrefix);
+                        PublicFolder.SendPublicFile(context);
                         if (!context.WasRespondedTo) context.Response.SendResponse(HttpStatusCode.NotFound);
                         return;
                     }
 
-                    if (!Router.Route(_publicFolder.ReturnFile(context))) throw new RouteNotFound(context);
+                    if (!Router.Route(PublicFolder.SendPublicFile(context))) throw new RouteNotFound(context);
                 }
                 catch (RouteNotFound)
                 {

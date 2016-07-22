@@ -13,11 +13,6 @@ namespace Grapevine.Server
         int Connections { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the default file to return when a directory is requested without a file name; defaults to index.html
-        /// </summary>
-        string DefaultPage { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating that route exceptions should be rethrown instead of logged
         /// </summary>
         bool EnableThrowingExceptions { get; set; }
@@ -78,14 +73,9 @@ namespace Grapevine.Server
         string Protocol { get; set; }
 
         /// <summary>
-        /// Gets or sets the path to the top-level directory containing static files; defaults to /public
+        /// Gets the PublicFolder object to use for serving static content
         /// </summary>
-        string PublicFolder { get; set; }
-
-        /// <summary>
-        /// Gets or sets the optional prefix for specifying static content should be returned
-        /// </summary>
-        string PublicFolderPrefix { get; set; }
+        PublicFolder PublicFolder { get; }
 
         /// <summary>
         /// Gets or sets the instance of IRouter to be used by this server to route incoming HTTP requests
@@ -96,7 +86,6 @@ namespace Grapevine.Server
     public class ServerOptions : IServerProperties
     {
         public int Connections { get; set; }
-        public string DefaultPage { get; set; }
         public bool EnableThrowingExceptions { get; set; }
         public string Host { get; set; }
         public IGrapevineLogger Logger { get; set; }
@@ -106,8 +95,7 @@ namespace Grapevine.Server
         public Action OnAfterStop { get; set; }
         public string Port { get; set; }
         public string Protocol { get; set; }
-        public string PublicFolder { get; set; }
-        public string PublicFolderPrefix { get; set; }
+        public PublicFolder PublicFolder { get; }
         public IRouter Router { get; set; }
 
         public Action OnStart
@@ -125,16 +113,12 @@ namespace Grapevine.Server
         public ServerOptions()
         {
             Connections = 50;
-            DefaultPage = "index.html";
             Host = "localhost";
             Logger = new NullLogger();
             Port = "1234";
             Protocol = "http";
-            PublicFolderPrefix = string.Empty;
+            PublicFolder = new PublicFolder();
             Router = new Router();
-
-            var path = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
-            if (path != null) PublicFolder = Path.Combine(path, "public");
         }
     }
 }

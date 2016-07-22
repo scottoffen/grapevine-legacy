@@ -1,5 +1,6 @@
 ﻿using System;
 using Grapevine.Server;
+using Grapevine.Util;
 using Shouldly;
 using Xunit;
 
@@ -12,14 +13,20 @@ namespace Grapevine.Test.Server
         {
             var options = new ServerOptions();
 
+            options.Logger.ShouldNotBeNull();
+            options.Logger.ShouldBeOfType<NullLogger>();
+
+            options.Router.ShouldNotBeNull();
             options.Router.ShouldBeOfType<Router>();
+            
+            options.PublicFolder.ShouldNotBeNull();
+            options.PublicFolder.ShouldBeOfType<PublicFolder>();
 
             options.Protocol.ShouldBe("http");
             options.Host.ShouldBe("localhost");
             options.Port.ShouldBe("1234");
-
-            options.PublicFolder.EndsWith("public").ShouldBe(true);
-            options.DefaultPage.ShouldBe("index.html");
+            options.Connections.ShouldBe(50);
+            options.EnableThrowingExceptions.ShouldBeFalse();
 
             options.OnAfterStart.ShouldBeNull();
             options.OnBeforeStart.ShouldBeNull();

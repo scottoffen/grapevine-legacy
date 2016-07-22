@@ -6,6 +6,9 @@ using System.Text.RegularExpressions;
 
 namespace Grapevine.Server
 {
+    /// <summary>
+    /// Represents code to be executed when a request is recieved and the conditions under which it should execute
+    /// </summary>
     public interface IRoute
     {
         /// <summary>

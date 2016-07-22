@@ -9,13 +9,14 @@ namespace Grapevine.Server
     /// </summary>
     public class PublicFolder
     {
-        private const bool IsFilePath = true;
+        protected const string DefaultFolder = "public";
+        protected const bool IsFilePath = true;
         private string _folderPath;
 
         public PublicFolder()
         {
             var path = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
-            if (path != null) _folderPath = Path.Combine(path, "webroot");
+            if (path != null) _folderPath = Path.Combine(path, DefaultFolder);
             if (!FolderExists(_folderPath)) CreateFolder(_folderPath);
         }
 
@@ -23,6 +24,11 @@ namespace Grapevine.Server
         /// Gets or sets the default file to return when a directory is requested
         /// </summary>
         public string DefaultFileName { get; set; } = "index.html";
+
+        /// <summary>
+        /// Gets or sets the optional prefix for specifying when static content should be returned
+        /// </summary>
+        public string Prefix { get; set; }
 
         /// <summary>
         /// Gets or sets the folder to be scanned for static content requests
@@ -36,11 +42,11 @@ namespace Grapevine.Server
         /// <summary>
         /// If it exists, responds to the request with the requested file
         /// </summary>
-        public IHttpContext ReturnFile(IHttpContext context, string prefix = null)
+        public IHttpContext SendPublicFile(IHttpContext context)
         {
             if ((context.Request.HttpMethod != HttpMethod.GET && context.Request.HttpMethod != HttpMethod.HEAD) || string.IsNullOrWhiteSpace(_folderPath)) return context;
 
-            var path = string.IsNullOrWhiteSpace(prefix) ? context.Request.PathInfo : context.Request.PathInfo.Replace(prefix, "");
+            var path = string.IsNullOrWhiteSpace(Prefix) ? context.Request.PathInfo : context.Request.PathInfo.Replace(Prefix, "");
             path = path.TrimStart('/', '\\');
 
             var filepath = GetFilePath(path);

@@ -28,7 +28,7 @@ namespace Grapevine.Server
         /// <summary>
         /// Gets or sets the MIME type of the content returned
         /// </summary>
-        string ContentType { get; set; }
+        ContentType ContentType { get; set; }
 
         /// <summary>
         /// Gets or sets the collection of cookies returned with the response
@@ -68,7 +68,7 @@ namespace Grapevine.Server
         /// <summary>
         /// Gets or sets the HTTP status code to be returned to the client
         /// </summary>
-        int StatusCode { get; set; }
+        HttpStatusCode StatusCode { get; set; }
 
         /// <summary>
         /// Gets or sets a text description of the HTTP status code returned to the client
@@ -133,7 +133,7 @@ namespace Grapevine.Server
         /// <param name="type"></param>
         /// <param name="filename"></param>
         /// <param name="asAttachment"></param>
-        void SendResponse(FileStream stream, ContentType type, string filename, bool asAttachment);
+        void SendResponse(FileStream stream, ContentType type, string filename, bool asAttachment = false);
 
         /// <summary>
         /// Sends the specified status code and exception as a response to the client and closes the response
@@ -182,6 +182,7 @@ namespace Grapevine.Server
         {
             Response = response;
             RequestHeaders = requestHeaders;
+            
             ResponseSent = false;
             Advanced = new AdvancedHttpResponse(this);
         }
@@ -198,10 +199,10 @@ namespace Grapevine.Server
             set { Response.ContentLength64 = value; }
         }
 
-        public string ContentType
+        public ContentType ContentType
         {
-            get { return Response.ContentType; }
-            set { Response.ContentType = value; }
+            get { return Enum.GetValues(typeof (ContentType)).Cast<ContentType>().First(t => t.ToValue().Equals(Response.ContentType)); }
+            set { Response.ContentType = value.ToValue(); }
         }
 
         public CookieCollection Cookies
@@ -242,10 +243,14 @@ namespace Grapevine.Server
             set { Response.SendChunked = value; }
         }
 
-        public int StatusCode
+        public HttpStatusCode StatusCode
         {
-            get { return Response.StatusCode; }
-            set { Response.StatusCode = value; }
+            get { return (HttpStatusCode)Response.StatusCode; }
+            set
+            {
+                Response.StatusCode = (int)value;
+                StatusDescription = value.ConvertToString();
+            }
         }
 
         public string StatusDescription
@@ -294,22 +299,21 @@ namespace Grapevine.Server
             }
             else
             {
-                SendResponse(response, Encoding.UTF8);
+                SendResponse(response, Response.ContentEncoding);
             }
         }
 
         public void SendResponse(string response, Encoding encoding)
         {
             Response.ContentEncoding = encoding;
-            if (string.IsNullOrWhiteSpace(ContentType)) Response.ContentType = Util.ContentType.TEXT.ToValue();
             FlushResponse(encoding.GetBytes(response));
         }
 
         public void SendResponse(FileStream stream, ContentType type, string filename, bool asAttachment = false)
         {
+            ContentType = type;
             if (!Response.Headers.AllKeys.Contains("Expires")) Response.AddHeader("Expires", DateTime.Now.AddHours(HoursToExpire).ToString("R"));
             if (asAttachment) Response.AddHeader("Content-Disposition", $"attachment; filename=\"{filename}\"");
-            Response.ContentType = type.ToValue();
 
             var buffer = GetFileBytes(stream, type.IsText());
             FlushResponse(buffer);
@@ -322,13 +326,19 @@ namespace Grapevine.Server
 
         public void SendResponse(HttpStatusCode statusCode, string response = null)
         {
-            var description = statusCode.ToString().ConvertCamelCase();
-            var body = !string.IsNullOrWhiteSpace(response) ? response : $"<h1>{description}</h1>";
-            var buffer = Encoding.UTF8.GetBytes(body);
+            StatusDescription = statusCode.ToString().ConvertCamelCase();
+            StatusCode = statusCode;
+            byte[] buffer;
 
-            StatusDescription = description;
-            StatusCode = (int)statusCode;
-            ContentType = Util.ContentType.HTML.ToValue();
+            if (!string.IsNullOrWhiteSpace(response))
+            {
+                ContentType = ContentType.HTML;
+                buffer = Encoding.ASCII.GetBytes($"<h1>{StatusDescription}</h1>");
+            }
+            else
+            {
+                buffer = ContentEncoding.GetBytes(response);
+            }
 
             FlushResponse(buffer);
         }
@@ -355,7 +365,7 @@ namespace Grapevine.Server
             var ext = Path.GetExtension(filepath)?.ToUpper().TrimStart('.');
             return !string.IsNullOrWhiteSpace(ext) && Enum.IsDefined(typeof(ContentType), ext)
                 ? (ContentType)Enum.Parse(typeof(ContentType), ext)
-                : Util.ContentType.DEFAULT;
+                : ContentType.DEFAULT;
         }
 
         /// <summary>
@@ -397,7 +407,7 @@ namespace Grapevine.Server
             {
                 using (var reader = new StreamReader(stream))
                 {
-                    buffer = Encoding.UTF8.GetBytes(reader.ReadToEnd());
+                    buffer = ContentEncoding.GetBytes(reader.ReadToEnd());
                 }
             }
             else

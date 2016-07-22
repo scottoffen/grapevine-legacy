@@ -394,7 +394,7 @@ namespace Grapevine.Server
         /// <param name="method"></param>
         /// <param name="basePath"></param>
         /// <returns>IList&lt;IRoute&gt;</returns>
-        internal IList<IRoute> GenerateRoutes(MethodInfo method, string basePath)
+        protected internal IList<IRoute> GenerateRoutes(MethodInfo method, string basePath)
         {
             var routes = new List<IRoute>();
 
@@ -432,7 +432,7 @@ namespace Grapevine.Server
         /// </summary>
         /// <param name="type"></param>
         /// <returns>IList&lt;IRoute&gt;</returns>
-        internal IList<IRoute> GenerateRoutes(Type type)
+        protected internal IList<IRoute> GenerateRoutes(Type type)
         {
             var routes = new List<IRoute>();
             var basepath = string.Empty;
@@ -456,7 +456,7 @@ namespace Grapevine.Server
         /// </summary>
         /// <param name="assembly"></param>
         /// <returns>IList&lt;IRoute&gt;</returns>
-        internal IList<IRoute> GenerateRoutes(Assembly assembly)
+        protected internal IList<IRoute> GenerateRoutes(Assembly assembly)
         {
             var routes = new List<IRoute>();
 
@@ -473,7 +473,7 @@ namespace Grapevine.Server
         /// Adds the route to the routing table excluding duplicates
         /// </summary>
         /// <param name="route"></param>
-        private void AddToRoutingTable(IRoute route)
+        protected void AddToRoutingTable(IRoute route)
         {
             if (route.Function == null) throw new ArgumentNullException(nameof(route));
             if (!_routingTable.Contains(route)) _routingTable.Add(route);
@@ -483,7 +483,7 @@ namespace Grapevine.Server
         /// Adds the routes to the routing table excluding duplicates
         /// </summary>
         /// <param name="routes"></param>
-        private void AddRangeToGlobalStack(IEnumerable<IRoute> routes)
+        protected void AddRangeToGlobalStack(IEnumerable<IRoute> routes)
         {
             routes.ToList().ForEach(AddToRoutingTable);
         }

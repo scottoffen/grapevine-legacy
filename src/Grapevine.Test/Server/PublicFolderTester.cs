@@ -25,7 +25,7 @@ namespace Grapevine.Test.Server
         public void default_folder_is_webroot()
         {
             var root = new PublicFolder();
-            root.FolderPath.EndsWith("webroot").ShouldBe(true);
+            root.FolderPath.EndsWith("public").ShouldBe(true);
         }
 
         [Fact]
