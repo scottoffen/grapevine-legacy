@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Security.Authentication.ExtendedProtection;
 using System.Threading;
+using Grapevine.Server.Exceptions;
 using Grapevine.Util;
 using HttpStatusCode = Grapevine.Util.HttpStatusCode;
 using ExtendedProtectionSelector = System.Net.HttpListener.ExtendedProtectionSelector;
@@ -182,7 +183,7 @@ namespace Grapevine.Server
             }
             catch (Exception e)
             {
-                var cshe = new CantStartHostException($"An error occured when trying to start the {GetType().FullName}", e);
+                var cshe = new UnableToStartHostException($"An error occured when trying to start the {GetType().FullName}", e);
                 Logger.Error(cshe);
                 if (EnableThrowingExceptions) throw cshe;
             }
@@ -205,7 +206,7 @@ namespace Grapevine.Server
             }
             catch (Exception e)
             {
-                var cshe = new CantStopHostException($"An error occured while trying to stop {GetType().FullName}", e);
+                var cshe = new UnableToStopHostException($"An error occured while trying to stop {GetType().FullName}", e);
                 Logger.Error(cshe);
                 if (EnableThrowingExceptions) throw cshe;
             }

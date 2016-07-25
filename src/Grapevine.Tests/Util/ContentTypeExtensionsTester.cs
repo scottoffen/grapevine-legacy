@@ -1,10 +1,10 @@
 ﻿using Grapevine.Util;
-using Xunit;
 using Shouldly;
+using Xunit;
 
 namespace Grapevine.Tests.Util
 {
-    public class ContentTypeTester
+    public class ContentTypeExtensionsTester
     {
         [Fact]
         public void content_type_extensions_is_text()

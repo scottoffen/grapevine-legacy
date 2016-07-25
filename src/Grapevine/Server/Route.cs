@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Grapevine.Util;
 using System.Text.RegularExpressions;
+using Grapevine.Server.Exceptions;
 
 namespace Grapevine.Server
 {
