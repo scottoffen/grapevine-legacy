@@ -93,6 +93,9 @@ _TeamCity*
 # DotCover is a Code Coverage Tool
 *.dotCover
 
+# OpenCover output directory (configured)
+GeneratedReports/
+
 # NCrunch
 *.ncrunch*
 _NCrunch_*
