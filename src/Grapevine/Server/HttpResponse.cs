@@ -330,7 +330,7 @@ namespace Grapevine.Server
             StatusCode = statusCode;
             byte[] buffer;
 
-            if (!string.IsNullOrWhiteSpace(response))
+            if (string.IsNullOrWhiteSpace(response))
             {
                 ContentType = ContentType.HTML;
                 buffer = Encoding.ASCII.GetBytes($"<h1>{StatusDescription}</h1>");

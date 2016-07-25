@@ -12,8 +12,8 @@
             var info = ct.GetType().GetMember(ct.ToString());
             if (info.Length <= 0) return null;
 
-            var attrs = info[0].GetCustomAttributes(typeof(ContentTypeMetadata), false);
-            return attrs.Length > 0 ? attrs[0] as ContentTypeMetadata : null;
+            var attributes = info[0].GetCustomAttributes(typeof(ContentTypeMetadata), false);
+            return attributes.Length > 0 ? attributes[0] as ContentTypeMetadata : null;
         }
 
         /// <summary>

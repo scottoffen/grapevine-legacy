@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.Cache;
-using System.Text.RegularExpressions;
+using Grapevine.Util;
 
 namespace Grapevine.Client
 {
@@ -14,7 +15,7 @@ namespace Grapevine.Client
         /// <summary>
         /// Gets the base URL of the server exposing resources
         /// </summary>
-        string BaseUrl { get; }
+        Uri BaseUrl { get; }
 
         /// <summary>
         /// Gets the cookies sent with and updated by each request
@@ -27,6 +28,31 @@ namespace Grapevine.Client
         ICredentials Credentials { get; set; }
 
         /// <summary>
+        /// Gets or sets the Domain Name System (DNS) host name or IP address of a server
+        /// </summary>
+        string Host { get; set; }
+
+        /// <summary>
+        /// Gets or sets the password associated with the user that accesses the resource, will be included in the URI
+        /// </summary>
+        string Password { get; set; }
+
+        /// <summary>
+        /// Gets or sets the port number of the URI
+        /// </summary>
+        int Port { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scheme name of the URI
+        /// </summary>
+        UriScheme Scheme { get; set; }
+
+        /// <summary>
+        /// The user name associated with the user that accesses the resource, will be included in the URI
+        /// </summary>
+        string UserName { get; set; }
+
+        /// <summary>
         /// Gets an IRestResponse returned from sending an IRestRequest to the server represented by the IRestClient
         /// </summary>
         IRestResponse Execute(IRestRequest restRequest);
@@ -34,15 +60,79 @@ namespace Grapevine.Client
 
     public class RestClient : IRestClient
     {
-        public string BaseUrl { get; }
+        protected UriBuilder Builder;
+
+        public Uri BaseUrl => Builder.Uri;
         public CookieContainer Cookies { get; }
         public ICredentials Credentials { get; set; }
 
-        public RestClient(string baseUrl)
+        public RestClient()
         {
-            if (baseUrl == null) throw new ArgumentNullException(nameof(baseUrl));
-            BaseUrl = Regex.Replace(baseUrl, "/$", "");
+            Builder = new UriBuilder();
+            Scheme = UriScheme.Http;
             Cookies = new CookieContainer();
+        }
+
+        public string Host
+        {
+            get { return Builder.Host;  }
+            set { Builder.Host = value; }
+        }
+
+        public string Password
+        {
+            get { return Builder.Password;  }
+            set { Builder.Password = value; }
+        }
+
+        public int Port
+        {
+            get { return Builder.Port;  }
+            set { Builder.Port = value; }
+        }
+
+        public UriScheme Scheme
+        {
+            get { return Enum.GetValues(typeof (UriScheme)).Cast<UriScheme>().First(t => t.ToScheme().Equals(Builder.Scheme)); }
+            set { Builder.Scheme = value.ToScheme(); }
+        }
+
+        public string UserName
+        {
+            get { return Builder.UserName;  }
+            set { Builder.UserName = value; }
+        }
+
+        public IRestResponse Execute(IRestRequest restRequest)
+        {
+            var request = restRequest.ToHttpWebRequest(Builder);
+
+            if (request.Credentials == null) request.Credentials = Credentials;
+            request.CookieContainer.Add(Cookies.GetCookies(request.RequestUri));
+
+            RestResponse response;
+            var stopwatch = Stopwatch.StartNew();
+
+            try
+            {
+                var httpresponse = (HttpWebResponse)request.GetResponse();
+                var elapsed = stopwatch.ElapsedMilliseconds;
+                response = new RestResponse(httpresponse) { ElapsedTime = elapsed };
+            }
+            catch (WebException e)
+            {
+                var elapsed = stopwatch.ElapsedMilliseconds;
+                var httpresponse = (HttpWebResponse)e.Response;
+                response = new RestResponse(httpresponse)
+                {
+                    ElapsedTime = elapsed,
+                    Error = e.Message,
+                    ErrorStatus = e.Status
+                };
+            }
+
+            if (response.Cookies != null) Cookies.Add(response.Cookies);
+            return response;
         }
 
         /// <summary>
@@ -79,37 +169,6 @@ namespace Grapevine.Client
         {
             get { return WebRequest.DefaultWebProxy; }
             set { WebRequest.DefaultWebProxy = value; }
-        }
-
-        public IRestResponse Execute(IRestRequest restRequest)
-        {
-            var request = restRequest.ToHttpWebRequest(BaseUrl);
-            if (request.Credentials == null) request.Credentials = Credentials;
-            request.CookieContainer.Add(Cookies.GetCookies(request.RequestUri));
-
-            RestResponse response;
-            var stopwatch = Stopwatch.StartNew();
-
-            try
-            {
-                var httpresponse = (HttpWebResponse) request.GetResponse();
-                var elapsed = stopwatch.ElapsedMilliseconds;
-                response = new RestResponse(httpresponse) {ElapsedTime = elapsed};
-            }
-            catch (WebException e)
-            {
-                var elapsed = stopwatch.ElapsedMilliseconds;
-                var httpresponse = (HttpWebResponse) e.Response;
-                response = new RestResponse(httpresponse)
-                {
-                    ElapsedTime = elapsed,
-                    Error = e.Message,
-                    ErrorStatus = e.Status
-                };
-            }
-
-            if (response.Cookies != null) Cookies.Add(response.Cookies);
-            return response;
         }
     }
 }

@@ -1,7 +1,7 @@
-﻿using System.Collections.Specialized;
+﻿using System;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Web;
 using Grapevine.Client.Exceptions;
 
 namespace Grapevine.Client
@@ -60,7 +60,7 @@ namespace Grapevine.Client
     {
         public override string ToString()
         {
-            return Collection.Count <= 0 ? string.Empty : string.Join("&", (from key in Collection.AllKeys let value = Collection.Get(key) select HttpUtility.UrlEncode(key) + "=" + HttpUtility.UrlEncode(value)).ToArray());
+            return Collection.Count <= 0 ? string.Empty : string.Join("&", (from key in Collection.AllKeys let value = Collection.Get(key) select Uri.EscapeDataString(key) + "=" + Uri.EscapeDataString(value)).ToArray());
         }
     }
 

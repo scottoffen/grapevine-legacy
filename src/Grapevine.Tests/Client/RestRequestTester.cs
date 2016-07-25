@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Cache;
 using System.Net.Security;
 using System.Security.Principal;
@@ -52,7 +53,13 @@ namespace Grapevine.Tests.Client
         public void rest_request_default_can_convert_to_httpwebrequest()
         {
             var restRequest = new RestRequest();
-            var httpRequest = restRequest.ToHttpWebRequest("http://localhost:1234");
+            var httpRequest =
+                restRequest.ToHttpWebRequest(new UriBuilder
+                {
+                    Scheme = UriScheme.Http.ToScheme(),
+                    Host = "localhost",
+                    Port = 1234
+                });
 
             httpRequest.Accept.ShouldBeNull();
             httpRequest.AllowAutoRedirect.ShouldBeTrue();

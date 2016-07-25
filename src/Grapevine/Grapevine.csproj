@@ -39,7 +39,6 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net" />
-    <Reference Include="System.Web" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
@@ -76,6 +75,8 @@
     <Compile Include="Util\ParamParser.cs" />
     <Compile Include="Util\PortFinder.cs" />
     <Compile Include="Util\ReadOnlyDictionary.cs" />
+    <Compile Include="Util\UriSchemaExtensions.cs" />
+    <Compile Include="Util\UriScheme.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

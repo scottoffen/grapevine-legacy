@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Grapevine.Util
+﻿namespace Grapevine.Util
 {
     /// <summary>
     /// MIME type of the body of the request or response

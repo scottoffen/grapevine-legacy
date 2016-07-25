@@ -243,9 +243,9 @@ namespace Grapevine.Client
         /// <summary>
         /// Gets the current request as an HttpWebRequest
         /// </summary>
-        /// <param name="baseUrl"></param>
+        /// <param name="builder"></param>
         /// <returns>HttpWebRequest</returns>
-        HttpWebRequest ToHttpWebRequest(string baseUrl);
+        HttpWebRequest ToHttpWebRequest(UriBuilder builder);
     }
 
     public class RestRequest : IRestRequest
@@ -360,9 +360,9 @@ namespace Grapevine.Client
             QueryString.Clear();
         }
 
-        public HttpWebRequest ToHttpWebRequest(string baseUrl)
+        public HttpWebRequest ToHttpWebRequest(UriBuilder builder)
         {
-            return Advanced.ToHttpWebRequest(baseUrl);
+            return Advanced.ToHttpWebRequest(builder);
         }
     }
 
@@ -381,12 +381,14 @@ namespace Grapevine.Client
         /// <summary>
         /// Gets the current request as an HttpWebRequest
         /// </summary>
-        /// <param name="baseUrl"></param>
+        /// <param name="builder"></param>
         /// <returns>HttpWebRequest</returns>
-        internal HttpWebRequest ToHttpWebRequest(string baseUrl)
+        internal HttpWebRequest ToHttpWebRequest(UriBuilder builder)
         {
-            var url = $"{baseUrl}/{_request.PathInfo}{(_request.QueryString.Count > 0 ? $"?{_request.QueryString}" : "")}";
-            var request = (HttpWebRequest) WebRequest.Create(url);
+            builder.Path = _request.PathInfo;
+            builder.Query = _request.QueryString.ToString();
+
+            var request = (HttpWebRequest) WebRequest.Create(builder.Uri);
 
             request.Headers = _request.Headers;
 

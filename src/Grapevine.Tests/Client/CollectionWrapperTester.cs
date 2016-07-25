@@ -42,7 +42,7 @@ namespace Grapevine.Tests.Client
 
             var qs = querystring.ToString();
 
-            qs.ShouldBe("My+Long+Key=My+Long+Value");
+            qs.ShouldBe("My%20Long%20Key=My%20Long%20Value");
         }
 
         [Fact]

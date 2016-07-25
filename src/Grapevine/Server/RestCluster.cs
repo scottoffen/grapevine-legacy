@@ -9,7 +9,7 @@ namespace Grapevine.Server
     /// </summary>
     public class RestCluster
     {
-        protected readonly Dictionary<string, IRestServer> _servers = new Dictionary<string, IRestServer>();
+        protected readonly Dictionary<string, IRestServer> Servers = new Dictionary<string, IRestServer>();
         protected bool Started;
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Grapevine.Server
         public void Add(string label, IRestServer server)
         {
             if (Started) server.Start();
-            _servers.Add(label, server);
+            Servers.Add(label, server);
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace Grapevine.Server
         /// </summary>
         public IRestServer Get(string label)
         {
-            return _servers.ContainsKey(label) ? _servers[label] : null;
+            return Servers.ContainsKey(label) ? Servers[label] : null;
         }
 
         /// <summary>
@@ -96,13 +96,13 @@ namespace Grapevine.Server
         /// </summary>
         public bool Remove(string label)
         {
-            if (!_servers.ContainsKey(label)) return true;
+            if (!Servers.ContainsKey(label)) return true;
 
             OnBeforeStopEach?.Invoke();
-            _servers[label].Stop();
+            Servers[label].Stop();
             OnAfterStopEach?.Invoke();
 
-            return _servers.Remove(label);
+            return Servers.Remove(label);
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace Grapevine.Server
         {
             OnBeforeStartAll?.Invoke();
 
-            foreach (var server in _servers.Values.Where(server => !server.IsListening))
+            foreach (var server in Servers.Values.Where(server => !server.IsListening))
             {
                 OnBeforeStartEach?.Invoke();
                 server.Start();
@@ -130,7 +130,7 @@ namespace Grapevine.Server
         {
             OnBeforeStopAll?.Invoke();
 
-            foreach (var server in _servers.Values.Where(server => server.IsListening))
+            foreach (var server in Servers.Values.Where(server => server.IsListening))
             {
                 OnBeforeStopEach?.Invoke();
                 server.Stop();

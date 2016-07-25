@@ -1,4 +1,5 @@
 ﻿using Grapevine.Client;
+using Grapevine.Util;
 using Shouldly;
 using Xunit;
 
@@ -7,14 +8,13 @@ namespace Grapevine.Tests.Client
     public class RestClientTester
     {
         [Fact]
-        public void rest_client_ctor_strips_trailing_slash()
+        public void rest_client_ctor()
         {
-            const string baseurl1 = "http://localhost:1234/";
-            const string baseurl2 = "http://localhost:1234";
+            const string baseurl2 = "http://localhost:1234/";
 
-            var client = new RestClient(baseurl1);
+            var client = new RestClient { Host = "localhost", Port = 1234, Scheme = UriScheme.Http };
 
-            client.BaseUrl.ShouldBe(baseurl2);
+            client.BaseUrl.AbsoluteUri.ShouldBe(baseurl2);
             client.Cookies.ShouldNotBeNull();
             client.Credentials.ShouldBeNull();
         }
