@@ -3,7 +3,7 @@ using Grapevine.Server;
 using Grapevine.Util;
 using Rhino.Mocks;
 
-namespace Grapevine.Test.Server
+namespace Grapevine.Tests.Server
 {
     public class RouteTestingHelper
     {

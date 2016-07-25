@@ -7,7 +7,7 @@ using Grapevine.Util;
 using Shouldly;
 using Xunit;
 
-namespace Grapevine.Test.Client
+namespace Grapevine.Tests.Client
 {
     public class RestRequestTester
     {

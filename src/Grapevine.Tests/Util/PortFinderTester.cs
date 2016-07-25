@@ -3,7 +3,7 @@ using Grapevine.Util;
 using Shouldly;
 using Xunit;
 
-namespace Grapevine.Test.Util
+namespace Grapevine.Tests.Util
 {
     public class PortFinderTester
     {

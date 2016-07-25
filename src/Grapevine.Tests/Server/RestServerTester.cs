@@ -2,7 +2,7 @@
 using Shouldly;
 using Grapevine.Server;
 
-namespace Grapevine.Test.Server
+namespace Grapevine.Tests.Server
 {
     public class RestServerTester
     {

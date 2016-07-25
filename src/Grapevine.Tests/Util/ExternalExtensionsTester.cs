@@ -3,7 +3,7 @@ using Grapevine.Util;
 using Xunit;
 using Shouldly;
 
-namespace Grapevine.Test.Util
+namespace Grapevine.Tests.Util
 {
     public class ExternalExtensionsTester
     {

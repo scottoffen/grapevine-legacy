@@ -4,7 +4,7 @@ using Grapevine.Util;
 using Shouldly;
 using Xunit;
 
-namespace Grapevine.Test.Server
+namespace Grapevine.Tests.Server
 {
     public class RouteTester
     {
