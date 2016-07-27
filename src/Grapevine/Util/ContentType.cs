@@ -746,6 +746,9 @@
         [ContentTypeMetadata(Value = "text/x-fortran", IsText = true)]
         FOR,
 
+        [ContentTypeMetadata(Value = "application/x-www-form-urlencoded", IsText = true)]
+        FormUrlEncoded,
+
         [ContentTypeMetadata(Value = "image/vnd.fpx", IsBinary = true)]
         FPX,
 
@@ -1471,6 +1474,9 @@
 
         [ContentTypeMetadata(Value = "model/vnd.mts", IsBinary = true)]
         MTS,
+
+        [ContentTypeMetadata(Value = "multipart/form-data", IsText = true)]
+        MultipartFormData,
 
         [ContentTypeMetadata(Value = "application/vnd.musician", IsBinary = true)]
         MUS,
