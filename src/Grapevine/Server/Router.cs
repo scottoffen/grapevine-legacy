@@ -13,14 +13,88 @@ namespace Grapevine.Server
     public interface IRouter
     {
         /// <summary>
+        /// Gets or sets a value to indicate whether request routing should continue even after a response has been sent.
+        /// </summary>
+        bool ContinueRoutingAfterResponseSent { get; set; }
+
+        /// <summary>
+        /// Gets the Exclusions that represents the types and namespaces to be excluded when scanning assemblies for routes
+        /// </summary>
+        IExclusions Exclusions { get; }
+
+        /// <summary>
+        /// Gets a list of registered routes in the order they were registered
+        /// </summary>
+        IList<IRoute> RoutingTable { get; }
+
+        /// <summary>
         /// Gets the scope used when scanning assemblies for routes
         /// </summary>
         string Scope { get; }
 
         /// <summary>
-        /// Gets or sets a value to indicate whether request routing should continue even after a response has been sent.
+        /// 
         /// </summary>
-        bool ContinueRoutingAfterResponseSent { get; set; }
+        /// <param name="func"></param>
+        /// <returns>IRouter</returns>
+        IRouter After(Func<IHttpContext, IHttpContext> func);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="httpMethod"></param>
+        /// <returns>IRouter</returns>
+        IRouter After(Func<IHttpContext, IHttpContext> func, HttpMethod httpMethod);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="startsWith"></param>
+        /// <returns>IRouter</returns>
+        IRouter After(Func<IHttpContext, IHttpContext> func, string startsWith);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="httpMethod"></param>
+        /// <param name="startsWith"></param>
+        /// <returns>IRouter</returns>
+        IRouter After(Func<IHttpContext, IHttpContext> func, HttpMethod httpMethod, string startsWith);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="func"></param>
+        /// <returns>IRouter</returns>
+        IRouter Before(Func<IHttpContext, IHttpContext> func);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="httpMethod"></param>
+        /// <returns>IRouter</returns>
+        IRouter Before(Func<IHttpContext, IHttpContext> func, HttpMethod httpMethod);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="startsWith"></param>
+        /// <returns>IRouter</returns>
+        IRouter Before(Func<IHttpContext, IHttpContext> func, string startsWith);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="func"></param>
+        /// <param name="httpMethod"></param>
+        /// <param name="startsWith"></param>
+        /// <returns>IRouter</returns>
+        IRouter Before(Func<IHttpContext, IHttpContext> func, HttpMethod httpMethod, string startsWith);
 
         /// <summary>
         /// Adds the <c>Type</c> to the list of excluded types when scanning assemblies for routes
@@ -44,14 +118,25 @@ namespace Grapevine.Server
         IRouter ExcludeNameSpace(string nameSpace);
 
         /// <summary>
-        /// Gets the Exclusions that represents the types and namespaces to be excluded when scanning assemblies for routes
+        /// Adds the routes in router parameter to the end of the current routing table
         /// </summary>
-        IExclusions Exclusions { get; }
+        /// <param name="router"></param>
+        /// <returns>IRouter</returns>
+        IRouter Import(IRouter router);
 
         /// <summary>
-        /// Gets a list of registered routes in the order they were registered
+        /// Adds the routes from the router type parameter to the end of the current routing table
         /// </summary>
-        IList<IRoute> RoutingTable { get; }
+        /// <param name="type"></param>
+        /// <returns>IRouter</returns>
+        IRouter Import(Type type);
+
+        /// <summary>
+        /// Adds the routes from the router type parameter to the end of the current routing table
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>IRouter</returns>
+        IRouter Import<T>() where T : IRouter;
 
         /// <summary>
         /// Adds the route to the routing table
@@ -145,34 +230,6 @@ namespace Grapevine.Server
         IRouter RegisterAssembly();
 
         /// <summary>
-        /// Adds the routes in router parameter to the end of the current routing table
-        /// </summary>
-        /// <param name="router"></param>
-        /// <returns>IRouter</returns>
-        IRouter Import(IRouter router);
-
-        /// <summary>
-        /// Adds the routes from the router type parameter to the end of the current routing table
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns>IRouter</returns>
-        IRouter Import(Type type);
-
-        /// <summary>
-        /// Adds the routes from the router type parameter to the end of the current routing table
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns>IRouter</returns>
-        IRouter Import<T>() where T : IRouter;
-
-        /// <summary>
-        /// Gets a list of enabled registered routes that match the IHttpContext provided
-        /// </summary>
-        /// <param name="context"></param>
-        /// <returns>IList&lt;IRoute&gt;</returns>
-        IList<IRoute> RouteFor(IHttpContext context);
-
-        /// <summary>
         /// Routes the IHttpContext through all enabled registered routes that match the IHttpConext provided; returns true if at least one route is invoked
         /// </summary>
         /// <param name="context"></param>
@@ -186,6 +243,13 @@ namespace Grapevine.Server
         /// <param name="routing"></param>
         /// <returns></returns>
         bool Route(IHttpContext context, IList<IRoute> routing);
+
+        /// <summary>
+        /// Gets a list of enabled registered routes that match the IHttpContext provided
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns>IList&lt;IRoute&gt;</returns>
+        IList<IRoute> RouteFor(IHttpContext context);
     }
 
     public class Router : IRouter
