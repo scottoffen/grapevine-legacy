@@ -12,6 +12,10 @@ namespace Grapevine.Server
     /// </summary>
     public interface IRouter
     {
+        Func<IHttpContext, IHttpContext> After { get; set; }
+
+        Func<IHttpContext, IHttpContext> Before { get; set; }
+
         /// <summary>
         /// Gets or sets a value to indicate whether request routing should continue even after a response has been sent.
         /// </summary>
@@ -31,70 +35,6 @@ namespace Grapevine.Server
         /// Gets the scope used when scanning assemblies for routes
         /// </summary>
         string Scope { get; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="func"></param>
-        /// <returns>IRouter</returns>
-        IRouter After(Func<IHttpContext, IHttpContext> func);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="httpMethod"></param>
-        /// <returns>IRouter</returns>
-        IRouter After(Func<IHttpContext, IHttpContext> func, HttpMethod httpMethod);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="startsWith"></param>
-        /// <returns>IRouter</returns>
-        IRouter After(Func<IHttpContext, IHttpContext> func, string startsWith);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="httpMethod"></param>
-        /// <param name="startsWith"></param>
-        /// <returns>IRouter</returns>
-        IRouter After(Func<IHttpContext, IHttpContext> func, HttpMethod httpMethod, string startsWith);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="func"></param>
-        /// <returns>IRouter</returns>
-        IRouter Before(Func<IHttpContext, IHttpContext> func);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="httpMethod"></param>
-        /// <returns>IRouter</returns>
-        IRouter Before(Func<IHttpContext, IHttpContext> func, HttpMethod httpMethod);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="startsWith"></param>
-        /// <returns>IRouter</returns>
-        IRouter Before(Func<IHttpContext, IHttpContext> func, string startsWith);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="func"></param>
-        /// <param name="httpMethod"></param>
-        /// <param name="startsWith"></param>
-        /// <returns>IRouter</returns>
-        IRouter Before(Func<IHttpContext, IHttpContext> func, HttpMethod httpMethod, string startsWith);
 
         /// <summary>
         /// Adds the <c>Type</c> to the list of excluded types when scanning assemblies for routes
@@ -257,8 +197,10 @@ namespace Grapevine.Server
         private readonly Exclusions _exclusions;
         private readonly IList<IRoute> _routingTable;
 
-        public string Scope { get; protected set; }
+        public Func<IHttpContext, IHttpContext> After { get; set; }
+        public Func<IHttpContext, IHttpContext> Before { get; set; }
         public bool ContinueRoutingAfterResponseSent { get; set; }
+        public string Scope { get; protected set; }
 
         /// <summary>
         /// Returns a new Router object
@@ -422,11 +364,11 @@ namespace Grapevine.Server
             var routeContext = context;
             var routeCounter = 0;
 
-            foreach (var route in routing)
-            {
-                if (!route.Enabled) continue;
-                routeCounter++;
+            if (Before != null) routeContext = After.Invoke(routeContext);
 
+            foreach (var route in routing.Where(route => route.Enabled))
+            {
+                routeCounter++;
                 routeContext = route.Invoke(routeContext);
 
                 LogRouteInvoked(context, route, routeCounter);
@@ -434,7 +376,9 @@ namespace Grapevine.Server
                 if (routeContext.WasRespondedTo) break;
             }
 
-            LogEndRequestRouting(context, routing.Count, routeCounter);
+            if (After != null) routeContext = After.Invoke(routeContext);
+
+            LogEndRequestRouting(routeContext, routing.Count, routeCounter);
             return routeContext.WasRespondedTo;
         }
 
