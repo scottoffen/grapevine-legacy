@@ -118,6 +118,7 @@ namespace Grapevine.Server
             if (methodInfo == null) throw new ArgumentNullException(nameof(methodInfo));
             Function = ConvertMethodToFunc(methodInfo);
             if (methodInfo.ReflectedType != null) Name = $"{methodInfo.ReflectedType.FullName}.{methodInfo.Name}";
+            Description = $"{HttpMethod} {PathInfo} > {Name}";
         }
 
         /// <summary>
@@ -151,6 +152,7 @@ namespace Grapevine.Server
             if (function == null) throw new ArgumentNullException(nameof(function));
             Function = function;
             Name = $"{Function.Method.ReflectedType}.{Function.Method.Name}";
+            Description = $"{HttpMethod} {PathInfo} > {Name}";
         }
 
         /// <summary>
