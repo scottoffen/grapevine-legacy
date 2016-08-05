@@ -218,6 +218,12 @@ namespace Grapevine.Server
             Listener.Close();
         }
 
+        public IRestServer LogToConsole()
+        {
+            Logger = new ConsoleLogger();
+            return this;
+        }
+
         /// <summary>
         /// For use in routes that want to stop the server; starts a new thread and then calls Stop on the server
         /// </summary>
