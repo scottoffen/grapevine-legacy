@@ -289,7 +289,12 @@ namespace Grapevine.Server
                         return;
                     }
 
-                    if (!Router.Route(PublicFolder.SendPublicFile(context))) throw new RouteNotFound(context);
+                    context = (HttpContext) PublicFolder.SendPublicFile(context);
+
+                    if (!context.WasRespondedTo)
+                    {
+                        if (!Router.Route(context)) throw new RouteNotFound(context);
+                    }
                 }
                 catch (RouteNotFound)
                 {
