@@ -221,6 +221,7 @@ namespace Grapevine.Server
         public IRestServer LogToConsole()
         {
             Logger = new ConsoleLogger();
+            Router.Logger = Logger;
             return this;
         }
 

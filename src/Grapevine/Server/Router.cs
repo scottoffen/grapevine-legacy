@@ -79,6 +79,11 @@ namespace Grapevine.Server
         IRouter Import<T>() where T : IRouter;
 
         /// <summary>
+        /// Gets or sets the internal logger
+        /// </summary>
+        IGrapevineLogger Logger { get; set; }
+
+        /// <summary>
         /// Adds the route to the routing table
         /// </summary>
         /// <param name="route"></param>
@@ -201,6 +206,7 @@ namespace Grapevine.Server
         public Func<IHttpContext, IHttpContext> Before { get; set; }
         public bool ContinueRoutingAfterResponseSent { get; set; }
         public string Scope { get; protected set; }
+        public IGrapevineLogger Logger { get; set; }
 
         /// <summary>
         /// Returns a new Router object
@@ -209,6 +215,7 @@ namespace Grapevine.Server
         {
             _exclusions = new Exclusions();
             _routingTable = new List<IRoute>();
+            Logger = new NullLogger();
         }
 
         /// <summary>
@@ -406,6 +413,7 @@ namespace Grapevine.Server
         protected internal IList<IRoute> GenerateRoutes(MethodInfo method, string basePath)
         {
             var routes = new List<IRoute>();
+            Logger.Trace($"Generating routes from method {method.Name}");
 
             var basepath = string.IsNullOrWhiteSpace(basePath)
                 ? string.Empty
@@ -430,7 +438,9 @@ namespace Grapevine.Server
 
                 if (!pathinfo.StartsWith("/")) pathinfo = $"/{pathinfo}";
 
-                routes.Add(new Route(method, attribute.HttpMethod, $"{prefix}{basepath}{pathinfo}"));
+                var route = new Route(method, attribute.HttpMethod, $"{prefix}{basepath}{pathinfo}");
+                Logger.Trace($"Generated route {route}");
+                routes.Add(route);
             }
 
             return routes;
@@ -448,9 +458,16 @@ namespace Grapevine.Server
 
             if (type.IsRestResource())
             {
-                if (!string.IsNullOrWhiteSpace(Scope) && !Scope.Equals(type.RestResource().Scope)) return routes;
+                if (!string.IsNullOrWhiteSpace(Scope) && !Scope.Equals(type.RestResource().Scope))
+                {
+                    Logger.Trace($"Excluding type {type.Name} due to scoping differences");
+                    return routes;
+                }
+
                 basepath = type.RestResource().BasePath;
             }
+
+            Logger.Trace($"Generating routes from type {type.Name}");
 
             foreach (var method in type.GetMethods().Where(m => m.IsRestRoute()))
             {
@@ -468,10 +485,16 @@ namespace Grapevine.Server
         protected internal IList<IRoute> GenerateRoutes(Assembly assembly)
         {
             var routes = new List<IRoute>();
+            Logger.Trace($"Generating routes for assembly {assembly.GetName().Name}");
 
             foreach (var type in assembly.GetTypes().Where(t => t.IsRestResource()))
             {
-                if (Exclusions.IsExcluded(type)) continue;
+                if (Exclusions.IsExcluded(type))
+                {
+                    Logger.Trace($"Excluding type {type.Name} due to exclusion rules");
+                    continue;
+                }
+
                 routes.AddRange(GenerateRoutes(type));
             }
 
