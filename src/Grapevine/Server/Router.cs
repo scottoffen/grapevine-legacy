@@ -372,7 +372,7 @@ namespace Grapevine.Server
             var routeContext = context;
             var routeCounter = 0;
 
-            if (Before != null) routeContext = After.Invoke(routeContext);
+            if (Before != null) routeContext = Before.Invoke(routeContext);
 
             foreach (var route in routing.Where(route => route.Enabled))
             {
