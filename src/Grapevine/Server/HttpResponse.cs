@@ -181,6 +181,7 @@ namespace Grapevine.Server
         internal HttpResponse(HttpListenerResponse response, NameValueCollection requestHeaders)
         {
             Response = response;
+            Response.ContentEncoding = Encoding.ASCII;
             RequestHeaders = requestHeaders;
             
             ResponseSent = false;
