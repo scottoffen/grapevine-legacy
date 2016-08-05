@@ -317,7 +317,7 @@ namespace Grapevine.Server
 
         public IRouter RegisterAssembly()
         {
-            AddRangeToGlobalStack(GenerateRoutes(Assembly.GetCallingAssembly()));
+            AddRangeToGlobalStack(GenerateRoutes(Assembly.GetEntryAssembly()));
             return this;
         }
 
