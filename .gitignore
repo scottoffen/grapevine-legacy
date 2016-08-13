@@ -25,7 +25,7 @@ bld/
 TestResult.xml
 
 #SonarQube
-.sonar
+.sonarqube/
 
 # Build Results of an ATL Project
 [Dd]ebugPS/

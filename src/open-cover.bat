@@ -1,6 +1,6 @@
 @ECHO OFF
 
-Set SearchDirectory=%~dp0Grapevine.Tests\bin\Debug
+SET SearchDirectory=%~dp0Grapevine.Tests\bin\Debug
 SET DllContainingTests=%~dp0Grapevine.Tests\bin\Debug\Grapevine.Tests.dll
 
 for /R "%~dp0packages" %%a in (*) do if /I "%%~nxa"=="xunit.console.exe" SET TestRunnerExe=%%~dpnxa
@@ -10,12 +10,12 @@ for /R "%~dp0packages" %%a in (*) do if /I "%%~nxa"=="ReportGenerator.exe" SET R
 if not exist "%~dp0GeneratedReports" mkdir "%~dp0GeneratedReports"
 call :RunOpenCoverUnitTestMetrics
 
-if %errorlevel% equ 0 ( 
- call :RunReportGeneratorOutput 
+if %errorlevel% equ 0 (
+ call :RunReportGeneratorOutput
 )
 
-if %errorlevel% equ 0 ( 
- call :RunLaunchReport 
+if %errorlevel% equ 0 (
+ call :RunLaunchReport
 )
 exit /b %errorlevel%
 
