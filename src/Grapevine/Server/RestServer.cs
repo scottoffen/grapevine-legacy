@@ -293,10 +293,10 @@ namespace Grapevine.Server
 
                     if (!context.WasRespondedTo)
                     {
-                        if (!Router.Route(context)) throw new RouteNotFound(context);
+                        if (!Router.Route(context)) throw new RouteNotFoundException(context);
                     }
                 }
-                catch (RouteNotFound)
+                catch (RouteNotFoundException)
                 {
                     context.Response.SendResponse(HttpStatusCode.NotFound);
                 }

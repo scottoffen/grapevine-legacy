@@ -366,7 +366,7 @@ namespace Grapevine.Server
         {
             LogBeginRequestRouting(context, routing.Count);
 
-            if (routing == null || !routing.Any()) throw new RouteNotFound(context);
+            if (routing == null || !routing.Any()) throw new RouteNotFoundException(context);
             if (context.WasRespondedTo) return true;
 
             var routeContext = context;
