@@ -3,7 +3,7 @@ using Grapevine.Util;
 
 namespace Grapevine.Server
 {
-    public interface IServerProperties
+    public interface IServerSettings
     {
         /// <summary>
         /// Gets or sets the number of HTTP connection threads maintained per processor; defaults to 50
@@ -81,7 +81,7 @@ namespace Grapevine.Server
         IRouter Router { get; set; }
     }
 
-    public class ServerOptions : IServerProperties
+    public class ServerSettings : IServerSettings
     {
         public int Connections { get; set; }
         public bool EnableThrowingExceptions { get; set; }
@@ -108,7 +108,7 @@ namespace Grapevine.Server
             set { OnAfterStop = value; }
         }
 
-        public ServerOptions()
+        public ServerSettings()
         {
             Connections = 50;
             Host = "localhost";
