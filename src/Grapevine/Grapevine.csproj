@@ -60,7 +60,7 @@
     <Compile Include="Server\HttpRequest.cs" />
     <Compile Include="Server\HttpResponse.cs" />
     <Compile Include="Server\DynamicProperties.cs" />
-    <Compile Include="Server\ServerOptions.cs" />
+    <Compile Include="Server\ServerSettings.cs" />
     <Compile Include="Server\PublicFolder.cs" />
     <Compile Include="Server\RestCluster.cs" />
     <Compile Include="Server\RestAttributes.cs" />

@@ -11,7 +11,7 @@ namespace Grapevine.Tests.Server
         [Fact]
         public void generic_configuration()
         {
-            var options = new ServerOptions();
+            var options = new ServerSettings();
 
             options.Logger.ShouldNotBeNull();
             options.Logger.ShouldBeOfType<NullLogger>();
@@ -41,7 +41,7 @@ namespace Grapevine.Tests.Server
         [Fact]
         public void on_start_is_synonym_for_on_after_start()
         {
-            var options = new ServerOptions();
+            var options = new ServerSettings();
 
             Action action1 = () => {  };
             Action action2 = () => {  };
@@ -62,7 +62,7 @@ namespace Grapevine.Tests.Server
         [Fact]
         public void on_stop_is_synonym_for_on_after_stop()
         {
-            var options = new ServerOptions();
+            var options = new ServerSettings();
 
             Action action1 = () => {  };
             Action action2 = () => {  };

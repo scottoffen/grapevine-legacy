@@ -13,7 +13,7 @@ namespace Grapevine.Server
     /// <summary>
     /// Provides a programmatically controlled REST implementation for a single Prefix using HttpListener
     /// </summary>
-    public interface IRestServer : IServerProperties, IDynamicProperties, IDisposable
+    public interface IRestServer : IServerSettings, IDynamicProperties, IDisposable
     {
         /// <summary>
         /// Gets a value that indicates whether HttpListener has been started
@@ -57,9 +57,9 @@ namespace Grapevine.Server
         public Action OnAfterStop { get; set; }
         public IRouter Router { get; set; }
 
-        public RestServer() : this(new ServerOptions()) { }
+        public RestServer() : this(new ServerSettings()) { }
 
-        public RestServer(ServerOptions options)
+        public RestServer(ServerSettings options)
         {
             Listener = new HttpListener();
             Listening = new Thread(HandleRequests);
@@ -83,14 +83,14 @@ namespace Grapevine.Server
             Listener.IgnoreWriteExceptions = true;
         }
 
-        public static RestServer For(Action<ServerOptions> configure)
+        public static RestServer For(Action<ServerSettings> configure)
         {
-            var options = new ServerOptions();
+            var options = new ServerSettings();
             configure(options);
             return new RestServer(options);
         }
 
-        public static RestServer For<T>() where T : ServerOptions, new()
+        public static RestServer For<T>() where T : ServerSettings, new()
         {
             return new RestServer(new T());
         }
