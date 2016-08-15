@@ -25,7 +25,7 @@ The focus is on simplicity, and while Grapevine is intended for use in applicati
 
 - Grapevine has **minimal configuration** requirements
 
-- Grapevine allows you to **map specific methods to HTTP Method and URL patterns**
+- Grapevine allows you to **map specific methods to HTTP verbs and URL patterns**
 
 - Grapevine supports using **regular expressions**
 
