@@ -191,7 +191,6 @@ namespace Grapevine.Server
 
         public IHttpContext Invoke(IHttpContext context)
         {
-            if (context.WasRespondedTo) return context;
             context.Request.PathParameters = ParseParams(context.Request.PathInfo);
             return Function(context);
         }
