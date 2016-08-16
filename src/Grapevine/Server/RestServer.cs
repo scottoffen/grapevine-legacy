@@ -23,7 +23,7 @@ namespace Grapevine.Server
         /// <summary>
         /// Gets the prefix created by combining the Protocol, Host and Port properties into a scheme and authority
         /// </summary>
-        string Origin { get; }
+        string ListenerPrefix { get; }
 
         /// <summary>
         /// Starts the server: executes OnBeforeStart, starts the HttpListener, then executes OnAfterStart if the HttpListener is listening
@@ -134,7 +134,7 @@ namespace Grapevine.Server
             set { OnAfterStop = value; }
         }
 
-        public string Origin => $"{Protocol}://{Host}:{Port}/";
+        public string ListenerPrefix => $"{Protocol}://{Host}:{Port}/";
 
         public string Port
         {
@@ -168,7 +168,7 @@ namespace Grapevine.Server
                 OnBeforeStart?.Invoke();
 
                 IsStopping = false;
-                Listener.Prefixes.Add(Origin);
+                Listener.Prefixes.Add(ListenerPrefix);
                 Listener.Start();
                 Listening.Start();
 

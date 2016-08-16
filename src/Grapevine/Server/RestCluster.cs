@@ -70,8 +70,8 @@ namespace Grapevine.Server
         /// <returns>Assigned labled of the server that was addded</returns>
         public string Add(IRestServer server)
         {
-            Add(server.Origin, server);
-            return server.Origin;
+            Add(server.ListenerPrefix, server);
+            return server.ListenerPrefix;
         }
 
         /// <summary>
