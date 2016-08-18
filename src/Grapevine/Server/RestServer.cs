@@ -40,7 +40,7 @@ namespace Grapevine.Server
     {
         private string _host;
         private string _port;
-        private string _protocol;
+        private string _protocol = "http";
         private int _connections;
         protected bool IsStopping;
         protected readonly HttpListener Listener;
@@ -75,9 +75,9 @@ namespace Grapevine.Server
             OnBeforeStop = options.OnBeforeStop;
             OnAfterStop = options.OnAfterStop;
             Port = options.Port;
-            Protocol = options.Protocol;
             PublicFolder = options.PublicFolder;
             Router = options.Router;
+            UseHttps = options.UseHttps;
 
             Advanced = new AdvancedRestServer(Listener);
             Listener.IgnoreWriteExceptions = true;
@@ -134,7 +134,7 @@ namespace Grapevine.Server
             set { OnAfterStop = value; }
         }
 
-        public string ListenerPrefix => $"{Protocol}://{Host}:{Port}/";
+        public string ListenerPrefix => $"{_protocol}://{Host}:{Port}/";
 
         public string Port
         {
@@ -146,17 +146,17 @@ namespace Grapevine.Server
             }
         }
 
-        public string Protocol
+        public PublicFolder PublicFolder { get; }
+
+        public bool UseHttps
         {
-            get { return _protocol; }
+            get { return _protocol == "https"; }
             set
             {
                 if (IsListening) throw new ServerStateException();
-                _protocol = value.ToLower();
+                _protocol = value ? "https" : "http";
             }
         }
-
-        public PublicFolder PublicFolder { get; }
 
         public void Start()
         {

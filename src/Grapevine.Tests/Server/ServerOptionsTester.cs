@@ -22,7 +22,7 @@ namespace Grapevine.Tests.Server
             options.PublicFolder.ShouldNotBeNull();
             options.PublicFolder.ShouldBeOfType<PublicFolder>();
 
-            options.Protocol.ShouldBe("http");
+            options.UseHttps.ShouldBeFalse();
             options.Host.ShouldBe("localhost");
             options.Port.ShouldBe("1234");
             options.Connections.ShouldBe(50);

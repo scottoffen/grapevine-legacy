@@ -63,14 +63,6 @@ namespace Grapevine.Server
         string Port { get; set; }
 
         /// <summary>
-        /// Gets or sets the case insensitive URI scheme (protocol) to be used when creating the HttpListener prefix; e.g. "http" or "https", defaults to http
-        /// <para>&#160;</para>
-        /// Note that if you create an HttpListener using https, you must select a Server Certificate for the listener. See the MSDN documentation on the HttpListener class for more information.<br />
-        /// https://msdn.microsoft.com/en-us/library/system.net.httplistener(v=vs.110).aspx
-        /// </summary>
-        string Protocol { get; set; }
-
-        /// <summary>
         /// Gets the PublicFolder object to use for serving static content
         /// </summary>
         PublicFolder PublicFolder { get; }
@@ -79,6 +71,14 @@ namespace Grapevine.Server
         /// Gets or sets the instance of IRouter to be used by this server to route incoming HTTP requests
         /// </summary>
         IRouter Router { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating that the listner should use the https protocol instead of http
+        /// <para>&#160;</para>
+        /// Note that if you create an HttpListener using https, you must select a Server Certificate for the listener. See the MSDN documentation on the HttpListener class for more information.<br />
+        /// https://msdn.microsoft.com/en-us/library/system.net.httplistener(v=vs.110).aspx
+        /// </summary>
+        bool UseHttps { get; set; }
     }
 
     public class ServerSettings : IServerSettings
@@ -92,9 +92,9 @@ namespace Grapevine.Server
         public Action OnBeforeStop { get; set; }
         public Action OnAfterStop { get; set; }
         public string Port { get; set; }
-        public string Protocol { get; set; }
         public PublicFolder PublicFolder { get; }
         public IRouter Router { get; set; }
+        public bool UseHttps { get; set; }
 
         public Action OnStart
         {
@@ -114,9 +114,9 @@ namespace Grapevine.Server
             Host = "localhost";
             Logger = new NullLogger();
             Port = "1234";
-            Protocol = "http";
             PublicFolder = new PublicFolder();
             Router = new Router();
+            UseHttps = false;
         }
     }
 }
