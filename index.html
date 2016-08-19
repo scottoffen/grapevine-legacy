@@ -99,9 +99,53 @@
 		<div class="container">
 			<div class="row">
 				<h1>Grapevine</h1>
-				<p>Grapevine is both a REST server <b>and</b> a REST client. At this point, the majority interest in Grapevine tends to revolve around the <code>RestServer</code> over the <code>RestClient</code>. Hence, this initial draft of the documentation will focus on the implementation and usage of <code>RestServer</code>.</p>
-				<p>The <code>RestServe</code> contains methods to configure and start an <a href="https://msdn.microsoft.com/en-us/library/system.net.httplistener%28v=vs.110%29.aspx?f=255&MSPPError=-2147217396" target="_blank"><code>HttpListener</code></a> instance. It listens on the specified protocol/host/port combination and drops all incoming http requests into a queue. The server then has number of worker threads that constantly monitor the queue, pull out the <code>HttpListenerContext</code> instances, wraps it in an <code>HttpContext</code> instance and </p>
+				<p>Grapevine is both a REST server <b>and</b> a REST client. At this point, the majority interest in Grapevine tends to revolve around the server capabilities. Hence, this initial draft of the documentation will focus on the implementation and usage of <code>RestServer</code>.</p>
+				<p>The <code>RestServe</code> contains methods to configure and start an <a href="https://msdn.microsoft.com/en-us/library/system.net.httplistener%28v=vs.110%29.aspx?f=255&MSPPError=-2147217396" target="_blank"><code>HttpListener</code></a> instance. It listens on the specified protocol/host/port combination and drops all incoming http requests into a queue. The server then has number of worker threads that constantly monitor the queue, pull out the <code>HttpListenerContext</code> instances, wraps it in an <code>HttpContext</code> instance and and routes it to the matching <code>Route</code> instances in the servers internal <code>Router</code>.</p>
 			</div>
+
+			<!-- Dynamic Properties -->
+			<div class="row">
+				<div class="col-md-4">
+					<h3>Dynamic Properties</h3>
+					<p>One of the first things to be aware of is the ability to extend an object via dynamic properties. Currently, both <code>IRestServer</code> and <code>IHttpContext</code> require you to implement the <code>IDynamicProperties</code> interface. It is recommended that everything that requires this interface implement it via the <code>DynamicProperties</code> abstract class.</p>
+					<p>Creating a dynamic property is then only a matter of creating some extension methods around the larger interface. The example code here shows adding a property called <code>Database</code> to the <code>IRestServer</code> interface. Note that you will always want to add the properties to the interface, not the concrete class, as everything internally is referenced by interface.</p>
+				</div>
+				<div class="col-md-8">
+					<pre class="codeblock">
+						<code class="language-csharp">
+							public class Database { /* this can be anything you want */ }
+
+							public static class ServerDatabaseExtensionMethods
+							{
+								private static string DbKey = "Database";
+
+								public static void SetDatabase(this IRestServer server, Database db)
+								{
+									server.Properties[DbKey] = db;
+								}
+
+								public static Database GetDatabase(this IRestServer server)
+								{
+									if (server.ContainsProperty(DbKey))
+									{
+										return server.GetPropertyValueAs<Database>(DbKey);
+									}
+
+									// You could throw an error instead
+									return null;
+								}
+							}
+
+							// And now you can get and set the dynamic property
+							var server = new RestServer();
+							server.SetDatabase(new Database());
+							var database = server.GetDatabase();
+						</code>
+					</pre>
+				</div>
+			</div>
+
+
 			<div class="row">
 				<h2>HttpContext</h2>
 				<hr/>
@@ -109,13 +153,42 @@
 			<div class="row">
 				<div class="col-md-4">
 					<h3>HttpContext</h3>
-					<p>Grapevine wraps the <code>HttpListenerContext</code> inside an <code>HttpContext</code> object. This object implements the <code>IHttpContext</code> interface. The method signature of all methods and generic delegates used by routes should accept an <code>IHttpContext</code> as the single parameter and return an <code>IHttpContext</code>.</p>
+					<p>Grapevine wraps the <code>HttpListenerContext</code> inside an internal <code>HttpContext</code> object. This object implements the <code>IHttpContext</code> interface. The method signature of all methods and generic delegates used by routes should accept an <code>IHttpContext</code> as the single parameter and return an <code>IHttpContext</code> and routes it to matching routes.</p>
 					<p>The provided implementation, <code>HttpContext</code>, has an internal constructor and therefore can only be instantiated by the <code>RestServer</code>.</p>
 				</div>
 				<div class="col-md-8">
 					<pre class="codeblock">
 						<code class="language-csharp">
+						    /// <summary>
+						    /// Provides modified access to the request and response objects used by the HttpListener class
+						    /// </summary>
+						    public interface IHttpContext : IDynamicProperties
+						    {
+						        /// <summary>
+						        /// Gets the IHttpRequest that represents a client's request for a resource
+						        /// </summary>
+						        IHttpRequest Request { get; }
 
+						        /// <summary>
+						        /// Gets the IHttpResponse object that will be sent to the client in response to the client's request
+						        /// </summary>
+						        IHttpResponse Response { get; }
+
+						        /// <summary>
+						        /// Gets an object used to obtain identity, authentication information, and security roles for the client whose request is represented by the underlying HttpListenerContext object
+						        /// </summary>
+						        IPrincipal User { get; }
+
+						        /// <summary>
+						        /// Gets the IRestServer object the client request was sent to
+						        /// </summary>
+						        IRestServer Server { get; }
+
+						        /// <summary>
+						        /// Returns a value that indicate whether or not the client request has been responded to
+						        /// </summary>
+						        bool WasRespondedTo { get; }
+						    }
 						</code>
 					</pre>
 				</div>
