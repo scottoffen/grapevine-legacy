@@ -234,8 +234,8 @@
 				<div class="col-md-4">
 					<h3>HttpResponse</h3>
 					<p><code>HttpResponse</code> implements <code>IHttpResponse</code> which - again, with a few notable exceptions - exposes the same set of properties as <a href="https://msdn.microsoft.com/en-us/library/system.net.httplistenerresponse(v=vs.100).aspx" target="_blank"><code>HttpListenerResponse</code></a>.
-					<p>Here, in addition to some convinience properties, there are the SendResponse() convinience methods, to simplify the process of responding to the client.</p>
-					<div class="well well-sm">The <code>Advanced</code> property on the response provides direct access to the request output stream vai <code>OutputStream</code> as well as access to the <code>Close()</code> methods you can find on <code>HttpListenerResponse</code>.</div>
+					<p>Here, in addition to some convinience properties, there are the <code>SendResponse()</code> convinience methods, to simplify the process of responding to the client. Most of the parameters can be set independent of the <code>SendResponse()</code> methods.</p>
+					<div class="well well-sm">The <code>Advanced</code> property on the response provides direct access to the request output stream via <code>OutputStream</code> as well as access to the <code>Close()</code> methods you can find on <code>HttpListenerResponse</code>.</div>
 				</div>
 				<div class="col-md-8">
 					<pre class="codeblock">
@@ -256,7 +256,38 @@
 							// SendResponse() has multiple overloads, intended to simplify how you send a response
 							// to the client; in all cases, the response output stream and the response get closed
 							// and the ResponseSent property is set to true.
-							response.SendResponse();
+
+							// If you pass a string of text, that text will be sent to the client
+							response.SendResponse("Hello, world!");
+
+							// If you pass a file path as a string and a true value, the file will be returned to
+							// the client
+							response.SendResponse(@"c:\data\somefile.xls", true);
+
+							// If you pass a string and an encoding type, the encoding type will be used to
+							// return the text to the client
+							response.SendResponse("Hello, world!", Encoding.UTF8);
+
+							// If you pass a FileStream and a ContentType, the file will be sent to the client
+							// and the Content-type header will be set to the ContentType provided
+							response.SendResponse(file_stream, ContentType.XLSX, "myfile.xlsx")
+
+							// If you do the same as above, but also pass a true value, the the file will be
+							// downloaded by the browser instead of loaded in the browser
+							response.SendResponse(file_stream, ContentType.XLSX, "myfile.xlsx", true);
+
+							// If you pass a status code and an exception, the exception will be returned to the
+							// client using the status code provided
+							response.SendResponse(HttpStatusCode.InternalServerError, new Exception("Bad stuff happened here"));
+
+							// If you pass a status code and some text, the text will be returned to the client
+							// using the status code provided
+							response.SendResponse(HttpStatusCode.ImATeapot, "Yes, this is a real (kind of) status code.");
+
+							// If you pass just the status code, the text of the status code will be sent to the
+							// client
+							response.SendResponse(HttpStatusCode.EnhanceYourCalm);
+							// the body will contain the text "Enhance Your Calm"
 						</code>
 					</pre>
 				</div>
