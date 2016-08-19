@@ -278,11 +278,11 @@
 
 							// If you pass a status code and an exception, the exception will be returned to the
 							// client using the status code provided
-							response.SendResponse(HttpStatusCode.InternalServerError, new Exception("Bad stuff happened here"));
+							response.SendResponse(HttpStatusCode.InternalServerError, new Exception("Bad stuff"));
 
 							// If you pass a status code and some text, the text will be returned to the client
 							// using the status code provided
-							response.SendResponse(HttpStatusCode.ImATeapot, "Yes, this is a real (kind of) status code.");
+							response.SendResponse(HttpStatusCode.ImATeapot, "Kind of a real status code.");
 
 							// If you pass just the status code, the text of the status code will be sent to the
 							// client
