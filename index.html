@@ -112,8 +112,9 @@
 				<div class="col-md-4">
 					<h3>Using IDynamicProperties</h3>
 					<p>One of the first things to be aware of is the ability to extend an object via dynamic properties. Currently, both <code>IRestServer</code> and <code>IHttpContext</code> require you to implement the <code>IDynamicProperties</code> interface. It is recommended that everything that requires this interface implement it via the <code>DynamicProperties</code> abstract class.</p>
-					<p>Creating a dynamic property is then only a matter of creating some extension methods around the larger interface. The methods <code>ContainsProperty(string key)</code> and <code>GetPropertyValueAs&lt;T&gt;(string key)</code> are already provided via extensions on the <code>IDynamicProperty</code> interface. The example code here shows adding a property called <code>Database</code> to the <code>IRestServer</code> interface. Note that you will always want to add the properties to the interface, not the concrete class, as everything internally is referenced by interface.</p>
+					<p>Creating a dynamic property is then only a matter of creating some extension methods around the larger interface. The convinience methods <code>ContainsProperty(string key)</code> and <code>GetPropertyValueAs&lt;T&gt;(string key)</code> are already provided via extensions on the <code>IDynamicProperty</code> interface. The example code here shows adding a property called <code>Database</code> to the <code>IRestServer</code> interface.<p>
 					<p>Dynamic properties are useful for sharing custom application context with the code inside your routes without needing to extend any classes.</p>
+					<div class="well well-sm">Note that you will always want to add the properties to the interface, not the concrete class, as everything internally is referenced by interface.</div>
 				</div>
 				<div class="col-md-8">
 					<pre class="codeblock">
