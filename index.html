@@ -98,18 +98,24 @@
 
 		<div class="container">
 			<div class="row">
+				<h1>Grapevine</h1>
+				<p>Grapevine is both a REST server <b>and</b> a REST client. At this point, the majority interest in Grapevine tends to revolve around the <code>RestServer</code> over the <code>RestClient</code>. Hence, this initial draft of the documentation will focus on the implementation and usage of <code>RestServer</code>.</p>
+				<p>The <code>RestServe</code> contains methods to configure and start an <a href="https://msdn.microsoft.com/en-us/library/system.net.httplistener%28v=vs.110%29.aspx?f=255&MSPPError=-2147217396" target="_blank"><code>HttpListener</code></a> instance. It listens on the specified protocol/host/port combination and drops all incoming http requests into a queue. The server then has number of worker threads that constantly monitor the queue, pull out the <code>HttpListenerContext</code> instances, wraps it in an <code>HttpContext</code> instance and </p>
+			</div>
+			<div class="row">
 				<h2>HttpContext</h2>
 				<hr/>
 			</div>
 			<div class="row">
 				<div class="col-md-4">
 					<h3>HttpContext</h3>
-					Grapevine wraps the <code>HttpListenerContext</code> inside an <code>HttpContext</code> object. This object implements the <code>IHttpContext</code> interface.
+					<p>Grapevine wraps the <code>HttpListenerContext</code> inside an <code>HttpContext</code> object. This object implements the <code>IHttpContext</code> interface. The method signature of all methods and generic delegates used by routes should accept an <code>IHttpContext</code> as the single parameter and return an <code>IHttpContext</code>.</p>
+					<p>The provided implementation, <code>HttpContext</code>, has an internal constructor and therefore can only be instantiated by the <code>RestServer</code>.</p>
 				</div>
 				<div class="col-md-8">
 					<pre class="codeblock">
 						<code class="language-csharp">
-							var server = new RestServer();
+
 						</code>
 					</pre>
 				</div>
