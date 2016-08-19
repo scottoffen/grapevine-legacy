@@ -69,3 +69,8 @@ textarea
 {
 	resize: vertical;
 }
+
+pre.codeblock
+{
+	margin-top: 25px;
+}
