@@ -105,7 +105,7 @@
 
 			<!-- Dynamic Properties -->
 			<div class="row">
-				<h2>Dynamic Properties</h2>
+				<h2>Working With Dynamic Properties</h2>
 				<hr/>
 			</div>
 			<div class="row">
@@ -153,20 +153,20 @@
 
 			<!-- HttpContext -->
 			<div class="row">
-				<h2>HttpContext</h2>
+				<h2>Working With The Http Context</h2>
 				<hr/>
 			</div>
 			<div class="row">
 				<div class="col-md-4">
 					<h3>HttpContext</h3>
 					<p>Grapevine wraps the <code>HttpListenerContext</code> inside an internal <code>HttpContext</code> object. This object implements the <code>IHttpContext</code> interface. The provided implementation, <code>HttpContext</code>, has an internal constructor and therefore can only be instantiated by the <code>RestServer</code>. In addition to providing the same properites (or equvilant versions) as <code>HttpListenerContext</code>, the interface also provides a reference back to the server that is handling the request via the <code>Server</code> property and <code>WasRespondedTo</code>, a boolean property indicating whether or not the route has sent a response to the client.</p>
-					<div class="well, well-sm">The method signature of all methods and generic delegates used by routes must accept an <code>IHttpContext</code> as the single parameter and return an <code>IHttpContext</code>.</div>
+					<div class="well well-sm">The method signature of all methods and generic delegates used by routes must accept an <code>IHttpContext</code> as the single parameter and return an <code>IHttpContext</code>.</div>
 				</div>
 				<div class="col-md-8">
 					<pre class="codeblock">
 						<code class="language-csharp">
-							// Provides modified access to the request and response objects used
-							// by the HttpListener class
+							// Provides modified access to the request and response objects used by the
+							// HttpListener class
 							public interface IHttpContext : IDynamicProperties
 							{
 								// Gets the IHttpRequest that represents a client's request for a resource
@@ -191,7 +191,46 @@
 					</pre>
 				</div>
 			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<h3>HttpRequest</h3>
+					<p><code>HttpRequest</code> implements <code>IHttpRequest</code> which - with a few notable exceptions - exposes the same set of properties as <code>HttpListenerRequest</code>.
 
+					<div class="well well-sm">While not recommended, you can directly access the input stream of the request via the <code>InputStream</code> property of the requests <code>Advanced<code> property.</div>
+				</div>
+				<div class="col-md-8">
+					<pre class="codeblock">
+						<code class="language-csharp">
+							// Instead of a string, returns the corresponding Grapevine.Util.ContentType
+							request.ContentType;
+
+							// Instead of a string, returns the corresponding Grapevine.Util.HttpMethod
+							request.HttpMethod;
+
+							// Grapevine gives each request its own unique GUID for easy correleation of events
+							request.Id;
+
+							// Grapevine provides a name that is a concatonation of the HttpMethod and the
+							// PathInfo properties
+							request.Name;
+
+							// PathInfo is the part of the URL that preceedes the ? in the RawUrl property and is
+							// used to determine route matching
+							request.PathInfo;
+
+							// If a route is using a pattern with placeholders (not a  of regular expression) the
+							// values matched are stored in this property
+							// For example, if the route patterns is /api/user/[id] and the PathInfo property
+							// is /api/user/1234, then the line below will return '1234'
+							request.PathParameters["id"];
+
+							// Payload returns a string representation of the contents of the body
+							// To access the request stream directly, use the Advanced property
+							request.Payload;
+						</code>
+					</pre>
+				</div>
+			</div>
 
 			<!--
 			<div class="row">
