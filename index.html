@@ -218,7 +218,7 @@
 							request.PathInfo;
 
 							// If a route is using a pattern with placeholders (not a  of regular expression) the
-							// values matched are stored in this property
+							// values matched are stored in this read-only dictionary
 							// For example, if the route patterns is /api/user/[id] and the PathInfo property
 							// is /api/user/1234, then the line below will return '1234'
 							request.PathParameters["id"];
@@ -288,6 +288,23 @@
 							// client
 							response.SendResponse(HttpStatusCode.EnhanceYourCalm);
 							// the body will contain the text "Enhance Your Calm"
+						</code>
+					</pre>
+				</div>
+			</div>
+				<div class="col-md-4">
+					<h3>NameValueCollection Extensions</h3>
+					<p>The <code>Headers</code> and <code>QueryString</code> properties are of type <code>NameValueCollection</code>, and Grapevine provides two extension methods for convinience in working with them.
+				</div>
+				<div class="col-md-8">
+					<pre class="codeblock">
+						<code class="language-csharp">
+							// Automatically casts the value of the specified header to generic type parameter
+							request.Headers.GetValue&lt;int&gt;("key");
+
+							// Automatically casts the value of the specified header to generic type parameter
+							// or returns the specified default value if the header is not found
+							request.Headers.GetValue&lt;int&gt;("key", 32);
 						</code>
 					</pre>
 				</div>
