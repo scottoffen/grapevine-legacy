@@ -319,20 +319,34 @@
 			</div>
 			<div class="row">
 				<div class="col-md-4">
-					<h3>RestServer</h3>
-					<p></p>
-					<div class="well well-sm"></div>
+					<h3>ServerSettings</h3>
+					<p>Let's start by taking a look at the <code>ServerSettings</code> class. Not only is this a required parameter for instantiating <code>RestServer</code>, but both implement the <code>IServerSettings</code> interface. And given that there is an interface, you can always create your own implementation and pass that into the <code>RestServer</code> constructor.</p>
+					<p>You can get an instance of <code>RestServer</code> up and running fairly quickly, but if you'd like to have more control over things, this is the place to do it.</p>
+					<div class="well well-sm">All of the properties show in this segment will throw a <code>ServerStateException</code> if you attempt to change their value after the <code>Start()</code> method is executed.</div>
 				</div>
 				<div class="col-md-8">
 					<pre class="codeblock">
 						<code class="language-csharp">
+						// Host defaults to localhost, but you can use anything supported as a prefix for HttpListener
+						settings.Host = "localhost";
+
+						// Port defaults to 1234
+						settings.Port = "4321";
+
+						// Connections defines the number of worker threads per processor that will will be
+						// monitoring the incoming queue
+						settings.Connections = 200; // default is 50
+
+						// Since HttpListener only supports http and https for protocols, Grapevine defaults to
+						// http. If you want to use https, just set this property to true
+						server.UseHttps = true;
 						</code>
 					</pre>
 				</div>
 			</div>
 			<div class="row">
 				<div class="col-md-4">
-					<h3>ServerSettings</h3>
+					<h3>RestServer</h3>
 					<p></p>
 					<div class="well well-sm"></div>
 				</div>
