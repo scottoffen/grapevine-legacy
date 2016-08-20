@@ -321,8 +321,8 @@
 				<div class="col-md-4">
 					<h3>IServerSettings</h3>
 					<p>Both <code>ServerSettings</code> and <code>IRestServer</code> implement <code>IServerSettings</code>. This allows for property definitions to easily enforced between the two. Here we'll explore those properties and how they interact.</p>
-					<p>All of the properties show in this segment will throw a <code>ServerStateException</code> if you attempt to change their value after the <code>Start()</code> method is executed.</p>
-					<div class="well well-sm">The <code>PublicFolder</code> and <code>Logger</code> properties will be discussed in later sections</div>
+					<p>All of the properties show in this segment except <code>EnableThrowingExceptions</code> will throw a <code>ServerStateException</code> if you attempt to change their value after the <code>Start()</code> method is executed.</p>
+					<div class="well well-sm">These properties can be set on either a <code>RestServer</code> instance or a <code>ServerSettings</code> instance.</div>
 				</div>
 				<div class="col-md-8">
 					<pre class="codeblock">
@@ -340,6 +340,10 @@
 						// Since HttpListener only supports http and https for protocols, Grapevine defaults to
 						// http. If you want to use https, just set this property to true
 						server.UseHttps = true;
+
+						// If this property is true, exceptions during starting and stopping the server will be
+						// re-thrown instead of swallowed
+						server.EnableThrowingExceptions = true;
 						</code>
 					</pre>
 				</div>
@@ -351,9 +355,9 @@
 					<ul>
 						<li>If <code>OnBeforeStart</code> throws an exception, the server will not start, but if <code>OnAfterStart</code> fails, the server state will not change.</li>
 						<li>If <code>OnBeforeStop</code> throws an exception, the server will not stop, but if <code>OnAfterStop</code> fails, the server state will not change.</li>
-						<li><code>OnStart</code> is a synonym for <code>OnAfterStart</code> and <code>OnStop</code> is a synonym for <code>OnAfterStop</code>.</li>
+						<li><code>OnStart</code> is a synonym for <code>OnAfterStart</code> and <code>OnStop</code> is a synonym for <code>OnAfterStop</code></li>
 					</ul>
-					<div class="well well-sm">If you want the delegate to call some methods on the server, the delegates need to be added directly to the server.</div>
+					<div class="well well-sm">If you want the delegate to call some methods on the server, the delegates need to be added directly to the server, not the server settings.</div>
 				</div>
 				<div class="col-md-8">
 					<pre class="codeblock">
