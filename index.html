@@ -320,14 +320,14 @@
 			<div class="row">
 				<div class="col-md-4">
 					<h3>ServerSettings</h3>
-					<p>Let's start by taking a look at the <code>ServerSettings</code> class. Not only is this a required parameter for instantiating <code>RestServer</code>, but both implement the <code>IServerSettings</code> interface. And given that there is an interface, you can always create your own implementation and pass that into the <code>RestServer</code> constructor.</p>
-					<p>You can get an instance of <code>RestServer</code> up and running fairly quickly, but if you'd like to have more control over things, this is the place to do it.</p>
-					<div class="well well-sm">All of the properties show in this segment will throw a <code>ServerStateException</code> if you attempt to change their value after the <code>Start()</code> method is executed.</div>
+					<p>Both <code>ServerSettings</code> and <code>IRestServer</code> implement <code>IServerSettings</code>. This allows for property definitions to easily enforced. Here we'll explore those properties and how they interact.</p>
+					<p>All of the properties show in this segment will throw a <code>ServerStateException</code> if you attempt to change their value after the <code>Start()</code> method is executed.</p>
+					<div class="well well-sm">The <code>PublicFolder</code> and <code>Logger</code> properties will be discussed in later sections</div>
 				</div>
 				<div class="col-md-8">
 					<pre class="codeblock">
 						<code class="language-csharp">
-						// Host defaults to localhost, but you can use anything supported as a prefix for HttpListener
+						// Host defaults to localhost, but you can use any supported prefix for HttpListener
 						settings.Host = "localhost";
 
 						// Port defaults to 1234
@@ -344,6 +344,39 @@
 					</pre>
 				</div>
 			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<p>There are several generic delegates that can be set to execute custom code before and/or after the server starts. These delegates accept no arguments and return no result. This is useful if you need to setup and/or tear down any additionl resources - e.g. databases - or otherwise ensure that the environment is setup in a manner consistent with the expectations of your routes.</p>
+					<div class="well well-sm"><code>OnStart</code> is a synonym for <code>OnAfterStart</code> and <code>OnStop</code> is a synonym for <code>OnAfterStop</code>.</div>
+				</div>
+				<div class="col-md-8">
+					<pre class="codeblock">
+						<code class="language-csharp">
+						settings.OnBeforeStart = () =>
+						{
+							Console.WriteLine($"Starting server on port {Port}");
+						};
+
+						settings.OnAfterStart = () =>
+						{
+							Console.WriteLine($"Server started on port {Port}");
+						};
+
+						settings.OnBeforeStop = () =>
+						{
+							Console.WriteLine("Server shutdown initiated...");
+						};
+
+						settings.OnAfterStop = () =>
+						{
+							Console.WriteLine("Server stopped");
+						};
+						</code>
+					</pre>
+				</div>
+			</div>
+
+
 			<div class="row">
 				<div class="col-md-4">
 					<h3>RestServer</h3>
