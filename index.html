@@ -346,12 +346,13 @@
 			</div>
 			<div class="row">
 				<div class="col-md-4">
+					<h4>Generic Delegates</h4>
 					<p>There are several optional generic delegates that can be set to execute custom code before and/or after the server starts. These delegates accept no arguments and return no result. This is useful if you need to setup and/or tear down any additionl resources - e.g. databases - or otherwise ensure that the environment is setup in a manner consistent with the expectations of your routes.</p>
 					<p>If <code>OnBeforeStart</code> fails, the server will not start, but if <code>OnAfterStart</code> fails, the server state will not change. <code>OnStart</code> is a synonym for <code>OnAfterStart</code> and <code>OnStop</code> is a synonym for <code>OnAfterStop</code>.</p>
 					<div class="well well-sm">If you want the delegate to call some methods on the server, the delegates need to be added directly to the server.</div>
 				</div>
 				<div class="col-md-8">
-					<pre>
+					<pre class="codeblock">
 						<code class="language-csharp">
 						var settings = new ServerSettings();
 						settings.OnBeforeStop = () =>
