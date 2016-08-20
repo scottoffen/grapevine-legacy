@@ -390,19 +390,19 @@ namespace Grapevine.Server
             return routeContext.WasRespondedTo;
         }
 
-        private static void LogBeginRequestRouting(IHttpContext context, int routes)
+        private void LogBeginRequestRouting(IHttpContext context, int routes)
         {
-            context.Server.Logger.Info($"Request {context.Request.Id}:{context.Request.Name} has {routes} routes");
+            Logger.Info($"Request {context.Request.Id}:{context.Request.Name} has {routes} routes");
         }
 
-        private static void LogEndRequestRouting(IHttpContext context, int routes, int routesHit)
+        private void LogEndRequestRouting(IHttpContext context, int routes, int routesHit)
         {
-            context.Server.Logger.Trace($"Request {context.Request.Id}:{context.Request.Name} invoked {routes}/{routesHit} routes");
+            Logger.Trace($"Request {context.Request.Id}:{context.Request.Name} invoked {routes}/{routesHit} routes");
         }
 
-        private static void LogRouteInvoked(IHttpContext context, IRoute route, int routeIndex)
+        private void LogRouteInvoked(IHttpContext context, IRoute route, int routeIndex)
         {
-            context.Server.Logger.Trace($"{routeIndex} Request {context.Request.Id}:{context.Request.Name} hit {route.Name}");
+            Logger.Trace($"{routeIndex} Request {context.Request.Id}:{context.Request.Name} hit {route.Name}");
         }
 
         /// <summary>
