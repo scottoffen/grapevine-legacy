@@ -1,5 +1,6 @@
 ﻿using System;
 using Grapevine.Server;
+using Grapevine.Util;
 
 namespace Grapevine.Local
 {
@@ -9,28 +10,27 @@ namespace Grapevine.Local
         {
             using (var server = new RestServer())
             {
-                server.PublicFolder.FolderPath = @"C:\source\github\gv-gh-pages";
-                server.PublicFolder.Prefix = "/Grapevine";
-
-                var port = server.Port;
-                server.OnAfterStart = () => { Console.WriteLine($"Server is running on port {port}"); };
-                server.OnAfterStop = () => { Console.WriteLine("Server has stopped"); };
-
                 server.LogToConsole().Start();
-
                 Console.ReadLine();
                 server.Stop();
             }
         }
     }
 
-    [RestResource(BasePath = "api")]
+    [RestResource]
     public class TestDocument
     {
         [RestRoute]
-        public IHttpContext Insert(IHttpContext context)
+        public IHttpContext Start(IHttpContext context)
         {
-            context.Response.SendResponse("This responds to everything that begins with /api/");
+            context.Properties.User = "Some User";
+            return context;
+        }
+
+        [RestRoute]
+        public IHttpContext Stop(IHttpContext context)
+        {
+            context.Response.SendResponse($"User: {context.Properties.User}");
             return context;
         }
     }

@@ -1,4 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Grapevine.Util
 {
@@ -29,6 +31,16 @@ namespace Grapevine.Util
         internal static bool IsNot<T>(this object obj)
         {
             return !obj.IsA<T>();
+        }
+
+        /// <summary>
+        /// Returns the section of the guid following the last dash
+        /// </summary>
+        /// <param name="guid"></param>
+        /// <returns>string</returns>
+        internal static string Truncate(this Guid guid)
+        {
+            return guid.ToString().Split('-').Last();
         }
     }
 }

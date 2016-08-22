@@ -216,7 +216,7 @@ namespace Grapevine.Server
             HttpMethod = (HttpMethod) Enum.Parse(typeof (HttpMethod), Request.HttpMethod);
             PathInfo = RawUrl.Split(new[] { '?' }, 2)[0];
             Name = $"{HttpMethod} {PathInfo}";
-            Id = Guid.NewGuid().ToString();
+            Id = Guid.NewGuid().Truncate();
             Advanced = new AdvancedHttpRequest(request);
         }
 
