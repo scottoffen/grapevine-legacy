@@ -121,8 +121,9 @@ namespace Grapevine.Client
             }
             catch (WebException e)
             {
+                if (e.Status == WebExceptionStatus.Timeout) throw;
                 var elapsed = stopwatch.ElapsedMilliseconds;
-                var httpresponse = (HttpWebResponse)e.Response;
+                var httpresponse = (HttpWebResponse) e.Response;
                 response = new RestResponse(httpresponse)
                 {
                     ElapsedTime = elapsed,

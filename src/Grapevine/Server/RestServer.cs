@@ -43,6 +43,7 @@ namespace Grapevine.Server
         private string _protocol = "http";
         private int _connections;
         protected bool IsStopping;
+        protected bool IsStarting;
         protected readonly HttpListener Listener;
         protected readonly Thread Listening;
         protected readonly ConcurrentQueue<HttpListenerContext> Queue;
@@ -160,19 +161,21 @@ namespace Grapevine.Server
 
         public void Start()
         {
-            if (IsListening) return;
+            if (IsListening || IsStarting) return;
+            if (IsStopping) throw new UnableToStartHostException("Cannot start server until server has finished stopping");
+            IsStarting = true;
+
             try
             {
                 if (Router.RoutingTable.Count == 0) Router.RegisterAssembly();
 
                 OnBeforeStart?.Invoke();
 
-                IsStopping = false;
                 Listener.Prefixes.Add(ListenerPrefix);
                 Listener.Start();
                 Listening.Start();
 
-                Workers = new Thread[_connections * Environment.ProcessorCount];
+                Workers = new Thread[_connections*Environment.ProcessorCount];
                 for (var i = 0; i < Workers.Length; i++)
                 {
                     Workers[i] = new Thread(Worker);
@@ -183,20 +186,24 @@ namespace Grapevine.Server
             }
             catch (Exception e)
             {
-                var cshe = new UnableToStartHostException($"An error occured when trying to start the {GetType().FullName}", e);
-                Logger.Error(cshe);
-                if (EnableThrowingExceptions) throw cshe;
+                throw new UnableToStartHostException($"An error occured when trying to start the {GetType().FullName}", e);
+            }
+            finally
+            {
+                IsStarting = false;
             }
         }
 
         public void Stop()
         {
-            if (!IsListening) return;
+            if (!IsListening || IsStopping) return;
+            if (IsStarting) throw new UnableToStartHostException("Cannot stop server until server has finished starting");
+            IsStopping = true;
+
             try
             {
                 OnBeforeStop?.Invoke();
 
-                IsStopping = true;
                 StopEvent.Set();
                 Listening.Join();
                 foreach (var worker in Workers) worker.Join();
@@ -206,9 +213,11 @@ namespace Grapevine.Server
             }
             catch (Exception e)
             {
-                var cshe = new UnableToStopHostException($"An error occured while trying to stop {GetType().FullName}", e);
-                Logger.Error(cshe);
-                if (EnableThrowingExceptions) throw cshe;
+                throw new UnableToStopHostException($"An error occured while trying to stop {GetType().FullName}", e);
+            }
+            finally
+            {
+                IsStopping = false;
             }
         }
 
@@ -298,14 +307,17 @@ namespace Grapevine.Server
                 }
                 catch (RouteNotFoundException)
                 {
+                    if (EnableThrowingExceptions) throw;
                     context.Response.SendResponse(HttpStatusCode.NotFound);
                 }
                 catch (NotImplementedException)
                 {
+                    if (EnableThrowingExceptions) throw;
                     context.Response.SendResponse(HttpStatusCode.NotImplemented);
                 }
                 catch (Exception e)
                 {
+                    if (EnableThrowingExceptions) throw;
                     Logger.Error(e);
                     context.Response.SendResponse(HttpStatusCode.InternalServerError, e);
                 }

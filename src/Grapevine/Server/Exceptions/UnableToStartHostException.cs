@@ -7,6 +7,8 @@ namespace Grapevine.Server.Exceptions
     /// </summary>
     public class UnableToStartHostException : Exception
     {
+        public UnableToStartHostException(string message) : base(message) { }
+
         public UnableToStartHostException(string message, Exception inner) : base(message, inner) { }
     }
 }
