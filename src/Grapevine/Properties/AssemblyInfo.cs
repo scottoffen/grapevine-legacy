@@ -32,7 +32,7 @@ using System.Runtime.CompilerServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("4.0.0.74")]
-[assembly: AssemblyFileVersion("4.0.0.74")]
+[assembly: AssemblyVersion("4.0.0.79")]
+[assembly: AssemblyFileVersion("4.0.0.79")]
 
 [assembly: InternalsVisibleTo("Grapevine.Tests")]
