@@ -59,7 +59,7 @@ namespace Grapevine.Tests.Client
                     Scheme = UriScheme.Http.ToScheme(),
                     Host = "localhost",
                     Port = 1234
-                });
+                }, new CookieContainer());
 
             httpRequest.Accept.ShouldBeNull();
             httpRequest.AllowAutoRedirect.ShouldBeTrue();
@@ -73,6 +73,7 @@ namespace Grapevine.Tests.Client
             httpRequest.ContentLength.ShouldBe(0);
             httpRequest.ContentType.ShouldBe(ContentType.TXT.ToValue());
             httpRequest.ContinueDelegate.ShouldBeNull();
+            httpRequest.CookieContainer.ShouldNotBeNull();
             httpRequest.Expect.ShouldBeNull();
             httpRequest.Headers.Count.ShouldBe(3);
             httpRequest.ImpersonationLevel.ShouldBe(TokenImpersonationLevel.Delegation);

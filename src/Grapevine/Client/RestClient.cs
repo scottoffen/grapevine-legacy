@@ -105,7 +105,7 @@ namespace Grapevine.Client
 
         public IRestResponse Execute(IRestRequest restRequest)
         {
-            var request = restRequest.ToHttpWebRequest(Builder);
+            var request = restRequest.ToHttpWebRequest(Builder, Cookies);
 
             if (request.Credentials == null) request.Credentials = Credentials;
             request.CookieContainer.Add(Cookies.GetCookies(request.RequestUri));

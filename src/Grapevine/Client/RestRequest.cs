@@ -245,7 +245,7 @@ namespace Grapevine.Client
         /// </summary>
         /// <param name="builder"></param>
         /// <returns>HttpWebRequest</returns>
-        HttpWebRequest ToHttpWebRequest(UriBuilder builder);
+        HttpWebRequest ToHttpWebRequest(UriBuilder builder, CookieContainer cookies);
     }
 
     public class RestRequest : IRestRequest
@@ -360,9 +360,9 @@ namespace Grapevine.Client
             QueryString.Clear();
         }
 
-        public HttpWebRequest ToHttpWebRequest(UriBuilder builder)
+        public HttpWebRequest ToHttpWebRequest(UriBuilder builder, CookieContainer cookies)
         {
-            return Advanced.ToHttpWebRequest(builder);
+            return Advanced.ToHttpWebRequest(builder, cookies);
         }
     }
 
@@ -383,7 +383,7 @@ namespace Grapevine.Client
         /// </summary>
         /// <param name="builder"></param>
         /// <returns>HttpWebRequest</returns>
-        internal HttpWebRequest ToHttpWebRequest(UriBuilder builder)
+        public HttpWebRequest ToHttpWebRequest(UriBuilder builder, CookieContainer cookies)
         {
             builder.Path = _request.PathInfo;
             builder.Query = _request.QueryString.ToString();
@@ -404,6 +404,7 @@ namespace Grapevine.Client
             request.ContentLength = _request.ContentLength;
             request.ContentType = _request.ContentType.ToValue();
             request.ContinueDelegate = _request.ContinueDelegate;
+            request.CookieContainer = cookies;
             request.Credentials = _request.Credentials;
             request.Date = _request.Date;
             request.Expect = _request.Expect;
