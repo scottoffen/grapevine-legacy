@@ -174,9 +174,8 @@ namespace Grapevine.Client
 
             var reader = new StreamReader(stream);
             _content = reader.ReadToEnd();
-
-            stream.Close();
             reader.Close();
+            stream.Close();
 
             return _content;
         }
