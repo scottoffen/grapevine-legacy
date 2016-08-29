@@ -10,10 +10,8 @@
         private static ContentTypeMetadata GetMetadata(ContentType ct)
         {
             var info = ct.GetType().GetMember(ct.ToString());
-            if (info.Length <= 0) return null;
-
             var attributes = info[0].GetCustomAttributes(typeof(ContentTypeMetadata), false);
-            return attributes.Length > 0 ? attributes[0] as ContentTypeMetadata : null;
+            return attributes.Length > 0 ? attributes[0] as ContentTypeMetadata : new ContentTypeMetadata();
         }
 
         /// <summary>
@@ -23,8 +21,7 @@
         /// <returns>string</returns>
         public static string ToValue(this ContentType ct)
         {
-            var metadata = GetMetadata(ct);
-            return metadata != null ? metadata.Value : ct.ToString();
+            return GetMetadata(ct).Value;
         }
 
         /// <summary>
@@ -34,8 +31,7 @@
         /// <returns>bool</returns>
         public static bool IsText(this ContentType ct)
         {
-            var metadata = GetMetadata(ct);
-            return metadata?.IsText ?? true;
+            return GetMetadata(ct).IsText;
         }
 
         /// <summary>
@@ -45,8 +41,7 @@
         /// <returns>bool</returns>
         public static bool IsBinary(this ContentType ct)
         {
-            var metadata = GetMetadata(ct);
-            return metadata?.IsBinary ?? false;
+            return GetMetadata(ct).IsBinary;
         }
     }
 }

@@ -86,14 +86,18 @@
     <Compile Include="Server\RouteTester.cs" />
     <Compile Include="Server\ServerOptionsTester.cs" />
     <Compile Include="Server\TestingHelpers.cs" />
-    <Compile Include="Util\CamelCaseTester.cs" />
+    <Compile Include="Util\ConsoleLoggerTester.cs" />
     <Compile Include="Util\ContentTypeExtensionsTester.cs" />
     <Compile Include="Util\ContentTypeMetadataTester.cs" />
     <Compile Include="Util\ExternalExtensionsTester.cs" />
     <Compile Include="Util\HttpMethodTester.cs" />
     <Compile Include="Util\HttpStatusCodeTester.cs" />
+    <Compile Include="Util\InMemoryLoggerTester.cs" />
+    <Compile Include="Util\InternalExtensionsTester.cs" />
+    <Compile Include="Util\NullLoggerTester.cs" />
     <Compile Include="Util\PatternParserTester.cs" />
     <Compile Include="Util\PortFinderTester.cs" />
+    <Compile Include="Util\ReadOnlyDictionaryTester.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

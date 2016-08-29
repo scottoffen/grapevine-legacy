@@ -1,8 +1,8 @@
 @ECHO OFF
 
-SET ProjectKey="DM-1"
-SET ProjectName="DeleteMe"
-SET ProjectVersion="0.0.0.11"
+SET ProjectKey="GV4"
+SET ProjectName="Grapevine 4"
+SET ProjectVersion="4.0.0.n"
 
 SET TestProject=Grapevine.Tests
 SET XunitReport=%~dp0XUnitResults.xml

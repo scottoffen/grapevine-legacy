@@ -2378,7 +2378,6 @@
         [ContentTypeMetadata(Value = "application/x-texinfo", IsBinary = true)]
         TEXINFO,
 
-        [ContentTypeMetadata(Value = "text/plain", IsText = true)]
         TEXT,
 
         [ContentTypeMetadata(Value = "application/thraud+xml", IsText = true)]

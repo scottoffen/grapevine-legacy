@@ -58,8 +58,8 @@ namespace Grapevine.Util
 
         public PortFinder(int startIndex, int endIndex)
         {
-            _startIndex = startIndex;
-            _endIndex = endIndex;
+            StartIndex = startIndex;
+            EndIndex = endIndex;
             PortFound = s => { };
             PortNotFound = () => { };
         }
@@ -161,13 +161,15 @@ namespace Grapevine.Util
             var inUse = IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners()
                 .Select(l => l.Port).ToList();
 
-            for (var port = min; port < max; port++)
+            int port = 0;
+            for (var i = min; i < max; i++)
             {
-                if (inUse.Contains(port)) continue;
-                return port.ToString();
+                if (inUse.Contains(i)) continue;
+                port = i;
+                break;
             }
 
-            return null;
+            return port.ToString();
         }
     }
 }

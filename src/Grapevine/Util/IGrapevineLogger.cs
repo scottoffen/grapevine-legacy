@@ -6,6 +6,17 @@ namespace Grapevine.Util
     public interface IGrapevineLogger
     {
         /// <summary>
+        /// Value indicating what level of logging should occur
+        /// </summary>
+        LogLevel Level { get; }
+
+        /// <summary>
+        /// Writes the diagnostic message at the level specified in the LogEvent
+        /// </summary>
+        /// <param name="evt"></param>
+        void Log(LogEvent evt);
+
+        /// <summary>
         /// Writes the diagnostic message at the <c>Trace</c> level
         /// </summary>
         /// <param name="obj"></param>
@@ -125,133 +136,118 @@ namespace Grapevine.Util
     /// </summary>
     public sealed class ConsoleLogger : IGrapevineLogger
     {
-        private readonly LogLevel _level;
+        public LogLevel Level { get; set; }
 
-        private static string RightNow => DateTime.Now.ToString(@"M/d/yyyy hh:mm:ss tt");
+        public string DateFormat => @"M/d/yyyy hh:mm:ss tt";
+
+        public DateTime RightNow => DateTime.Now;
 
         public ConsoleLogger() : this(LogLevel.Trace) { }
 
         public ConsoleLogger(LogLevel level)
         {
-            _level = level;
+            Level = level;
+        }
+
+        public void Log(LogEvent evt)
+        {
+            if (evt.Level > Level) return;
+            Console.WriteLine(CreateMessage(evt));
         }
 
         public void Trace(object obj)
         {
-            if (LogLevel.Trace > _level) return;
-            Trace(obj.ToString());
+            Log(new LogEvent { Level = LogLevel.Trace, DateTime = RightNow, Message = obj.ToString() });
         }
 
         public void Trace(string message)
         {
-            if (LogLevel.Trace > _level) return;
-            Log(LogLevel.Trace, message);
+            Log(new LogEvent { Level = LogLevel.Trace, DateTime = RightNow, Message = message });
         }
 
         public void Trace(string message, Exception ex)
         {
-            if (LogLevel.Trace > _level) return;
-            Trace(ExceptionToString(message, ex));
+            Log(new LogEvent { Level = LogLevel.Trace, DateTime = RightNow, Message = ExceptionToString(message, ex) });
         }
 
         public void Debug(object obj)
         {
-            if (LogLevel.Debug > _level) return;
-            Debug(obj.ToString());
+            Log(new LogEvent { Level = LogLevel.Debug, DateTime = RightNow, Message = obj.ToString() });
         }
 
         public void Debug(string message)
         {
-            if (LogLevel.Debug > _level) return;
-            Log(LogLevel.Debug, message);
+            Log(new LogEvent { Level = LogLevel.Debug, DateTime = RightNow, Message = message });
         }
 
         public void Debug(string message, Exception ex)
         {
-            if (LogLevel.Debug > _level) return;
-            Debug(ExceptionToString(message, ex));
+            Log(new LogEvent { Level = LogLevel.Debug, DateTime = RightNow, Message = ExceptionToString(message, ex) });
         }
 
         public void Info(object obj)
         {
-            if (LogLevel.Info > _level) return;
-            Info(obj.ToString());
+            Log(new LogEvent { Level = LogLevel.Info, DateTime = RightNow, Message = obj.ToString() });
         }
 
         public void Info(string message)
         {
-            if (LogLevel.Info > _level) return;
-            Log(LogLevel.Info, message);
+            Log(new LogEvent { Level = LogLevel.Info, DateTime = RightNow, Message = message });
         }
 
         public void Info(string message, Exception ex)
         {
-            if (LogLevel.Info > _level) return;
-            Info(ExceptionToString(message, ex));
+            Log(new LogEvent { Level = LogLevel.Info, DateTime = RightNow, Message = ExceptionToString(message, ex) });
         }
 
         public void Warn(object obj)
         {
-            if (LogLevel.Warn > _level) return;
-            Warn(obj.ToString());
+            Log(new LogEvent { Level = LogLevel.Warn, DateTime = RightNow, Message = obj.ToString() });
         }
 
         public void Warn(string message)
         {
-            if (LogLevel.Warn > _level) return;
-            Log(LogLevel.Warn, message);
+            Log(new LogEvent { Level = LogLevel.Warn, DateTime = RightNow, Message = message });
         }
 
         public void Warn(string message, Exception ex)
         {
-            if (LogLevel.Warn > _level) return;
-            Warn(ExceptionToString(message, ex));
+            Log(new LogEvent { Level = LogLevel.Warn, DateTime = RightNow, Message = ExceptionToString(message, ex) });
         }
 
         public void Error(object obj)
         {
-            if (LogLevel.Error > _level) return;
-            Error(obj.ToString());
+            Log(new LogEvent { Level = LogLevel.Error, DateTime = RightNow, Message = obj.ToString() });
         }
 
         public void Error(string message)
         {
-            if (LogLevel.Error > _level) return;
-            Log(LogLevel.Error, message);
+            Log(new LogEvent { Level = LogLevel.Error, DateTime = RightNow, Message = message });
         }
 
         public void Error(string message, Exception ex)
         {
-            if (LogLevel.Error > _level) return;
-            Error(ExceptionToString(message, ex));
+            Log(new LogEvent { Level = LogLevel.Error, DateTime = RightNow, Message = ExceptionToString(message, ex) });
         }
 
         public void Fatal(object obj)
         {
-            if (LogLevel.Fatal > _level) return;
-            Fatal(obj.ToString());
+            Log(new LogEvent { Level = LogLevel.Fatal, DateTime = RightNow, Message = obj.ToString() });
         }
 
         public void Fatal(string message)
         {
-            if (LogLevel.Fatal > _level) return;
-            Log(LogLevel.Fatal, message);
+            Log(new LogEvent { Level = LogLevel.Fatal, DateTime = RightNow, Message = message });
         }
 
         public void Fatal(string message, Exception ex)
         {
-            if (LogLevel.Fatal > _level) return;
-            Fatal(ExceptionToString(message, ex));
+            Log(new LogEvent { Level = LogLevel.Fatal, DateTime = RightNow, Message = ExceptionToString(message, ex) });
         }
 
-        private static void Log(LogLevel level, string message)
+        private string CreateMessage(LogEvent evt)
         {
-            Console.WriteLine(CreateMessage(level, message));
-        }
-
-        private static string CreateMessage(LogLevel level, string message)
-        {
-            return $"{RightNow}\t{level}\t{message}";
+            return $"{RightNow.ToString(DateFormat)}\t{evt.Level}\t{evt.Message}";
         }
 
         private static string ExceptionToString(string message, Exception ex)
@@ -265,132 +261,114 @@ namespace Grapevine.Util
     /// </summary>
     public sealed class InMemoryLogger : IGrapevineLogger
     {
-        private readonly LogLevel _level;
+        public LogLevel Level { get; set; }
 
         private static DateTime RightNow => DateTime.Now;
 
         public List<LogEvent> Logs { get; }
 
+        public InMemoryLogger() : this(LogLevel.Trace){}
+
         public InMemoryLogger(LogLevel level)
         {
-            _level = level;
+            Level = level;
             Logs = new List<LogEvent>();
+        }
+
+        public void Log(LogEvent evt)
+        {
+            if (evt.Level > Level) return;
+            Logs.Add(evt);
         }
 
         public void Trace(object obj)
         {
-            if (LogLevel.Trace > _level) return;
-            Logs.Add(new LogEvent { Level = LogLevel.Trace, DateTime = RightNow, Message = obj.ToString() });
+            Log(new LogEvent { Level = LogLevel.Trace, DateTime = RightNow, Message = obj.ToString() });
         }
 
         public void Trace(string message)
         {
-            if (LogLevel.Trace > _level) return;
-            Logs.Add(new LogEvent { Level = LogLevel.Trace, DateTime = RightNow, Message = message });
+            Log(new LogEvent { Level = LogLevel.Trace, DateTime = RightNow, Message = message });
         }
 
         public void Trace(string message, Exception ex)
         {
-            if (LogLevel.Trace > _level) return;
-            Logs.Add(new LogEvent { Level = LogLevel.Trace, DateTime = RightNow, Message = message, Exception = ex });
+            Log(new LogEvent { Level = LogLevel.Trace, DateTime = RightNow, Message = message, Exception = ex });
         }
 
         public void Debug(object obj)
         {
-            if (LogLevel.Debug > _level) return;
-            Logs.Add(new LogEvent { Level = LogLevel.Debug, DateTime = RightNow, Message = obj.ToString() });
+            Log(new LogEvent { Level = LogLevel.Debug, DateTime = RightNow, Message = obj.ToString() });
         }
 
         public void Debug(string message)
         {
-            if (LogLevel.Debug > _level) return;
-            Logs.Add(new LogEvent { Level = LogLevel.Debug, DateTime = RightNow, Message = message });
+            Log(new LogEvent { Level = LogLevel.Debug, DateTime = RightNow, Message = message });
         }
 
         public void Debug(string message, Exception ex)
         {
-            if (LogLevel.Debug > _level) return;
-            Logs.Add(new LogEvent { Level = LogLevel.Debug, DateTime = RightNow, Message = message, Exception = ex });
+            Log(new LogEvent { Level = LogLevel.Debug, DateTime = RightNow, Message = message, Exception = ex });
         }
 
         public void Info(object obj)
         {
-            if (LogLevel.Info > _level) return;
-            Logs.Add(new LogEvent { Level = LogLevel.Info, DateTime = RightNow, Message = obj.ToString() });
+            Log(new LogEvent { Level = LogLevel.Info, DateTime = RightNow, Message = obj.ToString() });
         }
 
         public void Info(string message)
         {
-            if (LogLevel.Info > _level) return;
-            Logs.Add(new LogEvent { Level = LogLevel.Info, DateTime = RightNow, Message = message });
+            Log(new LogEvent { Level = LogLevel.Info, DateTime = RightNow, Message = message });
         }
 
         public void Info(string message, Exception ex)
         {
-            if (LogLevel.Info > _level) return;
-            Logs.Add(new LogEvent { Level = LogLevel.Info, DateTime = RightNow, Message = message, Exception = ex });
+            Log(new LogEvent { Level = LogLevel.Info, DateTime = RightNow, Message = message, Exception = ex });
         }
 
         public void Warn(object obj)
         {
-            if (LogLevel.Warn > _level) return;
-            Logs.Add(new LogEvent { Level = LogLevel.Trace, DateTime = RightNow, Message = obj.ToString() });
+            Log(new LogEvent { Level = LogLevel.Warn, DateTime = RightNow, Message = obj.ToString() });
         }
 
         public void Warn(string message)
         {
-            if (LogLevel.Warn > _level) return;
-            Logs.Add(new LogEvent { Level = LogLevel.Warn, DateTime = RightNow, Message = message });
+            Log(new LogEvent { Level = LogLevel.Warn, DateTime = RightNow, Message = message });
         }
 
         public void Warn(string message, Exception ex)
         {
-            if (LogLevel.Warn > _level) return;
-            Logs.Add(new LogEvent { Level = LogLevel.Warn, DateTime = RightNow, Message = message, Exception = ex });
+            Log(new LogEvent { Level = LogLevel.Warn, DateTime = RightNow, Message = message, Exception = ex });
         }
 
         public void Error(object obj)
         {
-            if (LogLevel.Error > _level) return;
-            Logs.Add(new LogEvent { Level = LogLevel.Trace, DateTime = RightNow, Message = obj.ToString() });
+            Log(new LogEvent { Level = LogLevel.Error, DateTime = RightNow, Message = obj.ToString() });
         }
 
         public void Error(string message)
         {
-            if (LogLevel.Error > _level) return;
-            Logs.Add(new LogEvent { Level = LogLevel.Error, DateTime = RightNow, Message = message });
+            Log(new LogEvent { Level = LogLevel.Error, DateTime = RightNow, Message = message });
         }
 
         public void Error(string message, Exception ex)
         {
-            if (LogLevel.Error > _level) return;
-            Logs.Add(new LogEvent { Level = LogLevel.Error, DateTime = RightNow, Message = message, Exception = ex });
+            Log(new LogEvent { Level = LogLevel.Error, DateTime = RightNow, Message = message, Exception = ex });
         }
 
         public void Fatal(object obj)
         {
-            if (LogLevel.Fatal > _level) return;
-            Logs.Add(new LogEvent { Level = LogLevel.Trace, DateTime = RightNow, Message = obj.ToString() });
+            Log(new LogEvent { Level = LogLevel.Fatal, DateTime = RightNow, Message = obj.ToString() });
         }
 
         public void Fatal(string message)
         {
-            if (LogLevel.Fatal > _level) return;
-            Logs.Add(new LogEvent { Level = LogLevel.Fatal, DateTime = RightNow, Message = message });
+            Log(new LogEvent { Level = LogLevel.Fatal, DateTime = RightNow, Message = message });
         }
 
         public void Fatal(string message, Exception ex)
         {
-            if (LogLevel.Fatal > _level) return;
-            Logs.Add(new LogEvent { Level = LogLevel.Fatal, DateTime = RightNow, Message = message, Exception = ex });
-        }
-
-        public struct LogEvent
-        {
-            public LogLevel Level { get; set; }
-            public DateTime DateTime { get; set; }
-            public string Message { get; set; }
-            public Exception Exception { get; set; }
+            Log(new LogEvent { Level = LogLevel.Fatal, DateTime = RightNow, Message = message, Exception = ex });
         }
     }
 
@@ -399,6 +377,10 @@ namespace Grapevine.Util
     /// </summary>
     public sealed class NullLogger : IGrapevineLogger
     {
+        public LogLevel Level => LogLevel.Trace;
+
+        public void Log(LogEvent evt) { }
+
         public void Debug(string message) { }
 
         public void Debug(object obj) { }
@@ -434,6 +416,14 @@ namespace Grapevine.Util
         public void Warn(object obj) { }
 
         public void Warn(string message, Exception ex) { }
+    }
+
+    public struct LogEvent
+    {
+        public LogLevel Level { get; set; }
+        public DateTime DateTime { get; set; }
+        public string Message { get; set; }
+        public Exception Exception { get; set; }
     }
 
     /// <summary>
