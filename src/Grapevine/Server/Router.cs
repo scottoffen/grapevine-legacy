@@ -374,19 +374,24 @@ namespace Grapevine.Server
 
             if (Before != null) routeContext = Before.Invoke(routeContext);
 
-            foreach (var route in routing.Where(route => route.Enabled))
+            try
             {
-                routeCounter++;
-                routeContext = route.Invoke(routeContext);
+                foreach (var route in routing.Where(route => route.Enabled))
+                {
+                    routeCounter++;
+                    routeContext = route.Invoke(routeContext);
 
-                LogRouteInvoked(context, route, routeCounter);
-                if (ContinueRoutingAfterResponseSent) continue;
-                if (routeContext.WasRespondedTo) break;
+                    LogRouteInvoked(context, route, routeCounter);
+                    if (ContinueRoutingAfterResponseSent) continue;
+                    if (routeContext.WasRespondedTo) break;
+                }
+            }
+            finally
+            {
+                if (After != null) routeContext = After.Invoke(routeContext);
+                LogEndRequestRouting(routeContext, routing.Count, routeCounter);
             }
 
-            if (After != null) routeContext = After.Invoke(routeContext);
-
-            LogEndRequestRouting(routeContext, routing.Count, routeCounter);
             return routeContext.WasRespondedTo;
         }
 
