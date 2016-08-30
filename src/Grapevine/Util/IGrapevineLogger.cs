@@ -379,43 +379,43 @@ namespace Grapevine.Util
     {
         public LogLevel Level => LogLevel.Trace;
 
-        public void Log(LogEvent evt) { }
+        public void Log(LogEvent evt) { /* This method is intentionally left empty */ }
 
-        public void Debug(string message) { }
+        public void Debug(string message) { /* This method is intentionally left empty */ }
 
-        public void Debug(object obj) { }
+        public void Debug(object obj) { /* This method is intentionally left empty */ }
 
-        public void Debug(string message, Exception ex) { }
+        public void Debug(string message, Exception ex) { /* This method is intentionally left empty */ }
 
-        public void Error(string message) { }
+        public void Error(string message) { /* This method is intentionally left empty */ }
 
-        public void Error(object obj) { }
+        public void Error(object obj) { /* This method is intentionally left empty */ }
 
-        public void Error(string message, Exception ex) { }
+        public void Error(string message, Exception ex) { /* This method is intentionally left empty */ }
 
-        public void Fatal(string message) { }
+        public void Fatal(string message) { /* This method is intentionally left empty */ }
 
-        public void Fatal(object obj) { }
+        public void Fatal(object obj) { /* This method is intentionally left empty */ }
 
-        public void Fatal(string message, Exception ex) { }
+        public void Fatal(string message, Exception ex) { /* This method is intentionally left empty */ }
 
-        public void Info(string message) { }
+        public void Info(string message) { /* This method is intentionally left empty */ }
 
-        public void Info(object obj) { }
+        public void Info(object obj) { /* This method is intentionally left empty */ }
 
-        public void Info(string message, Exception ex) { }
+        public void Info(string message, Exception ex) { /* This method is intentionally left empty */ }
 
-        public void Trace(string message) { }
+        public void Trace(string message) { /* This method is intentionally left empty */ }
 
-        public void Trace(object obj) { }
+        public void Trace(object obj) { /* This method is intentionally left empty */ }
 
-        public void Trace(string message, Exception ex) { }
+        public void Trace(string message, Exception ex) { /* This method is intentionally left empty */ }
 
-        public void Warn(string message) { }
+        public void Warn(string message) { /* This method is intentionally left empty */ }
 
-        public void Warn(object obj) { }
+        public void Warn(object obj) { /* This method is intentionally left empty */ }
 
-        public void Warn(string message, Exception ex) { }
+        public void Warn(string message, Exception ex) { /* This method is intentionally left empty */ }
     }
 
     public struct LogEvent
