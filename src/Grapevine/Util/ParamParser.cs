@@ -42,8 +42,7 @@ namespace Grapevine.Util
             if (string.IsNullOrEmpty(pathinfo)) return new Regex(@"^.*$");
             if (pathinfo.StartsWith("^")) return new Regex(pathinfo);
 
-            var pattern = new StringBuilder();
-            if (!pathinfo.StartsWith("^")) pattern.Append("^");
+            var pattern = new StringBuilder("^");
 
             pattern.Append(ParseForParams.IsMatch(pathinfo)
                 ? ParseForParams.Replace(pathinfo, "(.+)")

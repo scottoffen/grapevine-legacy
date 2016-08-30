@@ -77,7 +77,6 @@
     <Compile Include="Util\HttpMethod.cs" />
     <Compile Include="Util\ParamParser.cs" />
     <Compile Include="Util\PortFinder.cs" />
-    <Compile Include="Util\ReadOnlyDictionary.cs" />
     <Compile Include="Util\UriSchemaExtensions.cs" />
     <Compile Include="Util\UriScheme.cs" />
   </ItemGroup>

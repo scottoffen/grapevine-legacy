@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using Grapevine.Util;
 using Shouldly;
@@ -39,7 +40,7 @@ namespace Grapevine.Tests.Util
         }
 
         [Fact]
-        public void finder_instance_finds_open_port_using_start_and_end_indicies()
+        public void finder_finds_open_port_using_start_and_end_indicies()
         {
             var start = 5000;
             var end = 6000;
@@ -51,33 +52,6 @@ namespace Grapevine.Tests.Util
             var iport = int.Parse(port);
             iport.ShouldBeGreaterThanOrEqualTo(start);
             iport.ShouldBeLessThanOrEqualTo(end);
-        }
-
-        [Fact]
-        public void finder_instance_finds_open_port_async()
-        {
-            var start = 5000;
-            var end = 6000;
-            var port = string.Empty;
-            var nf = false;
-
-            var finder = new PortFinder(start, end);
-            finder.PortFound += str => { port = str; };
-            finder.PortNotFound += () => { nf = true; };
-
-            finder.RunAsync();
-            while (nf == false && string.IsNullOrEmpty(port))
-            {
-                Thread.Sleep(300);
-            }
-
-            if (nf == false)
-            {
-                port.ShouldNotBeNullOrWhiteSpace();
-                var iport = int.Parse(port);
-                iport.ShouldBeGreaterThanOrEqualTo(start);
-                iport.ShouldBeLessThanOrEqualTo(end);
-            }
         }
 
         [Fact]
@@ -135,6 +109,19 @@ namespace Grapevine.Tests.Util
 
             port.ShouldBeGreaterThanOrEqualTo(start);
             port.ShouldBeLessThanOrEqualTo(end);
+        }
+
+        [Fact]
+        public void static_finder_does_not_find_open_port()
+        {
+            var port = PortFinder.PortsInUse.First();
+            PortFinder.FindNextLocalOpenPort(port, port).ShouldBe("0");
+        }
+
+        [Fact]
+        public void static_finder_contains_list_of_used_ports()
+        {
+            PortFinder.PortsInUse.Count.ShouldBeGreaterThan(0);
         }
     }
 }

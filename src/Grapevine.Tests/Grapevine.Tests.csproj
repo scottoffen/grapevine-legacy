@@ -97,7 +97,6 @@
     <Compile Include="Util\NullLoggerTester.cs" />
     <Compile Include="Util\PatternParserTester.cs" />
     <Compile Include="Util\PortFinderTester.cs" />
-    <Compile Include="Util\ReadOnlyDictionaryTester.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

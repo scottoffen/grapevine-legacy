@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Threading;
@@ -8,24 +9,7 @@ namespace Grapevine.Util
     /// <summary>
     /// Provides synchronous and asynchronous methods to detect available ports
     /// </summary>
-    public interface IPortFinder
-    {
-        /// <summary>
-        /// Synchronously scans for an avilable port in the specified range and returns to result as a string
-        /// </summary>
-        /// <returns>stringo</returns>
-        string Run();
-
-        /// <summary>
-        /// Begins an asynchronous scan for an available port in the specified range; will fire the PortFound event when one is detected, or the PortNotFound event if one is not detected
-        /// </summary>
-        void RunAsync();
-    }
-
-    /// <summary>
-    /// Provides synchronous and asynchronous methods to detect available ports
-    /// </summary>
-    public class PortFinder : IPortFinder
+    public class PortFinder
     {
         /// <summary>
         /// Represents the smallest port number possible
@@ -39,16 +23,6 @@ namespace Grapevine.Util
 
         private static string OutOfRangeMsg { get; } = $"must be an integer between {FirstPort} and {LastPort}.";
 
-        /// <summary>
-        /// An event that can be used to notify a client when an available port is detected
-        /// </summary>
-        public event Action<string> PortFound;
-
-        /// <summary>
-        /// An event that can be used to notify a client when no available port can be found in the specified range
-        /// </summary>
-        public event Action PortNotFound;
-
         private int _startIndex;
         private int _endIndex;
 
@@ -60,8 +34,6 @@ namespace Grapevine.Util
         {
             StartIndex = startIndex;
             EndIndex = endIndex;
-            PortFound = s => { };
-            PortNotFound = () => { };
         }
 
         /// <summary>
@@ -98,26 +70,13 @@ namespace Grapevine.Util
             }
         }
 
+        /// <summary>
+        /// Synchronously scans for an avilable port in the specified range and returns to result as a string
+        /// </summary>
+        /// <returns>string</returns>
         public string Run()
         {
             return FindNextLocalOpenPort(StartIndex, EndIndex);
-        }
-
-        public void RunAsync()
-        {
-            var t = new Thread(() =>
-            {
-                var port = Run();
-                if (port != null)
-                {
-                    PortFound?.Invoke(port);
-                }
-                else
-                {
-                    PortNotFound?.Invoke();
-                }
-            });
-            t.Start();
         }
 
         /// <summary>
@@ -162,7 +121,7 @@ namespace Grapevine.Util
                 .Select(l => l.Port).ToList();
 
             int port = 0;
-            for (var i = min; i < max; i++)
+            for (var i = min; i <= max; i++)
             {
                 if (inUse.Contains(i)) continue;
                 port = i;
@@ -170,6 +129,17 @@ namespace Grapevine.Util
             }
 
             return port.ToString();
+        }
+
+        /// <summary>
+        /// A list that contains all the ports currently in use
+        /// </summary>
+        public static List<int> PortsInUse
+        {
+            get
+            {
+                return IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners().Select(l => l.Port).ToList();
+            }
         }
     }
 }

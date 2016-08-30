@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
@@ -102,7 +103,7 @@ namespace Grapevine.Server
         /// <summary>
         /// Gets or sets a dictionary of parameters provided in the PathInfo as identified by the processing route
         /// </summary>
-        ReadOnlyDictionary<string, string> PathParameters { get; set; }
+        Dictionary<string, string> PathParameters { get; set; }
 
         /// <summary>
         /// Reads the HttpListenerRequest InputStream into a string and returns it
@@ -257,7 +258,7 @@ namespace Grapevine.Server
 
         public string PathInfo { get; }
 
-        public ReadOnlyDictionary<string, string> PathParameters { get; set; }
+        public Dictionary<string, string> PathParameters { get; set; }
 
         public string Payload
         {

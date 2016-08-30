@@ -227,7 +227,7 @@ namespace Grapevine.Server
         /// </summary>
         /// <param name="pathinfo"></param>
         /// <returns></returns>
-        protected ReadOnlyDictionary<string, string> ParseParams(string pathinfo)
+        protected Dictionary<string, string> ParseParams(string pathinfo)
         {
             var parsed = new Dictionary<string, string>();
             var idx = 0;
@@ -242,7 +242,7 @@ namespace Grapevine.Server
                 idx++;
             }
 
-            return new ReadOnlyDictionary<string, string>(parsed);
+            return parsed;
         }
 
         /// <summary>

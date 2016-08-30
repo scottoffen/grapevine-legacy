@@ -1,4 +1,5 @@
-﻿using Grapevine.Util;
+﻿using System;
+using Grapevine.Util;
 using Shouldly;
 using Xunit;
 
@@ -55,6 +56,24 @@ namespace Grapevine.Tests.Util
         public void parses_empty_string_to_default_expression()
         {
             PatternParser.GenerateRegEx("").ToString().ShouldBe(@"^.*$");
+        }
+
+        [Fact]
+        public void parser_returns_empty_dictionary_when_pathinfo_in_null()
+        {
+            PatternParser.GeneratePatternKeys(null).ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void parser_throws_error_when_pathinfo_has_duplicate_keys()
+        {
+            Should.Throw<ArgumentException>(() => PatternParser.GeneratePatternKeys("/[part]/[part]"));
+        }
+
+        [Fact]
+        public void pattern_ends_with_dollar_sign_only_if_path_info_does()
+        {
+            PatternParser.GenerateRegEx(@"/path/info$").ToString().EndsWith("$").ShouldBeTrue();
         }
     }
 }
