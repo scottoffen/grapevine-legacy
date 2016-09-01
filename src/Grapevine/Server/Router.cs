@@ -202,6 +202,7 @@ namespace Grapevine.Server
         private readonly Exclusions _exclusions;
         private readonly IList<IRoute> _routingTable;
 
+        public AssemblyType AssemblyType { get; set; }
         public Func<IHttpContext, IHttpContext> After { get; set; }
         public Func<IHttpContext, IHttpContext> Before { get; set; }
         public bool ContinueRoutingAfterResponseSent { get; set; }
@@ -325,7 +326,7 @@ namespace Grapevine.Server
 
         public IRouter RegisterAssembly()
         {
-            var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
+            var assembly = (AssemblyType == AssemblyType.Entry) ? Assembly.GetEntryAssembly() : Assembly.GetCallingAssembly();
             AddRangeToGlobalStack(GenerateRoutes(assembly));
             return this;
         }
@@ -338,9 +339,9 @@ namespace Grapevine.Server
 
         public IRouter Import(Type type)
         {
-            if (type.IsNot<IRouter>()) throw new ArgumentException($"Cannot Import: {type.FullName} does not implement {typeof(IRouter).FullName}");
-            if (type.IsAbstract) throw new ArgumentException($"Cannot Import: {type.FullName} is an abstract class");
             if (!type.IsClass) throw new ArgumentException($"Cannot Import: {type.FullName} type is not a class");
+            if (type.IsAbstract) throw new ArgumentException($"Cannot Import: {type.FullName} is an abstract class");
+            if (!type.Implements<IRouter>()) throw new ArgumentException($"Cannot Import: {type.FullName} does not implement {typeof(IRouter).FullName}");
             return Import((IRouter) Activator.CreateInstance(type));
         }
 
@@ -365,11 +366,10 @@ namespace Grapevine.Server
 
         public bool Route(IHttpContext context, IList<IRoute> routing)
         {
-            LogBeginRequestRouting(context, routing.Count);
-
             if (routing == null || !routing.Any()) throw new RouteNotFoundException(context);
             if (context.WasRespondedTo) return true;
 
+            LogBeginRequestRouting(context, routing.Count);
             var routeContext = context;
             var routeCounter = 0;
 
@@ -580,5 +580,24 @@ namespace Grapevine.Server
         {
             return Types.Contains(type) || NameSpaces.Contains(type.Namespace);
         }
+    }
+
+    /// <summary>
+    /// Represents the type of assembly to import from
+    /// </summary>
+    public enum AssemblyType
+    {
+        // Difference between .Get*Assembly methods
+        // http://knitinr.blogspot.com/2008/07/systemreflection-get-this-assembly.html
+
+        /// <summary>
+        /// Assembly.GetCallingAssembly
+        /// </summary>
+        Calling,
+
+        /// <summary>
+        /// Assembly.GetEntryAssembly
+        /// </summary>
+        Entry
     }
 }

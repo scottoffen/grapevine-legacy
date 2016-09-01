@@ -17,21 +17,26 @@ namespace Grapevine.Util
             return CamelCaseOuter.Replace(CamelCaseInner.Replace(s, "$1 $2"), "$1 $2");
         }
 
+        internal static bool Implements<T>(this Type type)
+        {
+            return type.GetInterfaces().Contains(typeof(T));
+        }
+
         /// <summary>
         /// Returns true if this is of type &lt;T&gt;
         /// </summary>
-        internal static bool IsA<T>(this object obj)
-        {
-            return obj is T || obj.GetType().IsInstanceOfType(typeof(T));
-        }
+        //internal static bool IsA<T>(this object obj)
+        //{
+        //    return obj is T || obj.GetType().IsInstanceOfType(typeof(T));
+        //}
 
         /// <summary>
         /// Returns true if this is NOT of type &lt;T&gt;
         /// </summary>
-        internal static bool IsNot<T>(this object obj)
-        {
-            return !obj.IsA<T>();
-        }
+        //internal static bool IsNot<T>(this object obj)
+        //{
+        //    return !obj.IsA<T>();
+        //}
 
         /// <summary>
         /// Returns the section of the guid following the last dash

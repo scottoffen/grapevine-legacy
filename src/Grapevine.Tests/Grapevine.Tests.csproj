@@ -85,6 +85,7 @@
     <Compile Include="Server\PublicFolderTester.cs" />
     <Compile Include="Server\RestServerTester.cs" />
     <Compile Include="Server\RouterTester.cs" />
+    <Compile Include="Server\RouterTesterHelpers.cs" />
     <Compile Include="Server\RouteTester.cs" />
     <Compile Include="Server\ServerOptionsTester.cs" />
     <Compile Include="Server\TestingHelpers.cs" />

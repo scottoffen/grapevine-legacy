@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections;
-using System.Reflection;
-using System.Security.Policy;
 using Grapevine.Server;
 using Grapevine.Util;
 using Shouldly;
 using Xunit;
 using System.Collections.Generic;
+using Grapevine.Server.Exceptions;
+using Rhino.Mocks;
 
 namespace Grapevine.Tests.Server
 {
@@ -382,6 +381,27 @@ namespace Grapevine.Tests.Server
         }
 
         [Fact]
+        public void router_import_throws_error_if_type_is_not_a_class()
+        {
+            var router = new Router();
+            Should.Throw<ArgumentException>(() => router.Import(typeof(IRouter)));
+        }
+
+        [Fact]
+        public void router_import_throws_error_if_type_does_not_implement_irouter()
+        {
+            var router = new Router();
+            Should.Throw<ArgumentException>(() => router.Import(typeof(NotARouter)));
+        }
+
+        [Fact]
+        public void router_import_throws_error_if_type_is_abstract()
+        {
+            var router = new Router();
+            Should.Throw<ArgumentException>(() => router.Import(typeof(AbstractRouter)));
+        }
+
+        [Fact]
         public void router_imports_routes_from_another_router_instance()
         {
             var myrouter = new MyRouter();
@@ -466,6 +486,178 @@ namespace Grapevine.Tests.Server
         }
 
         [Fact]
+        public void router_route_throws_exception_if_routing_is_null()
+        {
+            var request = MockRepository.Mock<IHttpRequest>();
+            request.Stub(x => x.HttpMethod).Return(HttpMethod.GET);
+            request.Stub(x => x.PathInfo).Return("/path");
+
+            var context = MockRepository.Mock<IHttpContext>();
+            context.Stub(x => x.Request).Return(request);
+
+            var router = new Router();
+            IList<IRoute> routing = null;
+            Should.Throw<RouteNotFoundException>(() => router.Route(context, routing));
+        }
+
+        [Fact]
+        public void router_route_throws_exception_if_routing_is_empty()
+        {
+            var request = MockRepository.Mock<IHttpRequest>();
+            request.Stub(x => x.HttpMethod).Return(HttpMethod.GET);
+            request.Stub(x => x.PathInfo).Return("/path");
+
+            var context = MockRepository.Mock<IHttpContext>();
+            context.Stub(x => x.Request).Return(request);
+
+            var router = new Router();
+            IList<IRoute> routing = new List<IRoute>();
+            Should.Throw<RouteNotFoundException>(() => router.Route(context, routing));
+        }
+
+        [Fact]
+        public void router_route_returns_true_if_context_has_been_responded_to()
+        {
+            var executed = false;
+
+            Func<IHttpContext, IHttpContext> function = ctx => { executed = true; return ctx; };
+            var route = new Route(function);
+
+            var context = MockRepository.Mock<IHttpContext>();
+            context.Stub(x => x.WasRespondedTo).Return(true);
+
+            var router = new Router();
+            IList<IRoute> routing = new List<IRoute>();
+            routing.Add(route);
+
+            router.Route(context, routing).ShouldBeTrue();
+            executed.ShouldBeFalse();
+        }
+
+        [Fact]
+        public void router_route_executes_before_delegate_prior_to_routing()
+        {
+            var executionOrder = new List<string>();
+            Func<IHttpContext, IHttpContext> before = ctx => { executionOrder.Add("before"); return ctx; };
+            Func<IHttpContext, IHttpContext> function = ctx => { executionOrder.Add("function"); return ctx; };
+
+            var route = new Route(function);
+            IList<IRoute> routing = new List<IRoute>();
+
+            var router = new Router();
+            router.Before = before;
+            routing.Add(route);
+
+            var request = MockRepository.Mock<IHttpRequest>();
+            request.Stub(x => x.HttpMethod).Return(HttpMethod.GET);
+            request.Stub(x => x.PathInfo).Return("/");
+            request.Stub(x => x.Id).Return("12345");
+            request.Stub(x => x.Name).Return("fake request");
+
+            var context = MockRepository.Mock<IHttpContext>();
+            context.Stub(x => x.Request).Return(request);
+
+            router.Route(context, routing);
+
+            executionOrder[0].ShouldBe("before");
+            executionOrder[1].ShouldBe("function");
+        }
+
+        [Fact]
+        public void router_route_executes_after_delegate_after_routing()
+        {
+            var executionOrder = new List<string>();
+            Func<IHttpContext, IHttpContext> after = ctx => { executionOrder.Add("after"); return ctx; };
+            Func<IHttpContext, IHttpContext> function = ctx => { executionOrder.Add("function"); return ctx; };
+
+            var route = new Route(function);
+            IList<IRoute> routing = new List<IRoute>();
+
+            var router = new Router();
+            router.After = after;
+            routing.Add(route);
+
+            var request = MockRepository.Mock<IHttpRequest>();
+            request.Stub(x => x.HttpMethod).Return(HttpMethod.GET);
+            request.Stub(x => x.PathInfo).Return("/");
+            request.Stub(x => x.Id).Return("12345");
+            request.Stub(x => x.Name).Return("fake request");
+
+            var context = MockRepository.Mock<IHttpContext>();
+            context.Stub(x => x.Request).Return(request);
+
+            router.Route(context, routing);
+
+            executionOrder[0].ShouldBe("function");
+            executionOrder[1].ShouldBe("after");
+        }
+
+        [Fact]
+        public void router_route_continues_execution_after_response_sent_if_continue_flag_is_true()
+        {
+            var executed = false;
+
+            var request = MockRepository.Mock<IHttpRequest>();
+            request.Stub(x => x.HttpMethod).Return(HttpMethod.GET);
+            request.Stub(x => x.PathInfo).Return("/");
+            request.Stub(x => x.Id).Return("12345");
+            request.Stub(x => x.Name).Return("fake request");
+
+            var response = MockRepository.Mock<IHttpResponse>();
+
+            var context = MockRepository.Mock<IHttpContext>();
+            context.Stub(x => x.Request).Return(request);
+            context.Stub(x => x.Response).Return(response);
+
+            Func<IHttpContext, IHttpContext> one = ctx => { context.Stub(x => x.WasRespondedTo).Return(true); return ctx; };
+            Func<IHttpContext, IHttpContext> two = ctx => { executed = true; return ctx; };
+
+            var router = new Router();
+            router.ContinueRoutingAfterResponseSent = true;
+            router.Register(one);
+            router.Register(two);
+
+            router.Route(context).ShouldBeTrue();
+            executed.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void router_route_stops_execution_after_response_sent_if_continue_flag_is_false()
+        {
+            var executed = false;
+
+            var request = MockRepository.Mock<IHttpRequest>();
+            request.Stub(x => x.HttpMethod).Return(HttpMethod.GET);
+            request.Stub(x => x.PathInfo).Return("/");
+            request.Stub(x => x.Id).Return("12345");
+            request.Stub(x => x.Name).Return("fake request");
+
+            var response = MockRepository.Mock<IHttpResponse>();
+
+            var context = MockRepository.Mock<IHttpContext>();
+            context.Stub(x => x.Request).Return(request);
+            context.Stub(x => x.Response).Return(response);
+
+            Func<IHttpContext, IHttpContext> one = ctx => { context.Stub(x => x.WasRespondedTo).Return(true); return ctx; };
+            Func<IHttpContext, IHttpContext> two = ctx => { executed = true; return ctx; };
+
+            var router = new Router();
+            router.Register(one);
+            router.Register(two);
+
+            router.Route(context).ShouldBeTrue();
+            executed.ShouldBeFalse();
+        }
+
+        [Fact]
+        public void router_protected_add_route_to_table_throws_exception_if_route_function_is_null()
+        {
+            var router = new Router();
+            var route = MockRepository.Mock<IRoute>();
+            Should.Throw<ArgumentNullException>(() => router.AddRouteToTable(route));
+        }
+
+        [Fact]
         public void router_runs_routes_for_get_context()
         {
             var loaded = new LoadedRouter();
@@ -507,23 +699,6 @@ namespace Grapevine.Tests.Server
 
             router.Route(context, routes);
             hitme.ShouldBe(true);
-        }
-    }
-
-    public static class RouterExtensions
-    {
-        public static Exclusions GetExclusions(this Router router)
-        {
-            var memberInfo = router.GetType();
-            var field = memberInfo?.GetField("_exclusions", BindingFlags.Instance | BindingFlags.NonPublic);
-            return (Exclusions) field?.GetValue(router);
-        }
-
-        public static IList<IRoute> GetRoutingTable(this Router router)
-        {
-            var memberInfo = router.GetType();
-            var field = memberInfo?.GetField("_routingTable", BindingFlags.Instance | BindingFlags.NonPublic);
-            return (IList<IRoute>)field?.GetValue(router);
         }
     }
 }

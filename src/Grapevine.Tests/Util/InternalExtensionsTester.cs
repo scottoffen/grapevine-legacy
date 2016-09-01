@@ -14,21 +14,21 @@ namespace Grapevine.Tests.Util
             description.ShouldBe("Enhance Your Calm");
         }
 
-        [Fact]
-        public void is_a_returns_true_when_object_is_of_type()
-        {
-            var fake = new FakeClass();
-            fake.IsA<IFakeInterfase>().ShouldBeTrue();
-            fake.IsA<FakeClass>().ShouldBeTrue();
-        }
+        //[Fact]
+        //public void is_a_returns_true_when_object_is_of_type()
+        //{
+        //    var fake = new FakeClass();
+        //    fake.IsA<IFakeInterfase>().ShouldBeTrue();
+        //    fake.IsA<FakeClass>().ShouldBeTrue();
+        //}
 
-        [Fact]
-        public void is_a_returns_false_when_object_is_not_of_type()
-        {
-            var notfake = new NotFakeClass();
-            notfake.IsNot<IFakeInterfase>().ShouldBeTrue();
-            notfake.IsNot<FakeClass>().ShouldBeTrue();
-        }
+        //[Fact]
+        //public void is_a_returns_false_when_object_is_not_of_type()
+        //{
+        //    var notfake = new NotFakeClass();
+        //    notfake.IsNot<IFakeInterfase>().ShouldBeTrue();
+        //    notfake.IsNot<FakeClass>().ShouldBeTrue();
+        //}
 
         [Fact]
         public void guid_truncation_return_last_part_of_guid()
