@@ -49,7 +49,6 @@
     <Compile Include="Client\RestRequest.cs" />
     <Compile Include="Client\RestResponse.cs" />
     <Compile Include="Server\DynamicPropertiesExtensions.cs" />
-    <Compile Include="Server\Exceptions\DynamicPropertyTypeMismatchException.cs" />
     <Compile Include="Server\Exceptions\DynamicValueNotFoundException.cs" />
     <Compile Include="Server\Exceptions\RouteMethodArgumentException.cs" />
     <Compile Include="Server\Exceptions\RouteNotFoundException.cs" />

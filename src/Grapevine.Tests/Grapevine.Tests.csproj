@@ -41,6 +41,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Rhino.Mocks, Version=4.0.0.0, Culture=neutral, PublicKeyToken=38730f1abddafc13, processorArchitecture=MSIL">
       <HintPath>..\packages\RhinoMocks.4.0.0-alpha3\lib\net40\Rhino.Mocks.dll</HintPath>
       <Private>True</Private>
@@ -80,6 +81,7 @@
     <Compile Include="Client\RestClientTester.cs" />
     <Compile Include="Client\RestRequestTester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Server\DynamicPropertiesTester.cs" />
     <Compile Include="Server\PublicFolderTester.cs" />
     <Compile Include="Server\RestServerTester.cs" />
     <Compile Include="Server\RouterTester.cs" />

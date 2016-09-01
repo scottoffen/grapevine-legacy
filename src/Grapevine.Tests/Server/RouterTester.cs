@@ -1,15 +1,58 @@
 ﻿using System;
+using System.Collections;
+using System.Reflection;
+using System.Security.Policy;
 using Grapevine.Server;
 using Grapevine.Util;
 using Shouldly;
 using Xunit;
+using System.Collections.Generic;
 
 namespace Grapevine.Tests.Server
 {
     public class RouterTester
     {
         [Fact]
-        public void router_exclude_type()
+        public void router_ctor_initializes_properties()
+        {
+            var router = new Router();
+
+            router.GetExclusions().ShouldNotBeNull();
+            router.GetRoutingTable().ShouldNotBeNull();
+            router.Logger.ShouldBeOfType<NullLogger>();
+            router.Scope.Equals(string.Empty).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void router_ctor_initializes_properties_with_scope()
+        {
+            const string scope = "MyScope";
+            var router = new Router(scope);
+
+            router.GetExclusions().ShouldNotBeNull();
+            router.GetRoutingTable().ShouldNotBeNull();
+            router.Logger.ShouldBeOfType<NullLogger>();
+            router.Scope.Equals(scope).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void router_ctor_fluent_initializes_properties()
+        {
+            const string scope = "MyScope";
+
+            var router = Router.For(_ =>
+            {
+                _.Register(Route.For(HttpMethod.ALL).Use(context => context));
+                _.ContinueRoutingAfterResponseSent = true;
+            }, scope);
+
+            router.Scope.ShouldBe(scope);
+            router.RoutingTable.Count.ShouldBe(1);
+            router.ContinueRoutingAfterResponseSent.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void router_excludes_type()
         {
             var router = new Router();
             router.Exclude(typeof(RouteTestingHelper));
@@ -19,7 +62,23 @@ namespace Grapevine.Tests.Server
         }
 
         [Fact]
-        public void router_exclude_generic_type()
+        public void router_excludes_type_only_once()
+        {
+            var router = new Router();
+            router.Exclusions.Types.Count.ShouldBe(0);
+
+            router.Exclude<Route>();
+            router.Exclusions.Types.Count.ShouldBe(1);
+
+            router.Exclude<Router>();
+            router.Exclusions.Types.Count.ShouldBe(2);
+
+            router.Exclude<Route>();
+            router.Exclusions.Types.Count.ShouldBe(2);
+        }
+
+        [Fact]
+        public void router_excludes_generic_type()
         {
             var router = new Router();
             router.Exclude<RouteTestingHelper>();
@@ -29,7 +88,7 @@ namespace Grapevine.Tests.Server
         }
 
         [Fact]
-        public void router_exclude_namespace()
+        public void router_excludes_namespace()
         {
             var ns = "My.Fictional.Namespace";
             var router = new Router();
@@ -37,6 +96,22 @@ namespace Grapevine.Tests.Server
 
             router.Exclusions.NameSpaces.Count.ShouldBe(1);
             router.Exclusions.NameSpaces[0].ShouldBe(ns);
+        }
+
+        [Fact]
+        public void router_excludes_namespace_only_once()
+        {
+            var router = new Router();
+            router.Exclusions.NameSpaces.Count.ShouldBe(0);
+
+            router.ExcludeNameSpace("FakeNamespace");
+            router.Exclusions.NameSpaces.Count.ShouldBe(1);
+
+            router.ExcludeNameSpace("NamespaceFake");
+            router.Exclusions.NameSpaces.Count.ShouldBe(2);
+
+            router.ExcludeNameSpace("FakeNamespace");
+            router.Exclusions.NameSpaces.Count.ShouldBe(2);
         }
 
         [Fact]
@@ -113,7 +188,7 @@ namespace Grapevine.Tests.Server
         [Fact]
         public void router_registers_method_as_route()
         {
-            var method = typeof (RouteTestingHelper).GetMethod("RouteOne");
+            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
             var route = new Route(method);
             var router = new Router();
 
@@ -170,6 +245,17 @@ namespace Grapevine.Tests.Server
         }
 
         [Fact]
+        public void router_registers_all_methods_in_type_without_baseurl()
+        {
+            var router = new Router();
+            router.Register(typeof(RouterTestingHelperTwo));
+
+            router.RoutingTable.Count.ShouldBe(2);
+            router.RoutingTable[0].PathInfo.ShouldBe("/two/[topic]/[id]");
+            router.RoutingTable[1].PathInfo.ShouldBe("/");
+        }
+
+        [Fact]
         public void router_registers_all_methods_in_type_with_baseurl()
         {
             var router = new Router();
@@ -181,14 +267,15 @@ namespace Grapevine.Tests.Server
         }
 
         [Fact]
-        public void router_registers_all_methods_in_type_without_baseurl()
+        public void router_registers_all_methods_in_type_with_malformed_baseurl()
         {
             var router = new Router();
-            router.Register(typeof(RouterTestingHelperTwo));
+            router.Register(typeof(RouterTestingHelperFour));
 
-            router.RoutingTable.Count.ShouldBe(2);
-            router.RoutingTable[0].PathInfo.ShouldBe("/two/[topic]/[id]");
-            router.RoutingTable[1].PathInfo.ShouldBe("/");
+            router.RoutingTable.Count.ShouldBe(3);
+            router.RoutingTable[0].PathInfo.ShouldBe("/four/[topic]/[id]");
+            router.RoutingTable[1].PathInfo.ShouldBe("/four/");
+            router.RoutingTable[2].PathInfo.ShouldBe(@"^/four/\d+");
         }
 
         [Fact]
@@ -239,6 +326,24 @@ namespace Grapevine.Tests.Server
         public void router_registers_by_scanning_assembly()
         {
             var router = new Router();
+
+            router.RegisterAssembly();
+
+            router.RoutingTable.Count.ShouldBe(7);
+            router.RoutingTable[0].Name.ShouldBe($"{typeof(RouterTestingHelperOne).FullName}.RouteOne");
+            router.RoutingTable[1].Name.ShouldBe($"{typeof(RouterTestingHelperOne).FullName}.StaticRoute");
+            router.RoutingTable[2].Name.ShouldBe($"{typeof(RouterTestingHelperTwo).FullName}.RouteOne");
+            router.RoutingTable[3].Name.ShouldBe($"{typeof(RouterTestingHelperTwo).FullName}.StaticRoute");
+            router.RoutingTable[4].Name.ShouldBe($"{typeof(RouterTestingHelperFour).FullName}.RouteOne");
+            router.RoutingTable[5].Name.ShouldBe($"{typeof(RouterTestingHelperFour).FullName}.StaticRoute");
+            router.RoutingTable[6].Name.ShouldBe($"{typeof(RouterTestingHelperFour).FullName}.RouteWithRegex");
+        }
+
+        [Fact]
+        public void router_registers_by_scanning_assembly_and_skips_excluded_types()
+        {
+            var router = new Router();
+            router.Exclude<RouterTestingHelperFour>();
 
             router.RegisterAssembly();
 
@@ -402,6 +507,23 @@ namespace Grapevine.Tests.Server
 
             router.Route(context, routes);
             hitme.ShouldBe(true);
+        }
+    }
+
+    public static class RouterExtensions
+    {
+        public static Exclusions GetExclusions(this Router router)
+        {
+            var memberInfo = router.GetType();
+            var field = memberInfo?.GetField("_exclusions", BindingFlags.Instance | BindingFlags.NonPublic);
+            return (Exclusions) field?.GetValue(router);
+        }
+
+        public static IList<IRoute> GetRoutingTable(this Router router)
+        {
+            var memberInfo = router.GetType();
+            var field = memberInfo?.GetField("_routingTable", BindingFlags.Instance | BindingFlags.NonPublic);
+            return (IList<IRoute>)field?.GetValue(router);
         }
     }
 }

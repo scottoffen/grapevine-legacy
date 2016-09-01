@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Grapevine.Util;
 using System.Text.RegularExpressions;
@@ -232,13 +233,10 @@ namespace Grapevine.Server
             var parsed = new Dictionary<string, string>();
             var idx = 0;
 
-            foreach (Match match in PathInfoPattern.Matches(pathinfo))
+            foreach (var match in PathInfoPattern.Matches(pathinfo).Cast<Match>().Where(m => m.Success))
             {
-                if (match.Success)
-                {
-                    var key = PatternKeys.Count > 0 && PatternKeys.Count > idx ? PatternKeys[idx] : $"p{idx}";
-                    parsed.Add(key, match.Groups[1].Value);
-                }
+                var key = PatternKeys.Count > 0 && PatternKeys.Count > idx ? PatternKeys[idx] : $"p{idx}";
+                parsed.Add(key, match.Groups[1].Value);
                 idx++;
             }
 
@@ -250,7 +248,7 @@ namespace Grapevine.Server
         /// </summary>
         /// <param name="methodInfo"></param>
         /// <returns></returns>
-        protected Func<IHttpContext, IHttpContext> ConvertMethodToFunc(MethodInfo methodInfo)
+        public static Func<IHttpContext, IHttpContext> ConvertMethodToFunc(MethodInfo methodInfo)
         {
             if (methodInfo == null) throw new ArgumentNullException(nameof(methodInfo));
             if (methodInfo.ReturnType != typeof(IHttpContext)) throw new RouteMethodArgumentException($"{methodInfo.Name}: Return type must be of type {typeof(IHttpContext).Name}");
@@ -259,20 +257,8 @@ namespace Grapevine.Server
             if (args.Length != 1) throw new RouteMethodArgumentException($"{methodInfo.Name}: must have one and only one argument to be used as a {typeof(RestRoute).Name}");
             if (args[0].ParameterType != typeof(IHttpContext)) throw new RouteMethodArgumentException($"{methodInfo.Name}: argument must be of type {typeof(IHttpContext).Name}");
 
-            Func<IHttpContext, IHttpContext> function;
-
-            if (methodInfo.IsStatic)
-            {
-                function = context => (IHttpContext)methodInfo.Invoke(null, new object[] { context });
-            }
-            else
-            {
-                function = context =>
-                {
-                    var instance = methodInfo.ReflectedType != null ? Activator.CreateInstance(methodInfo.ReflectedType) : null;
-                    return (IHttpContext)methodInfo.Invoke(instance, new object[] { context });
-                };
-            }
+            var instance = (methodInfo.IsStatic || methodInfo.ReflectedType == null) ? null : Activator.CreateInstance(methodInfo.ReflectedType);
+            Func<IHttpContext, IHttpContext> function = context => (IHttpContext)methodInfo.Invoke(instance, new object[] { context });
 
             return function;
         }

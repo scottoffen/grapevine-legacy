@@ -10,16 +10,14 @@ namespace Grapevine.Server
         {
             if (string.IsNullOrWhiteSpace(key)) throw new ArgumentNullException(nameof(key));
 
-            var properties = props.Properties as IDictionary<string, object>;
-            if (properties == null || !properties.ContainsKey(key)) throw new DynamicValueNotFoundException(key);
+            var dictionary = props.Properties as IDictionary<string, object>;
+            if (dictionary == null || !dictionary.ContainsKey(key)) throw new DynamicValueNotFoundException(key);
 
-            var property = properties[key];
+            var property = dictionary[key];
             if (property is T) return (T)property;
 
             var result = Convert.ChangeType(property, typeof(T));
-            if (result != null) return (T)result;
-
-            throw new DynamicPropertyTypeMismatchException(key, property.GetType().Name, typeof(T).Name);
+            return (T)result;
         }
 
         public static bool ContainsProperty(this IDynamicProperties props, string key)

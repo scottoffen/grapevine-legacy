@@ -216,6 +216,7 @@ namespace Grapevine.Server
             _exclusions = new Exclusions();
             _routingTable = new List<IRoute>();
             Logger = new NullLogger();
+            Scope = string.Empty;
         }
 
         /// <summary>

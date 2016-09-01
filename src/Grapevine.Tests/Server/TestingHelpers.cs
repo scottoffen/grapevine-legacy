@@ -21,6 +21,26 @@ namespace Grapevine.Tests.Server
             return context;
         }
 
+        public void FailureRouteOne(IHttpContext context)
+        {
+            /* This method intentionally left blank */
+        }
+
+        public IHttpContext FailureRouteTwo(IHttpContext context, bool makeThisFail)
+        {
+            return context;
+        }
+
+        public IHttpContext FailureRouteThree()
+        {
+            return null;
+        }
+
+        public IHttpContext FailureRouteFour(bool makeThisFail)
+        {
+            return null;
+        }
+
         public static IHttpContext StaticRoute(IHttpContext context)
         {
             TriggeredBy = "StaticRoute";
@@ -97,6 +117,33 @@ namespace Grapevine.Tests.Server
 
         [RestRoute(HttpMethod = HttpMethod.GET)]
         public static IHttpContext StaticRoute(IHttpContext context)
+        {
+            return context;
+        }
+    }
+
+    [RestResource(BasePath = "four/")]
+    public class RouterTestingHelperFour
+    {
+        public IHttpContext NotARoute(IHttpContext context)
+        {
+            return context;
+        }
+
+        [RestRoute(HttpMethod = HttpMethod.POST, PathInfo = "/[topic]/[id]")]
+        public IHttpContext RouteOne(IHttpContext context)
+        {
+            return context;
+        }
+
+        [RestRoute(HttpMethod = HttpMethod.GET)]
+        public static IHttpContext StaticRoute(IHttpContext context)
+        {
+            return context;
+        }
+
+        [RestRoute(HttpMethod = HttpMethod.GET, PathInfo = @"^/\d+")]
+        public static IHttpContext RouteWithRegex(IHttpContext context)
         {
             return context;
         }

@@ -1,13 +1,73 @@
 ﻿using System;
+using System.Reflection;
 using Grapevine.Server;
+using Grapevine.Server.Exceptions;
 using Grapevine.Util;
+using Rhino.Mocks;
 using Shouldly;
+using Shouldly.Configuration;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Grapevine.Tests.Server
 {
     public class RouteTester
     {
+        [Fact]
+        public void route_ctor_throws_excpetion_if_methodinfo_is_null()
+        {
+            MethodInfo method = null;
+            Should.Throw<ArgumentNullException>(() => { var route = new Route(method); });
+        }
+
+        [Fact]
+        public void route_ctor_throws_exception_if_methodinfo_return_type_is_not_ihttpcontext()
+        {
+            var method = typeof(RouteTestingHelper).GetMethod("FailureRouteOne");
+            Should.Throw<RouteMethodArgumentException>(() => { var route = new Route(method); });
+        }
+
+        [Fact]
+        public void route_ctor_throws_exception_if_methodinfo_number_of_args_is_not_one()
+        {
+            var methodA = typeof(RouteTestingHelper).GetMethod("FailureRouteTwo");
+            var methodB = typeof(RouteTestingHelper).GetMethod("FailureRouteThree");
+
+            Should.Throw<RouteMethodArgumentException>(() => { var route = new Route(methodA); });
+            Should.Throw<RouteMethodArgumentException>(() => { var route = new Route(methodB); });
+        }
+
+        [Fact]
+        public void route_ctor_throws_exception_if_methodinfo_first_arg_is_not_ihttpcontext()
+        {
+            var method = typeof(RouteTestingHelper).GetMethod("FailureRouteFour");
+            Should.Throw<RouteMethodArgumentException>(() => { var route = new Route(method); });
+        }
+
+        [Fact]
+        public void route_ctor_name_is_null_if_reflected_type_is_null()
+        {
+            Castle.DynamicProxy.Generators.AttributesToAvoidReplicating.Add(
+                typeof(System.Security.Permissions.ReflectionPermissionAttribute));
+            Castle.DynamicProxy.Generators.AttributesToAvoidReplicating.Add(
+                typeof(System.Security.Permissions.PermissionSetAttribute));
+
+            var param = MockRepository.Mock<ParameterInfo>();
+            param.Stub(x => x.ParameterType).Return(typeof(IHttpContext));
+
+            var args = new ParameterInfo[1];
+            args[0] = param;
+
+            var method = MockRepository.Mock<MethodInfo>();
+            method.Stub(x => x.ReturnType).Return(typeof(IHttpContext));
+            method.Stub(x => x.GetParameters()).Return(args);
+            method.Stub(x => x.ReflectedType).Return(null);
+
+            var route = new Route(method);
+
+            route.Name.ShouldBeNull();
+        }
+
         [Fact]
         public void route_ctor_methodinfo_only_correctly_sets_properties()
         {
@@ -69,6 +129,13 @@ namespace Grapevine.Tests.Server
 
             route.PathInfo.ShouldBe(pathinfo);
             route.PathInfoPattern.ToString().ShouldBe(pattern);
+        }
+
+        [Fact]
+        public void route_ctor_throws_exception_if_function_is_null()
+        {
+            Func<IHttpContext, IHttpContext> func = null;
+            Should.Throw<ArgumentNullException>(() => { var route = new Route(func); });
         }
 
         [Fact]
@@ -135,7 +202,7 @@ namespace Grapevine.Tests.Server
         }
 
         [Fact]
-        public void route_static_ctor_using_for_to_use()
+        public void route_static_ctor_using_for_to_use_with_function()
         {
             Func<IHttpContext, IHttpContext> function = context => context;
             var verb = HttpMethod.GET;
@@ -149,7 +216,7 @@ namespace Grapevine.Tests.Server
         }
 
         [Fact]
-        public void route_static_ctor_using_for_use()
+        public void route_static_ctor_using_for_use_with_function()
         {
             Func<IHttpContext, IHttpContext> function = context => context;
             var verb = HttpMethod.GET;
@@ -159,6 +226,48 @@ namespace Grapevine.Tests.Server
             route.HttpMethod.ShouldBe(verb);
             route.PathInfo.ShouldBe(string.Empty);
             route.Function.ShouldBe(function);
+        }
+
+        [Fact]
+        public void route_static_ctor_using_for_to_use_with_methodinfo()
+        {
+            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
+            var verb = HttpMethod.GET;
+            var pathinfo = "/some/route";
+
+            var route = Route.For(verb).To(pathinfo).Use(method);
+
+            route.HttpMethod.ShouldBe(verb);
+            route.PathInfo.ShouldBe(pathinfo);
+            route.Name.ShouldBe($"{method.ReflectedType.FullName}.{method.Name}");
+        }
+
+        [Fact]
+        public void route_static_ctor_using_for_use_with_methodinfo()
+        {
+            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
+            var verb = HttpMethod.GET;
+
+            var route = Route.For(verb).Use(method);
+
+            route.HttpMethod.ShouldBe(verb);
+            route.PathInfo.ShouldBe(string.Empty);
+            route.Name.ShouldBe($"{method.ReflectedType.FullName}.{method.Name}");
+        }
+
+        [Fact]
+        public void route_enable_and_disable_set_toggle_correctly()
+        {
+            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
+            var route = new Route(method);
+
+            route.Enabled.ShouldBeTrue();
+
+            route.Disable();
+            route.Enabled.ShouldBeFalse();
+
+            route.Enable();
+            route.Enabled.ShouldBeTrue();
         }
 
         [Fact]
@@ -303,8 +412,26 @@ namespace Grapevine.Tests.Server
             var route1 = new Route(func);
             var route2 = new Route(func);
 
-            route1.Equals(route2).ShouldBe(true);
-            route1.Name.Equals(route2.Name).ShouldBe(true);
+            route1.Equals(route2).ShouldBeTrue();
+            route1.Name.Equals(route2.Name).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void route_equality_false_when_object_is_not_route()
+        {
+            Func<IHttpContext, IHttpContext> func = context => context;
+            var route = new Route(func);
+
+            route.Equals(func).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void route_gethashcode_overrides()
+        {
+            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
+            var route = new Route(method);
+
+            route.GetHashCode().Equals(route.ToString().GetHashCode()).ShouldBeTrue();
         }
 
         [Fact]
@@ -477,7 +604,11 @@ namespace Grapevine.Tests.Server
 
             RouteTestingHelper.WhoTriggeredMe().ShouldBe("RouteTwo");
         }
+
+        [Fact]
+        public void route_convert_method_to_func_throws_exception_when_methodinfo_is_null()
+        {
+            Should.Throw<ArgumentNullException>(() => Route.ConvertMethodToFunc(null));
+        }
     }
-
-
 }
