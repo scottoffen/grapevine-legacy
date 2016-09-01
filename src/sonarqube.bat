@@ -1,8 +1,10 @@
 @ECHO OFF
 
+if [%1]==[] goto :usage
+
 SET ProjectKey="GV4"
 SET ProjectName="Grapevine 4"
-SET ProjectVersion="4.0.0.n"
+SET ProjectVersion="4.0.0.%1"
 
 SET TestProject=Grapevine.Tests
 SET XunitReport=%~dp0XUnitResults.xml
@@ -40,3 +42,14 @@ MSBuild.SonarQube.Runner.exe end
 REM Clean Up Files
 del %XunitReport%
 del %CoverageReport%
+
+goto :end
+
+:usage
+@echo Usage: %0 ^<BuildNumber^>
+@echo The provided ^<BuildNumber^> will be appended to the end of the project version
+
+goto :end
+
+:end
+exit /B
