@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Threading;
 using Grapevine.Util;
 using Shouldly;
 using Xunit;
