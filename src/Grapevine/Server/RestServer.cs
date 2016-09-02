@@ -5,6 +5,7 @@ using System.Security.Authentication.ExtendedProtection;
 using System.Threading;
 using Grapevine.Server.Exceptions;
 using Grapevine.Util;
+using Grapevine.Util.Loggers;
 using HttpStatusCode = Grapevine.Util.HttpStatusCode;
 using ExtendedProtectionSelector = System.Net.HttpListener.ExtendedProtectionSelector;
 

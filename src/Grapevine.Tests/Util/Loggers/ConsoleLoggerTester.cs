@@ -1,10 +1,11 @@
 ﻿using System;
 using System.IO;
 using Grapevine.Util;
+using Grapevine.Util.Loggers;
 using Shouldly;
 using Xunit;
 
-namespace Grapevine.Tests.Util
+namespace Grapevine.Tests.Util.Loggers
 {
     public class ConsoleLoggerTester
     {

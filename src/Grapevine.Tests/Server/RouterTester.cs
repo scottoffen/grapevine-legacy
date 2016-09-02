@@ -5,6 +5,7 @@ using Shouldly;
 using Xunit;
 using System.Collections.Generic;
 using Grapevine.Server.Exceptions;
+using Grapevine.Util.Loggers;
 using Rhino.Mocks;
 
 namespace Grapevine.Tests.Server

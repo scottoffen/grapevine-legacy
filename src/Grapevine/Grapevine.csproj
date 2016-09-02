@@ -74,6 +74,9 @@
     <Compile Include="Util\IGrapevineLogger.cs" />
     <Compile Include="Util\InternalExtensions.cs" />
     <Compile Include="Util\HttpMethod.cs" />
+    <Compile Include="Util\Loggers\ConsoleLogger.cs" />
+    <Compile Include="Util\Loggers\InMemoryLogger.cs" />
+    <Compile Include="Util\Loggers\NullLogger.cs" />
     <Compile Include="Util\ParamParser.cs" />
     <Compile Include="Util\PortFinder.cs" />
     <Compile Include="Util\UriSchemaExtensions.cs" />
