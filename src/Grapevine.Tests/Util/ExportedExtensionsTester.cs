@@ -6,7 +6,7 @@ using Shouldly;
 
 namespace Grapevine.Tests.Util
 {
-    public class ExternalExtensionsTester
+    public class ExportedExtensionsTester
     {
         [Fact]
         public void get_value_throws_exception_when_collection_is_null()
@@ -41,7 +41,7 @@ namespace Grapevine.Tests.Util
         [Fact]
         public void get_value_converts_to_bool()
         {
-            var collection = new NameValueCollection {{"IsTrue", "true"}, {"IsFalse", "FALSE"}};
+            var collection = new NameValueCollection { { "IsTrue", "true" }, { "IsFalse", "FALSE" } };
 
             collection.GetValue<bool>("IsTrue").ShouldBeTrue();
             collection.GetValue<bool>("IsFalse").ShouldBeFalse();
@@ -50,7 +50,7 @@ namespace Grapevine.Tests.Util
         [Fact]
         public void get_value_or_default_returns_default()
         {
-            var collection = new NameValueCollection {{"IsTrue", "true"}};
+            var collection = new NameValueCollection { { "IsTrue", "true" } };
 
             collection.GetValue<bool>("IsTrue", false).ShouldBeTrue();
             collection.GetValue<bool>("IsFalse", true).ShouldBeTrue();

@@ -11,7 +11,7 @@ namespace Grapevine.Tests.Server
     public class DynamicPropertiesTester
     {
         [Fact]
-        public void dynamic_property_not_initialized_until_first_access ()
+        public void dynamic_property_not_initialized_until_first_access()
         {
             var props = new DynaProps();
             props.IsInitialized.ShouldBeFalse();

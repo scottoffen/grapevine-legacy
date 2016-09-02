@@ -8,7 +8,7 @@ namespace Grapevine.Tests.Util
     public class PatternParserTester
     {
         [Fact]
-        public void parses_pattern_to_regular_expression ()
+        public void parses_pattern_to_regular_expression()
         {
             var pattern = "/path/[param1]/[param2]";
             PatternParser.GenerateRegEx(pattern).ToString().ShouldBe(@"^/path/(.+)/(.+)$");

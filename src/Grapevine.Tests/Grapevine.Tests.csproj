@@ -91,15 +91,17 @@
     <Compile Include="Server\TestingHelpers.cs" />
     <Compile Include="Util\ContentTypeExtensionsTester.cs" />
     <Compile Include="Util\ContentTypeMetadataTester.cs" />
-    <Compile Include="Util\ExternalExtensionsTester.cs" />
+    <Compile Include="Util\ExportedExtensionsTester.cs" />
     <Compile Include="Util\HttpMethodTester.cs" />
     <Compile Include="Util\HttpStatusCodeTester.cs" />
     <Compile Include="Util\InternalExtensionsTester.cs" />
     <Compile Include="Util\Loggers\ConsoleLoggerTester.cs" />
     <Compile Include="Util\Loggers\InMemoryLoggerTester.cs" />
+    <Compile Include="Util\Loggers\LoggerExtensionsTester.cs" />
     <Compile Include="Util\Loggers\NullLoggerTester.cs" />
     <Compile Include="Util\PatternParserTester.cs" />
     <Compile Include="Util\PortFinderTester.cs" />
+    <Compile Include="Util\UriSchemeExtensionsTester.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -18,13 +18,6 @@ namespace Grapevine.Tests.Server
 
     public static class RouterExtensions
     {
-        internal static Exclusions GetExclusions(this Router router)
-        {
-            var memberInfo = router.GetType();
-            var field = memberInfo?.GetField("_exclusions", BindingFlags.Instance | BindingFlags.NonPublic);
-            return (Exclusions)field?.GetValue(router);
-        }
-
         internal static IList<IRoute> GetRoutingTable(this Router router)
         {
             var memberInfo = router.GetType();

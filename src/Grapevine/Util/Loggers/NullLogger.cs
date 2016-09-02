@@ -7,6 +7,17 @@ namespace Grapevine.Util.Loggers
     /// </summary>
     public sealed class NullLogger : IGrapevineLogger
     {
+        private static NullLogger _logger;
+
+        private NullLogger() { }
+
+        public static NullLogger GetInstance()
+        {
+            if (_logger != null) return _logger;
+            _logger = new NullLogger();
+            return _logger;
+        }
+
         /// <inheritdoc/>
         public LogLevel Level => LogLevel.Trace;
 

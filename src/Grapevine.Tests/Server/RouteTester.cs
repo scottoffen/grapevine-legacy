@@ -5,9 +5,7 @@ using Grapevine.Server.Exceptions;
 using Grapevine.Util;
 using Rhino.Mocks;
 using Shouldly;
-using Shouldly.Configuration;
 using Xunit;
-using Xunit.Sdk;
 
 namespace Grapevine.Tests.Server
 {
@@ -71,7 +69,7 @@ namespace Grapevine.Tests.Server
         [Fact]
         public void route_ctor_methodinfo_only_correctly_sets_properties()
         {
-            var method = typeof (RouteTestingHelper).GetMethod("RouteOne");
+            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
             var route = new Route(method);
 
             route.HttpMethod.ShouldBe(HttpMethod.ALL);

@@ -113,7 +113,7 @@ namespace Grapevine.Server
         {
             Connections = 50;
             Host = "localhost";
-            Logger = new NullLogger();
+            Logger = NullLogger.GetInstance();
             Port = "1234";
             PublicFolder = new PublicFolder();
             Router = new Router();

@@ -23,9 +23,9 @@ namespace Grapevine.Server
         bool ContinueRoutingAfterResponseSent { get; set; }
 
         /// <summary>
-        /// Gets the Exclusions that represents the types and namespaces to be excluded when scanning assemblies for routes
+        /// Scan the assembly for routes based on inclusion and exclusion rules
         /// </summary>
-        IExclusions Exclusions { get; }
+        IRouteScanner Scanner { get; }
 
         /// <summary>
         /// Gets a list of registered routes in the order they were registered
@@ -36,27 +36,6 @@ namespace Grapevine.Server
         /// Gets the scope used when scanning assemblies for routes
         /// </summary>
         string Scope { get; }
-
-        /// <summary>
-        /// Adds the <c>Type</c> to the list of excluded types when scanning assemblies for routes
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        IRouter Exclude<T>();
-
-        /// <summary>
-        /// Adds the <c>Type</c> to the list of excluded types when scanning assemblies for routes
-        /// </summary>
-        /// <param name="T"></param>
-        /// <returns></returns>
-        IRouter Exclude(Type T);
-
-        /// <summary>
-        /// Adds the namespace to the list of excluded namespaces when scanning assemblies for routes
-        /// </summary>
-        /// <param name="nameSpace"></param>
-        /// <returns></returns>
-        IRouter ExcludeNameSpace(string nameSpace);
 
         /// <summary>
         /// Adds the routes in router parameter to the end of the current routing table
@@ -200,14 +179,15 @@ namespace Grapevine.Server
 
     public class Router : IRouter
     {
-        private readonly Exclusions _exclusions;
         private readonly IList<IRoute> _routingTable;
 
-        public AssemblyType AssemblyType { get; set; }
         public Func<IHttpContext, IHttpContext> After { get; set; }
         public Func<IHttpContext, IHttpContext> Before { get; set; }
+
         public bool ContinueRoutingAfterResponseSent { get; set; }
         public string Scope { get; protected set; }
+
+        public IRouteScanner Scanner { get; protected set; }
         public IGrapevineLogger Logger { get; set; }
 
         /// <summary>
@@ -215,9 +195,9 @@ namespace Grapevine.Server
         /// </summary>
         public Router()
         {
-            _exclusions = new Exclusions();
             _routingTable = new List<IRoute>();
-            Logger = new NullLogger();
+            Logger = NullLogger.GetInstance();
+            Scanner = new RouteScanner();
             Scope = string.Empty;
         }
 
@@ -241,23 +221,6 @@ namespace Grapevine.Server
             var router = new Router(scope);
             config(router);
             return router;
-        }
-
-        public IRouter Exclude(Type type)
-        {
-            if (!_exclusions.Types.Contains(type)) _exclusions.Types.Add(type);
-            return this;
-        }
-
-        public IRouter Exclude<T>()
-        {
-            return Exclude(typeof(T));
-        }
-
-        public IRouter ExcludeNameSpace(string nameSpace)
-        {
-            if (!_exclusions.NameSpaces.Contains(nameSpace)) _exclusions.NameSpaces.Add(nameSpace);
-            return this;
         }
 
         public IRouter Register(IRoute route)
@@ -316,7 +279,7 @@ namespace Grapevine.Server
 
         public IRouter Register(Type type)
         {
-            AddRangeToGlobalStack(GenerateRoutes(type));
+            AddToRoutingTable(Scanner.ScanType(type));
             return this;
         }
 
@@ -327,14 +290,13 @@ namespace Grapevine.Server
 
         public IRouter RegisterAssembly()
         {
-            var assembly = (AssemblyType == AssemblyType.Entry) ? Assembly.GetEntryAssembly() : Assembly.GetCallingAssembly();
-            AddRangeToGlobalStack(GenerateRoutes(assembly));
+            AddToRoutingTable(Scanner.Scan());
             return this;
         }
 
         public IRouter Import(IRouter router)
         {
-            AddRangeToGlobalStack(router.RoutingTable);
+            AddToRoutingTable(router.RoutingTable);
             return this;
         }
 
@@ -358,8 +320,6 @@ namespace Grapevine.Server
 
         public IList<IRoute> RoutingTable => _routingTable.ToList().AsReadOnly();
 
-        public IExclusions Exclusions => _exclusions.AsReadOnly();
-
         public bool Route(IHttpContext context)
         {
             return Route(context, RouteFor(context));
@@ -370,9 +330,11 @@ namespace Grapevine.Server
             if (routing == null || !routing.Any()) throw new RouteNotFoundException(context);
             if (context.WasRespondedTo) return true;
 
-            LogBeginRequestRouting(context, routing.Count);
             var routeContext = context;
+            var totalRoutes = routing.Count;
             var routeCounter = 0;
+
+            Logger.BeginRouting($"{context.Request.Id} - {context.Request.Name} has {totalRoutes} routes");
 
             if (Before != null) routeContext = Before.Invoke(routeContext);
 
@@ -383,7 +345,7 @@ namespace Grapevine.Server
                     routeCounter++;
                     routeContext = route.Invoke(routeContext);
 
-                    LogRouteInvoked(context, route, routeCounter);
+                    Logger.RouteInvoked($"{context.Request.Id} - {routeCounter}/{totalRoutes} {route.Name}");
                     if (ContinueRoutingAfterResponseSent) continue;
                     if (routeContext.WasRespondedTo) break;
                 }
@@ -391,122 +353,10 @@ namespace Grapevine.Server
             finally
             {
                 if (After != null) routeContext = After.Invoke(routeContext);
-                LogEndRequestRouting(routeContext, routing.Count, routeCounter);
+                Logger.EndRouting($"{context.Request.Id} - {routeCounter} of {totalRoutes} routes invoked");
             }
 
             return routeContext.WasRespondedTo;
-        }
-
-        private void LogBeginRequestRouting(IHttpContext context, int routes)
-        {
-            Logger.Info($"Request {context.Request.Id}:{context.Request.Name} has {routes} routes");
-        }
-
-        private void LogEndRequestRouting(IHttpContext context, int routes, int routesHit)
-        {
-            Logger.Trace($"Request {context.Request.Id}:{context.Request.Name} invoked {routes}/{routesHit} routes");
-        }
-
-        private void LogRouteInvoked(IHttpContext context, IRoute route, int routeIndex)
-        {
-            Logger.Trace($"{routeIndex} Request {context.Request.Id}:{context.Request.Name} hit {route.Name}");
-        }
-
-        /// <summary>
-        /// Generates a list of routes for the RestRoute attributed MethodInfo provided and the basePath applied to the PathInfo
-        /// </summary>
-        /// <param name="method"></param>
-        /// <param name="basePath"></param>
-        /// <returns>IList&lt;IRoute&gt;</returns>
-        protected internal IList<IRoute> GenerateRoutes(MethodInfo method, string basePath)
-        {
-            var routes = new List<IRoute>();
-            Logger.Trace($"Generating routes from method {method.Name}");
-
-            var basepath = string.IsNullOrWhiteSpace(basePath)
-                ? string.Empty
-                : basePath;
-
-            if (basepath != string.Empty && basepath.EndsWith("/"))
-                basepath = basepath.TrimEnd('/');
-
-            if (basepath != string.Empty && !basepath.StartsWith("/"))
-                basepath = $"/{basepath}";
-
-            foreach (var attribute in method.GetCustomAttributes(true).Where(a => a is RestRoute).Cast<RestRoute>())
-            {
-                var pathinfo = attribute.PathInfo;
-                var prefix = string.Empty;
-
-                if (pathinfo.StartsWith("^"))
-                {
-                    prefix = "^";
-                    pathinfo = pathinfo.TrimStart('^');
-                }
-
-                if (!pathinfo.StartsWith("/")) pathinfo = $"/{pathinfo}";
-
-                var route = new Route(method, attribute.HttpMethod, $"{prefix}{basepath}{pathinfo}");
-                Logger.Trace($"Generated route {route}");
-                routes.Add(route);
-            }
-
-            return routes;
-        }
-
-        /// <summary>
-        /// Generates a list of routes for all RestRoute attributed methods found in RestResource
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns>IList&lt;IRoute&gt;</returns>
-        protected internal IList<IRoute> GenerateRoutes(Type type)
-        {
-            var routes = new List<IRoute>();
-            var basepath = string.Empty;
-
-            if (type.IsRestResource())
-            {
-                if (!string.IsNullOrWhiteSpace(Scope) && !Scope.Equals(type.RestResource().Scope))
-                {
-                    Logger.Trace($"Excluding type {type.Name} due to scoping differences");
-                    return routes;
-                }
-
-                basepath = type.RestResource().BasePath;
-            }
-
-            Logger.Trace($"Generating routes from type {type.Name}");
-
-            foreach (var method in type.GetMethods().Where(m => m.IsRestRoute()))
-            {
-                routes.AddRange(GenerateRoutes(method, basepath));
-            }
-
-            return routes;
-        }
-
-        /// <summary>
-        /// Generates a list of routes for all RestResource types found in the assembly
-        /// </summary>
-        /// <param name="assembly"></param>
-        /// <returns>IList&lt;IRoute&gt;</returns>
-        protected internal IList<IRoute> GenerateRoutes(Assembly assembly)
-        {
-            var routes = new List<IRoute>();
-            Logger.Trace($"Generating routes for assembly {assembly.GetName().Name}");
-
-            foreach (var type in assembly.GetTypes().Where(t => t.IsRestResource()))
-            {
-                if (Exclusions.IsExcluded(type))
-                {
-                    Logger.Trace($"Excluding type {type.Name} due to exclusion rules");
-                    continue;
-                }
-
-                routes.AddRange(GenerateRoutes(type));
-            }
-
-            return routes;
         }
 
         /// <summary>
@@ -523,63 +373,9 @@ namespace Grapevine.Server
         /// Adds the routes to the routing table excluding duplicates
         /// </summary>
         /// <param name="routes"></param>
-        protected void AddRangeToGlobalStack(IEnumerable<IRoute> routes)
+        protected void AddToRoutingTable(IEnumerable<IRoute> routes)
         {
             routes.ToList().ForEach(AddToRoutingTable);
-        }
-    }
-
-    /// <summary>
-    /// Representation of the <c>Types</c> and namespaces to exclude when scanning assemblies for Routes
-    /// </summary>
-    public interface IExclusions
-    {
-        /// <summary>
-        /// Gets the list of namespaces to exclude when scanning assemblies for Routes
-        /// </summary>
-        IList<string> NameSpaces { get; }
-
-        /// <summary>
-        /// Gets the list of <c>Types</c> to excluded when scanning assemblies for Routes
-        /// </summary>
-        IList<Type> Types { get; }
-
-        /// <summary>
-        /// Gets a read only representation of the IExclusion instance
-        /// </summary>
-        IExclusions AsReadOnly();
-
-        /// <summary>
-        /// Gets a value that indicates whether the supplied Type is excluded by Type or namespace
-        /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        bool IsExcluded(Type type);
-    }
-
-    public class Exclusions : IExclusions
-    {
-        public IList<string> NameSpaces { get; internal set; }
-        public IList<Type> Types { get; internal set; }
-
-        internal Exclusions()
-        {
-            NameSpaces = new List<string>();
-            Types = new List<Type>();
-        }
-
-        public IExclusions AsReadOnly()
-        {
-            return new Exclusions
-            {
-                NameSpaces = NameSpaces.ToList().AsReadOnly(),
-                Types = Types.ToList().AsReadOnly()
-            };
-        }
-
-        public bool IsExcluded(Type type)
-        {
-            return Types.Contains(type) || NameSpaces.Contains(type.Namespace);
         }
     }
 

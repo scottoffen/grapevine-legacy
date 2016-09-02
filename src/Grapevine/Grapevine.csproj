@@ -59,6 +59,7 @@
     <Compile Include="Server\HttpRequest.cs" />
     <Compile Include="Server\HttpResponse.cs" />
     <Compile Include="Server\DynamicProperties.cs" />
+    <Compile Include="Server\RouteScanner.cs" />
     <Compile Include="Server\ServerSettings.cs" />
     <Compile Include="Server\PublicFolder.cs" />
     <Compile Include="Server\RestCluster.cs" />
@@ -76,10 +77,11 @@
     <Compile Include="Util\HttpMethod.cs" />
     <Compile Include="Util\Loggers\ConsoleLogger.cs" />
     <Compile Include="Util\Loggers\InMemoryLogger.cs" />
+    <Compile Include="Util\Loggers\LoggerExtensions.cs" />
     <Compile Include="Util\Loggers\NullLogger.cs" />
     <Compile Include="Util\ParamParser.cs" />
     <Compile Include="Util\PortFinder.cs" />
-    <Compile Include="Util\UriSchemaExtensions.cs" />
+    <Compile Include="Util\UriSchemeExtensions.cs" />
     <Compile Include="Util\UriScheme.cs" />
   </ItemGroup>
   <ItemGroup />

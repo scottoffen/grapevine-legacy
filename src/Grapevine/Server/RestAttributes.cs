@@ -6,10 +6,10 @@ using Grapevine.Util;
 namespace Grapevine.Server
 {
     /// <summary>
-    /// <para>Class attribute for defining a RestResource</para>
+    /// <para>Class attribute for defining a GetRestResource</para>
     /// <para>Targets: Class</para>
     /// <para>&#160;</para>
-    /// <para>A class with the RestResource attribute can be scanned for RestRoute attributed methods</para>
+    /// <para>A class with the GetRestResource attribute can be scanned for RestRoute attributed methods</para>
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     public class RestResource : Attribute
@@ -73,7 +73,7 @@ namespace Grapevine.Server
         }
 
         /// <summary>
-        /// Returns true if the type is a valid RestResource
+        /// Returns true if the type is a valid GetRestResource
         /// </summary>
         internal static bool IsRestResource(this Type type)
         {
@@ -81,9 +81,9 @@ namespace Grapevine.Server
         }
 
         /// <summary>
-        /// Returns the value of the RestResource attribute; returns null if the type does not have a RestResource attribute
+        /// Returns the value of the GetRestResource attribute; returns null if the type does not have a GetRestResource attribute
         /// </summary>
-        internal static RestResource RestResource(this Type type)
+        internal static RestResource GetRestResource(this Type type)
         {
             if (!type.IsRestResource()) return null;
             return (RestResource)type.GetCustomAttributes(true).First(a => a is RestResource);

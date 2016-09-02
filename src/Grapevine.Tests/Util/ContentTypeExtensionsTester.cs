@@ -23,14 +23,5 @@ namespace Grapevine.Tests.Util
             ct.IsText().ShouldBeFalse();
             ct.IsBinary().ShouldBeTrue();
         }
-
-        [Fact]
-        public void content_type_applies_defaults()
-        {
-            const ContentType ct = ContentType.TEXT;
-            ct.ToValue().ShouldBe("text/plain");
-            ct.IsText().ShouldBeTrue();
-            ct.IsBinary().ShouldBeFalse();
-        }
     }
 }

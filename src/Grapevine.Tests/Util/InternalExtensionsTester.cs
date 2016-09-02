@@ -8,27 +8,24 @@ namespace Grapevine.Tests.Util
     public class InternalExtensionsTester
     {
         [Fact]
-        public void converts_httpstatuscode_description_from_camel_case()
+        public void converts_string_from_camel_case_to_title_case()
         {
-            var description = HttpStatusCode.EnhanceYourCalm.ConvertToString();
-            description.ShouldBe("Enhance Your Calm");
+            const string original = "EnhanceYourCalm";
+            const string expected = "Enhance Your Calm";
+            original.ConvertCamelCase().ShouldBe(expected);
         }
 
-        //[Fact]
-        //public void is_a_returns_true_when_object_is_of_type()
-        //{
-        //    var fake = new FakeClass();
-        //    fake.IsA<IFakeInterfase>().ShouldBeTrue();
-        //    fake.IsA<FakeClass>().ShouldBeTrue();
-        //}
+        [Fact]
+        public void implements_is_true_if_type_implements_interface()
+        {
+            typeof(FakeClass).Implements<IFakeInterfase>().ShouldBeTrue();
+        }
 
-        //[Fact]
-        //public void is_a_returns_false_when_object_is_not_of_type()
-        //{
-        //    var notfake = new NotFakeClass();
-        //    notfake.IsNot<IFakeInterfase>().ShouldBeTrue();
-        //    notfake.IsNot<FakeClass>().ShouldBeTrue();
-        //}
+        [Fact]
+        public void implements_is_false_if_type_does_not_implement_interface()
+        {
+            typeof(NotFakeClass).Implements<IFakeInterfase>().ShouldBeFalse();
+        }
 
         [Fact]
         public void guid_truncation_return_last_part_of_guid()

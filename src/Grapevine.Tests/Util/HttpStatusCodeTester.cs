@@ -15,7 +15,7 @@ namespace Grapevine.Tests.Util
         [Fact]
         public void http_status_code_converts_to_int()
         {
-            const int code = (int) HttpStatusCode.NonAuthoritativeInformation;
+            const int code = (int)HttpStatusCode.NonAuthoritativeInformation;
             code.ShouldBe(203);
         }
     }

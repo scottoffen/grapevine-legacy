@@ -161,7 +161,7 @@ namespace Grapevine.Tests.Server
             var response = MockRepository.Mock<IHttpResponse>();
 
             var server = MockRepository.Mock<IRestServer>();
-            server.Stub(x => x.Logger).Return(new NullLogger());
+            server.Stub(x => x.Logger).Return(NullLogger.GetInstance());
 
             var context = MockRepository.Mock<IHttpContext>();
             context.Stub(x => x.Request).Return(request);

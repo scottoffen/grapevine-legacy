@@ -1,6 +1,6 @@
 ﻿namespace Grapevine.Util
 {
-    internal static class UriSchemaExtensions
+    internal static class UriSchemeExtensions
     {
         internal static string ToScheme(this UriScheme scheme)
         {

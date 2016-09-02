@@ -17,5 +17,14 @@ namespace Grapevine.Tests.Util
             var attribute = attributes[0];
             attribute.AllowMultiple.ShouldBeFalse();
         }
+
+        [Fact]
+        public void content_type_applies_defaults()
+        {
+            const ContentType ct = ContentType.TEXT;
+            ct.ToValue().ShouldBe("text/plain");
+            ct.IsText().ShouldBeTrue();
+            ct.IsBinary().ShouldBeFalse();
+        }
     }
 }

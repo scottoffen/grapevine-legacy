@@ -232,6 +232,7 @@ namespace Grapevine.Server
         {
             Logger = new ConsoleLogger();
             Router.Logger = Logger;
+            Router.Scanner.Logger = Logger;
             return this;
         }
 

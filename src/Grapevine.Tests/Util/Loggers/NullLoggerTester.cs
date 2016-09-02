@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using Grapevine.Util;
 using Grapevine.Util.Loggers;
 using Shouldly;
@@ -9,13 +10,26 @@ namespace Grapevine.Tests.Util.Loggers
     public class NullLoggerTester
     {
         [Fact]
-        public void null_logger_does_nothing()
+        public void null_logger_initialized_at_first_access()
+        {
+            var field = typeof(NullLogger).GetField("_logger", BindingFlags.Static | BindingFlags.NonPublic);
+            field.SetValue(null, null);
+            field.GetValue(null).ShouldBeNull();
+
+            var logger1 = NullLogger.GetInstance();
+            var logger2 = NullLogger.GetInstance();
+
+            field.GetValue(null).ShouldNotBeNull();
+        }
+
+        [Fact]
+        public void null_logger_previously_initialized()
         {
             var obj = new object();
             var ex = new Exception();
             var msg = "Log Message";
 
-            var logger = new NullLogger();
+            var logger = NullLogger.GetInstance();
 
             logger.Log(new LogEvent());
 
