@@ -116,7 +116,6 @@ namespace Grapevine.Server
         /// <param name="pathInfo"></param>
         public Route(MethodInfo methodInfo, HttpMethod httpMethod, string pathInfo) : this(httpMethod, pathInfo)
         {
-            if (methodInfo == null) throw new ArgumentNullException(nameof(methodInfo));
             Function = ConvertMethodToFunc(methodInfo);
             if (methodInfo.ReflectedType != null) Name = $"{methodInfo.ReflectedType.FullName}.{methodInfo.Name}";
             Description = $"{HttpMethod} {PathInfo} > {Name}";
@@ -192,6 +191,7 @@ namespace Grapevine.Server
 
         public IHttpContext Invoke(IHttpContext context)
         {
+            if (!Enabled) return context;
             context.Request.PathParameters = ParseParams(context.Request.PathInfo);
             return Function(context);
         }

@@ -2,6 +2,7 @@
 using System.Reflection;
 using Grapevine.Server;
 using Grapevine.Server.Exceptions;
+using Grapevine.Tests.Server.Helpers;
 using Grapevine.Util;
 using Rhino.Mocks;
 using Shouldly;
@@ -12,33 +13,33 @@ namespace Grapevine.Tests.Server
     public class RouteTester
     {
         [Fact]
-        public void route_ctor_throws_excpetion_if_methodinfo_is_null()
+        public void route_convert_method_to_func_throws_excpetion_if_methodinfo_is_null()
         {
             MethodInfo method = null;
-            Should.Throw<ArgumentNullException>(() => { var route = new Route(method); });
+            Should.Throw<ArgumentNullException>(() => { Route.ConvertMethodToFunc(method); });
         }
 
         [Fact]
-        public void route_ctor_throws_exception_if_methodinfo_return_type_is_not_ihttpcontext()
+        public void route_convert_method_to_func_throws_exception_if_methodinfo_return_type_is_not_ihttpcontext()
         {
-            var method = typeof(RouteTestingHelper).GetMethod("FailureRouteOne");
-            Should.Throw<RouteMethodArgumentException>(() => { var route = new Route(method); });
+            var method = typeof(RouteTesterHelper).GetMethod("DoesNotReturnContext");
+            Should.Throw<RouteMethodArgumentException>(() => { Route.ConvertMethodToFunc(method); });
         }
 
         [Fact]
-        public void route_ctor_throws_exception_if_methodinfo_number_of_args_is_not_one()
+        public void route_convert_method_to_func_throws_exception_if_methodinfo_number_of_args_is_not_one()
         {
-            var methodA = typeof(RouteTestingHelper).GetMethod("FailureRouteTwo");
-            var methodB = typeof(RouteTestingHelper).GetMethod("FailureRouteThree");
+            var methodA = typeof(RouteTesterHelper).GetMethod("MethodTakesZeroArgs");
+            var methodB = typeof(RouteTesterHelper).GetMethod("MethodTakesTwoArgs");
 
-            Should.Throw<RouteMethodArgumentException>(() => { var route = new Route(methodA); });
-            Should.Throw<RouteMethodArgumentException>(() => { var route = new Route(methodB); });
+            Should.Throw<RouteMethodArgumentException>(() => { Route.ConvertMethodToFunc(methodA); });
+            Should.Throw<RouteMethodArgumentException>(() => { Route.ConvertMethodToFunc(methodB); });
         }
 
         [Fact]
-        public void route_ctor_throws_exception_if_methodinfo_first_arg_is_not_ihttpcontext()
+        public void route_convert_method_to_func_throws_exception_if_methodinfo_first_argument_is_not_ihttpcontext()
         {
-            var method = typeof(RouteTestingHelper).GetMethod("FailureRouteFour");
+            var method = typeof(RouteTesterHelper).GetMethod("DoesNotTakeContextArg");
             Should.Throw<RouteMethodArgumentException>(() => { var route = new Route(method); });
         }
 
@@ -64,34 +65,38 @@ namespace Grapevine.Tests.Server
             var route = new Route(method);
 
             route.Name.ShouldBeNull();
+            route.Description.ShouldBe("ALL  > ");
         }
 
         [Fact]
         public void route_ctor_methodinfo_only_correctly_sets_properties()
         {
-            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
+            var method = typeof(RouteTesterHelper).GetMethod("ShouldThrowNoExceptions");
             var route = new Route(method);
 
+            route.Enabled.ShouldBeTrue();
             route.HttpMethod.ShouldBe(HttpMethod.ALL);
             route.PathInfo.ShouldBe(string.Empty);
             route.PathInfoPattern.ToString().ShouldBe(@"^.*$");
+            route.Description.ShouldBe($"{HttpMethod.ALL}  > {method.ReflectedType.FullName}.{method.Name}");
         }
 
         [Fact]
         public void route_ctor_methodinfo_and_httpmethod_correctly_sets_properties()
         {
-            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
+            var method = typeof(RouteTesterHelper).GetMethod("ShouldThrowNoExceptions");
             var route = new Route(method, HttpMethod.GET);
 
             route.HttpMethod.ShouldBe(HttpMethod.GET);
             route.PathInfo.ShouldBe(string.Empty);
             route.PathInfoPattern.ToString().ShouldBe(@"^.*$");
+            route.Description.ShouldBe($"{HttpMethod.GET}  > {method.ReflectedType.FullName}.{method.Name}");
         }
 
         [Fact]
         public void route_ctor_methodinfo_and_pathinfo_correctly_sets_properties()
         {
-            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
+            var method = typeof(RouteTesterHelper).GetMethod("ShouldThrowNoExceptions");
             var pathinfo = "/path/to/resource";
             var pattern = "^/path/to/resource$";
 
@@ -100,33 +105,27 @@ namespace Grapevine.Tests.Server
             route.HttpMethod.ShouldBe(HttpMethod.ALL);
             route.PathInfo.ShouldBe(pathinfo);
             route.PathInfoPattern.ToString().ShouldBe(pattern);
+            route.Description.ShouldBe($"{HttpMethod.ALL} {pathinfo} > {method.ReflectedType.FullName}.{method.Name}");
         }
 
         [Fact]
         public void route_ctor_methodinfo_http_method_and_pathinfo_correctly_sets_properties()
         {
-            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
-            var pathinfo = "/path/[param1]/[param2]";
-            var pattern = "^/path/(.+)/(.+)$";
+            var method = typeof(RouteTesterHelper).GetMethod("ShouldThrowNoExceptions");
+            const string pathinfo = "/path/[param1]/[param2]";
+            const string pattern = "^/path/(.+)/(.+)$";
 
             var route = new Route(method, HttpMethod.GET, pathinfo);
 
             route.HttpMethod.ShouldBe(HttpMethod.GET);
             route.PathInfo.ShouldBe(pathinfo);
             route.PathInfoPattern.ToString().ShouldBe(pattern);
-        }
+            route.Description.ShouldBe($"{HttpMethod.GET} {pathinfo} > {method.ReflectedType.FullName}.{method.Name}");
 
-        [Fact]
-        public void route_ctor_method_and_pathinfo_with_params_correctly_sets_properties()
-        {
-            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
-            var pathinfo = "/path/[param1]/[param2]";
-            var pattern = "^/path/(.+)/(.+)$";
-
-            var route = new Route(method, pathinfo);
-
-            route.PathInfo.ShouldBe(pathinfo);
-            route.PathInfoPattern.ToString().ShouldBe(pattern);
+            var keys = route.GetPatternKeys();
+            keys.Count.ShouldBe(2);
+            keys[0].ShouldBe("param1");
+            keys[1].ShouldBe("param2");
         }
 
         [Fact]
@@ -142,6 +141,8 @@ namespace Grapevine.Tests.Server
             Func<IHttpContext, IHttpContext> function = context => context;
             var route = new Route(function);
 
+            route.Enabled.ShouldBeTrue();
+            route.Function.ShouldBe(function);
             route.HttpMethod.ShouldBe(HttpMethod.ALL);
             route.PathInfo.ShouldBe(string.Empty);
             route.PathInfoPattern.ToString().ShouldBe(@"^.*$");
@@ -153,6 +154,7 @@ namespace Grapevine.Tests.Server
             Func<IHttpContext, IHttpContext> function = context => context;
             var route = new Route(function, HttpMethod.GET);
 
+            route.Function.ShouldBe(function);
             route.HttpMethod.ShouldBe(HttpMethod.GET);
             route.PathInfo.ShouldBe(string.Empty);
             route.PathInfoPattern.ToString().ShouldBe(@"^.*$");
@@ -162,11 +164,12 @@ namespace Grapevine.Tests.Server
         public void route_ctor_function_and_pathinfo_correctly_sets_properties()
         {
             Func<IHttpContext, IHttpContext> function = context => context;
-            var pathinfo = "/path/to/resource";
-            var pattern = "^/path/to/resource$";
+            const string pathinfo = "/path/to/resource";
+            const string pattern = "^/path/to/resource$";
 
             var route = new Route(function, pathinfo);
 
+            route.Function.ShouldBe(function);
             route.HttpMethod.ShouldBe(HttpMethod.ALL);
             route.PathInfo.ShouldBe(pathinfo);
             route.PathInfoPattern.ToString().ShouldBe(pattern);
@@ -176,87 +179,26 @@ namespace Grapevine.Tests.Server
         public void route_ctor_function_http_method_and_pathinfo_correctly_sets_properties()
         {
             Func<IHttpContext, IHttpContext> function = context => context;
-            var pathinfo = "/path/[param1]/[param2]";
-            var pattern = "^/path/(.+)/(.+)$";
+            const string pathinfo = "/path/[param1]/[param2]";
+            const string pattern = "^/path/(.+)/(.+)$";
 
             var route = new Route(function, HttpMethod.GET, pathinfo);
 
+            route.Function.ShouldBe(function);
             route.HttpMethod.ShouldBe(HttpMethod.GET);
             route.PathInfo.ShouldBe(pathinfo);
             route.PathInfoPattern.ToString().ShouldBe(pattern);
-        }
 
-        [Fact]
-        public void route_ctor_function_and_pathinfo_with_params_correctly_sets_properties()
-        {
-            Func<IHttpContext, IHttpContext> function = context => context;
-            var pathinfo = "/path/[param1]/[param2]";
-            var pattern = "^/path/(.+)/(.+)$";
-
-            var route = new Route(function, pathinfo);
-
-            route.PathInfo.ShouldBe(pathinfo);
-            route.PathInfoPattern.ToString().ShouldBe(pattern);
-        }
-
-        [Fact]
-        public void route_static_ctor_using_for_to_use_with_function()
-        {
-            Func<IHttpContext, IHttpContext> function = context => context;
-            var verb = HttpMethod.GET;
-            var pathinfo = "/some/route";
-
-            var route = Route.For(verb).To(pathinfo).Use(function);
-
-            route.HttpMethod.ShouldBe(verb);
-            route.PathInfo.ShouldBe(pathinfo);
-            route.Function.ShouldBe(function);
-        }
-
-        [Fact]
-        public void route_static_ctor_using_for_use_with_function()
-        {
-            Func<IHttpContext, IHttpContext> function = context => context;
-            var verb = HttpMethod.GET;
-
-            var route = Route.For(verb).Use(function);
-
-            route.HttpMethod.ShouldBe(verb);
-            route.PathInfo.ShouldBe(string.Empty);
-            route.Function.ShouldBe(function);
-        }
-
-        [Fact]
-        public void route_static_ctor_using_for_to_use_with_methodinfo()
-        {
-            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
-            var verb = HttpMethod.GET;
-            var pathinfo = "/some/route";
-
-            var route = Route.For(verb).To(pathinfo).Use(method);
-
-            route.HttpMethod.ShouldBe(verb);
-            route.PathInfo.ShouldBe(pathinfo);
-            route.Name.ShouldBe($"{method.ReflectedType.FullName}.{method.Name}");
-        }
-
-        [Fact]
-        public void route_static_ctor_using_for_use_with_methodinfo()
-        {
-            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
-            var verb = HttpMethod.GET;
-
-            var route = Route.For(verb).Use(method);
-
-            route.HttpMethod.ShouldBe(verb);
-            route.PathInfo.ShouldBe(string.Empty);
-            route.Name.ShouldBe($"{method.ReflectedType.FullName}.{method.Name}");
+            var keys = route.GetPatternKeys();
+            keys.Count.ShouldBe(2);
+            keys[0].ShouldBe("param1");
+            keys[1].ShouldBe("param2");
         }
 
         [Fact]
         public void route_enable_and_disable_set_toggle_correctly()
         {
-            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
+            var method = typeof(RouteTesterHelper).GetMethod("ShouldThrowNoExceptions");
             var route = new Route(method);
 
             route.Enabled.ShouldBeTrue();
@@ -269,164 +211,404 @@ namespace Grapevine.Tests.Server
         }
 
         [Fact]
-        public void route_equality_false_when_created_using_different_methods()
+        public void route_invoke_does_nothing_when_disabled()
         {
-            var method1 = typeof(RouteTestingHelper).GetMethod("RouteOne");
-            var method2 = typeof(RouteTestingHelper).GetMethod("RouteTwo");
-            var verb = HttpMethod.GET;
-            var pathinfo = "/path/[param1]/[param2]";
+            var executed = false;
+            Func<IHttpContext, IHttpContext> function = context =>
+            {
+                executed = true;
+                return context;
+            };
 
-            var route1 = new Route(method1, verb, pathinfo);
-            var route2 = new Route(method2, verb, pathinfo);
+            var route = new Route(function);
+            route.Disable();
+            route.Invoke(MockContext.GetMockContext());
 
-            route1.Equals(route2).ShouldBe(false);
+            executed.ShouldBeFalse();
         }
 
         [Fact]
-        public void route_equality_false_when_created_using_different_httpmethods()
+        public void route_invokes_using_function()
         {
-            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
-            var pathinfo = "/path/[param1]/[param2]";
+            const string expected = "1234";
+            var actual = string.Empty;
 
-            var route1 = new Route(method, HttpMethod.GET, pathinfo);
-            var route2 = new Route(method, HttpMethod.POST, pathinfo);
+            Func<IHttpContext, IHttpContext> function = context =>
+            {
+                actual = context.Request.PathParameters["id"];
+                return context;
+            };
 
-            route1.Equals(route2).ShouldBe(false);
+            var route = new Route(function, "/id/[id]");
+            route.Invoke(MockContext.GetMockContext(MockContext.GetMockRequest(new MockProperties { PathInfo = $"/id/{expected}" })));
+
+            actual.Equals(expected).ShouldBeTrue();
         }
 
         [Fact]
-        public void route_equality_false_when_created_using_different_pathinfo()
+        public void route_invokes_using_non_static_methodinfo()
         {
-            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
-            var verb = HttpMethod.GET;
-            var pathinfo1 = "/path1/[param1]/[param2]";
-            var pathinfo2 = "/path2/[param1]/[param2]";
+            var method = typeof(RouteTesterHelper).GetMethod("InstanceMethodInfo");
+            var route = new Route(method);
 
-            var route1 = new Route(method, verb, pathinfo1);
-            var route2 = new Route(method, verb, pathinfo2);
+            RouteTesterHelper.InstanceMethodInfoHit.ShouldBeFalse();
 
-            route1.Equals(route2).ShouldBe(false);
+            route.Invoke(MockContext.GetMockContext());
+
+            RouteTesterHelper.InstanceMethodInfoHit.ShouldBeTrue();
         }
 
         [Fact]
-        public void route_equality_false_when_routes_created_using_different_underlying_function_and_method()
+        public void route_invokes_using_non_static_methodinfo_context_not_shared()
         {
-            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
+            var method1 = typeof(RouteTesterHelper).GetMethod("ContextNotShared");
+            var method2 = typeof(RouteTesterHelper).GetMethod("ContextNotShared");
+
+            var route1 = new Route(method1);
+            var route2 = new Route(method2);
+
+            var response = MockContext.GetMockResponse();
+            var context = MockContext.GetMockContext(response);
+
+            route1.Invoke(context);
+            response.AssertWasNotCalled(r => r.Abort());
+
+            route2.Invoke(context);
+            response.AssertWasNotCalled(r => r.Abort());
+        }
+
+        [Fact]
+        public void route_invokes_using_static_methodinfo()
+        {
+            var method = typeof(RouteTesterHelper).GetMethod("StaticMethodInfo");
+            var route = new Route(method);
+
+            RouteTesterHelper.StaticMethodInfoHit.ShouldBeFalse();
+
+            route.Invoke(MockContext.GetMockContext());
+
+            RouteTesterHelper.StaticMethodInfoHit.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void route_invokes_using_static_method()
+        {
+            var route = new Route(RouteTesterHelper.StaticMethod);
+
+            RouteTesterHelper.StaticMethodHit.ShouldBeFalse();
+
+            route.Invoke(MockContext.GetMockContext());
+
+            RouteTesterHelper.StaticMethodHit.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void route_invokes_using_instance_method()
+        {
+            var instance = new RouteTesterHelper();
+            var route = new Route(instance.InstanceMethod);
+
+            RouteTesterHelper.InstanceMethodHit.ShouldBeFalse();
+
+            route.Invoke(MockContext.GetMockContext());
+
+            RouteTesterHelper.InstanceMethodHit.ShouldBeTrue();
+            instance.InstanceHits.ShouldBe(1);
+
+            route.Invoke(MockContext.GetMockContext());
+            instance.InstanceHits.ShouldBe(2);
+        }
+
+        [Fact]
+        public void route_invokes_using_shared_instance_method_appropriately()
+        {
+            var method = typeof(RouteTesterHelper).GetMethod("SharedInstanceMethod");
+            var instance = new RouteTesterHelper();
+
+            var route1 = new Route(instance.SharedInstanceMethod);
+            var route2 = new Route(instance.SharedInstanceMethod);
+            var route3 = new Route(method);
+
+            RouteTesterHelper.SharedInstanceMethodHit.ShouldBeFalse();
+
+            route1.Invoke(MockContext.GetMockContext());
+
+            RouteTesterHelper.SharedInstanceMethodHit.ShouldBeTrue();
+            instance.InstanceHits.ShouldBe(1);
+
+            route2.Invoke(MockContext.GetMockContext());
+            instance.InstanceHits.ShouldBe(2);
+
+            route3.Invoke(MockContext.GetMockContext());
+            instance.InstanceHits.ShouldBe(2);
+
+            route1.Invoke(MockContext.GetMockContext());
+            instance.InstanceHits.ShouldBe(3);
+        }
+
+        [Fact]
+        public void route_matches_true_with_exact_match()
+        {
+            const string pathinfo = "/path/to/resource";
+            const HttpMethod verb = HttpMethod.GET;
+
+            var properties = new MockProperties {HttpMethod = verb, PathInfo = pathinfo};
+            var request = MockContext.GetMockRequest(properties);
+            var context = MockContext.GetMockContext(request);
+
+            var route = new Route(RouteTesterHelper.StaticMethod, verb, pathinfo);
+
+            route.Matches(context).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void route_matches_true_with_equivalent_httpmethod()
+        {
+            const string pathinfo = "/path/to/resource";
+            const HttpMethod verb = HttpMethod.GET;
+
+            var properties = new MockProperties { HttpMethod = verb, PathInfo = pathinfo };
+            var request = MockContext.GetMockRequest(properties);
+            var context = MockContext.GetMockContext(request);
+
+            var route = new Route(RouteTesterHelper.StaticMethod, HttpMethod.ALL, pathinfo);
+
+            route.Matches(context).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void route_matches_true_with_wildcard_pathinfo()
+        {
+            const string pathinfo = "/path/to/resource";
+            const HttpMethod verb = HttpMethod.GET;
+
+            var properties = new MockProperties { HttpMethod = verb, PathInfo = pathinfo };
+            var request = MockContext.GetMockRequest(properties);
+            var context = MockContext.GetMockContext(request);
+
+            var route = new Route(RouteTesterHelper.StaticMethod, verb);
+
+            route.Matches(context).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void route_matches_true_with_equivalent_httpmethod_and_wildcard_pathinfo()
+        {
+            const string pathinfo = "/path/to/resource";
+            const HttpMethod verb = HttpMethod.GET;
+
+            var properties = new MockProperties { HttpMethod = verb, PathInfo = pathinfo };
+            var request = MockContext.GetMockRequest(properties);
+            var context = MockContext.GetMockContext(request);
+
+            var route = new Route(RouteTesterHelper.StaticMethod);
+
+            route.Matches(context).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void route_matches_true_with_path_params()
+        {
+            const string pathinfo = "/path/to/resource";
+            const HttpMethod verb = HttpMethod.GET;
+
+            var properties = new MockProperties { HttpMethod = verb, PathInfo = pathinfo };
+            var request = MockContext.GetMockRequest(properties);
+            var context = MockContext.GetMockContext(request);
+
+            var route = new Route(RouteTesterHelper.StaticMethod, verb, @"/path/to/[something]");
+
+            route.Matches(context).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void route_matches_false_with_different_httpmethod()
+        {
+            const string pathinfo = "/path/to/resource";
+            const HttpMethod verbOnRequest = HttpMethod.GET;
+            const HttpMethod verbOnRoute = HttpMethod.POST;
+
+            var properties = new MockProperties { HttpMethod = verbOnRequest, PathInfo = pathinfo };
+            var request = MockContext.GetMockRequest(properties);
+            var context = MockContext.GetMockContext(request);
+
+            var route = new Route(RouteTesterHelper.StaticMethod, verbOnRoute, pathinfo);
+
+            route.Matches(context).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void route_matches_false_with_different_pathinfo()
+        {
+            const string pathinfoOnRequest = "/path/to/resource";
+            const string pathinfoOnRoute = "/path/ot/resource";
+            const HttpMethod verb = HttpMethod.GET;
+
+            var properties = new MockProperties { HttpMethod = verb, PathInfo = pathinfoOnRequest };
+            var request = MockContext.GetMockRequest(properties);
+            var context = MockContext.GetMockContext(request);
+
+            var route = new Route(RouteTesterHelper.StaticMethod, verb, pathinfoOnRoute);
+
+            route.Matches(context).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void route_matches_false_when_missing_path_params()
+        {
+            const string pathinfoOnRequest = "/path/to/";
+            const string pathinfoOnRoute = "/path/to/[resource]";
+            const HttpMethod verb = HttpMethod.GET;
+
+            var properties = new MockProperties { HttpMethod = verb, PathInfo = pathinfoOnRequest };
+            var request = MockContext.GetMockRequest(properties);
+            var context = MockContext.GetMockContext(request);
+
+            var route = new Route(RouteTesterHelper.StaticMethod, verb, pathinfoOnRoute);
+
+            route.Matches(context).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void route_equality_false_when_object_compared_to_is_not_route()
+        {
+            var route1 = new Route(RouteTesterHelper.StaticMethod);
+            var route2 = new AltRoute();
+
+            route1.Equals(route2).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void route_equality_true_when_routes_use_same_methodinfo()
+        {
+            var route1 = new Route(RouteTesterHelper.StaticMethod);
+            var route2 = new Route(RouteTesterHelper.StaticMethod);
+
+            route1.Equals(route2).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void route_equality_false_when_routes_use_different_methodinfo()
+        {
+            var route1 = new Route(RouteTesterHelper.StaticMethod);
+            var route2 = new Route(RouteTesterHelper.StaticMethodInfo);
+
+            route1.Equals(route2).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void route_equality_true_when_routes_use_same_function()
+        {
             Func<IHttpContext, IHttpContext> function = context => context;
 
-            var verb = HttpMethod.GET;
-            var pathinfo = "/path/[param1]/[param2]";
+            var route1 = new Route(function);
+            var route2 = new Route(function);
 
-            var route1 = new Route(method, verb, pathinfo);
-            var route2 = new Route(function, verb, pathinfo);
-
-            route1.Equals(route2).ShouldBe(false);
+            route1.Equals(route2).ShouldBeTrue();
         }
 
         [Fact]
-        public void route_equality_false_when_routes_created_using_identical_but_different_underlying_functions()
+        public void route_equality_false_when_routes_use_different_function()
         {
             Func<IHttpContext, IHttpContext> function1 = context => context;
             Func<IHttpContext, IHttpContext> function2 = context => context;
 
-            var verb = HttpMethod.GET;
-            var pathinfo = "/path/[param1]/[param2]";
+            var route1 = new Route(function1);
+            var route2 = new Route(function2);
 
-            var route1 = new Route(function1, verb, pathinfo);
-            var route2 = new Route(function2, verb, pathinfo);
-
-            route1.Equals(route2).ShouldBe(false);
+            route1.Equals(route2).ShouldBeFalse();
         }
 
         [Fact]
-        public void route_equality_true_when_routes_created_using_overlapping_patterns()
-        {
-            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
-            var verb = HttpMethod.GET;
-            var pathinfo1 = "/path/[param1]/[param2]";
-            var pathinfo2 = "/path/[id]/[key]";
-
-            var route1 = new Route(method, verb, pathinfo1);
-            var route2 = new Route(method, verb, pathinfo2);
-
-            route1.Equals(route2).ShouldBe(true);
-        }
-
-        [Fact]
-        public void route_equality_true_when_routes_created_using_same_underlying_method()
-        {
-            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
-            Func<IHttpContext, IHttpContext> function = new RouteTestingHelper().RouteOne;
-
-            var verb = HttpMethod.GET;
-            var pathinfo = "/path/[param1]/[param2]";
-
-            var route1 = new Route(method, verb, pathinfo);
-            var route2 = new Route(function, verb, pathinfo);
-
-            route1.Equals(route2).ShouldBe(true);
-        }
-
-        [Fact]
-        public void route_equality_true_when_routes_created_using_same_underlying_function()
+        public void route_equality_false_when_routes_use_different_function_and_methodinfo()
         {
             Func<IHttpContext, IHttpContext> function = context => context;
 
-            var verb = HttpMethod.GET;
-            var pathinfo = "/path/[param1]/[param2]";
+            var route1 = new Route(function);
+            var route2 = new Route(RouteTesterHelper.StaticMethod);
 
-            var route1 = new Route(function, verb, pathinfo);
-            var route2 = new Route(function, verb, pathinfo);
-
-            route1.Equals(route2).ShouldBe(true);
+            route1.Equals(route2).ShouldBeFalse();
         }
 
         [Fact]
-        public void route_equality_true_when_routes_created_using_equivalent_httpmethods()
+        public void route_equality_true_when_routes_use_same_function_and_methodinfo()
         {
-            Func<IHttpContext, IHttpContext> function = context => context;
-            var pathinfo = "/path/[param1]/[param2]";
+            Func<IHttpContext, IHttpContext> function = RouteTesterHelper.StaticMethod;
 
-            var route1 = new Route(function, HttpMethod.ALL, pathinfo);
-            var route2 = new Route(function, HttpMethod.GET, pathinfo);
-
-            route1.Equals(route2).ShouldBe(true);
-        }
-
-        [Fact]
-        public void route_equality_true_when_created_from_method_only_using_same_method()
-        {
-            var route1 = new Route(typeof(RouteTestingHelper).GetMethod("RouteOne"));
-            var route2 = new Route(typeof(RouteTestingHelper).GetMethod("RouteOne"));
-
-            route1.Equals(route2).ShouldBe(true);
-            route1.Name.Equals(route2.Name).ShouldBe(true);
-        }
-
-        [Fact]
-        public void route_equality_true_when_created_from_function_only_using_same_function()
-        {
-            Func<IHttpContext, IHttpContext> func = context => context;
-            var route1 = new Route(func);
-            var route2 = new Route(func);
+            var route1 = new Route(function);
+            var route2 = new Route(RouteTesterHelper.StaticMethod);
 
             route1.Equals(route2).ShouldBeTrue();
-            route1.Name.Equals(route2.Name).ShouldBeTrue();
         }
 
         [Fact]
-        public void route_equality_false_when_object_is_not_route()
+        public void route_equality_true_when_httpmethod_is_equivalent()
         {
-            Func<IHttpContext, IHttpContext> func = context => context;
-            var route = new Route(func);
+            var route1 = new Route(RouteTesterHelper.StaticMethod, HttpMethod.POST);
+            var route2 = new Route(RouteTesterHelper.StaticMethod);
 
-            route.Equals(func).ShouldBeFalse();
+            route1.Equals(route2).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void route_equality_false_when_httpmethods_are_different()
+        {
+            var route1 = new Route(RouteTesterHelper.StaticMethod, HttpMethod.POST);
+            var route2 = new Route(RouteTesterHelper.StaticMethod, HttpMethod.DELETE);
+
+            route1.Equals(route2).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void route_equality_true_when_using_same_path_info()
+        {
+            const string pathinfo = "/path/to/resource";
+            var route1 = new Route(RouteTesterHelper.StaticMethod, pathinfo);
+            var route2 = new Route(RouteTesterHelper.StaticMethod, pathinfo);
+
+            route1.Equals(route2).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void route_equality_false_when_using_different_path_info()
+        {
+            const string pathinfo1 = "/path/to/resource1";
+            const string pathinfo2 = "/path/to/resource2";
+
+            var route1 = new Route(RouteTesterHelper.StaticMethod, pathinfo1);
+            var route2 = new Route(RouteTesterHelper.StaticMethod, pathinfo2);
+
+            route1.Equals(route2).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void route_equality_true_when_using_overlapping_patterns()
+        {
+            const string pathinfo1 = "/path/to/[resource1]";
+            const string pathinfo2 = "/path/to/[resource2]";
+
+            var route1 = new Route(RouteTesterHelper.StaticMethod, pathinfo1);
+            var route2 = new Route(RouteTesterHelper.StaticMethod, pathinfo2);
+
+            route1.Equals(route2).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void route_equality_false_when_not_using_overlapping_patterns()
+        {
+            const string pathinfo1 = "/path1/to/[resource]";
+            const string pathinfo2 = "/path2/to/[resource]";
+
+            var route1 = new Route(RouteTesterHelper.StaticMethod, pathinfo1);
+            var route2 = new Route(RouteTesterHelper.StaticMethod, pathinfo2);
+
+            route1.Equals(route2).ShouldBeFalse();
         }
 
         [Fact]
         public void route_gethashcode_overrides()
         {
-            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
+            var method = typeof(RouteTesterHelper).GetMethod("ShouldThrowNoExceptions");
             var route = new Route(method);
 
             route.GetHashCode().Equals(route.ToString().GetHashCode()).ShouldBeTrue();
@@ -435,178 +617,38 @@ namespace Grapevine.Tests.Server
         [Fact]
         public void route_tostring_overrides_with_function()
         {
+            const string pathinfo = "/path/to/resource";
             Func<IHttpContext, IHttpContext> function = context => context;
-            var pathinfo = "/path/to/resource";
+            var fname = $"{function.Method.ReflectedType.FullName}.{function.Method.Name}";
+
             var route = new Route(function, HttpMethod.ALL, pathinfo);
 
-            route.ToString().ShouldBe($"{HttpMethod.ALL} {pathinfo} > {function.Method.ReflectedType.FullName}.{function.Method.Name}");
+            route.ToString().ShouldBe($"{HttpMethod.ALL} {pathinfo} > {fname}");
+        }
+
+        [Fact]
+        public void route_tostring_overrides_with_methodinfo()
+        {
+            const string pathinfo = "/path/to/resource";
+            var method = typeof(RouteTesterHelper).GetMethod("ShouldThrowNoExceptions");
+            var fname = $"{method.ReflectedType.FullName}.{method.Name}";
+            
+            var route = new Route(method, HttpMethod.POST, "/path/to/resource");
+
+            route.ToString().ShouldBe($"{HttpMethod.POST} {pathinfo} > {fname}");
         }
 
         [Fact]
         public void route_tostring_overrides_with_method()
         {
-            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
-            var pathinfo = "/path/to/resource";
-            var route = new Route(method, HttpMethod.GET, "/path/to/resource");
+            const string pathinfo = "/path/to/resource";
+            var method = typeof(RouteTesterHelper).GetMethod("ShouldThrowNoExceptions");
+            Func<IHttpContext, IHttpContext> function = new RouteTesterHelper().ShouldThrowNoExceptions;
+            var fname = $"{method.ReflectedType.FullName}.{method.Name}";
 
-            route.ToString().ShouldBe($"{HttpMethod.GET} {pathinfo} > {method.ReflectedType.FullName}.{method.Name}");
-        }
-
-        [Fact]
-        public void route_tostring_overrides_with_function_wrapped_method()
-        {
-            var method = typeof(RouteTestingHelper).GetMethod("RouteOne");
-            Func<IHttpContext, IHttpContext> function = new RouteTestingHelper().RouteOne;
-            var pathinfo = "/path/to/resource";
             var route = new Route(function, HttpMethod.GET, pathinfo);
 
-            route.ToString().ShouldBe($"{HttpMethod.GET} {pathinfo} > {method.ReflectedType.FullName}.{method.Name}");
-        }
-
-        [Fact]
-        public void route_matches_true_with_exact_match()
-        {
-            var pathinfo = "/path/to/resource";
-            var verb = HttpMethod.GET;
-
-            var route = new Route(typeof(RouteTestingHelper).GetMethod("RouteOne"), verb, pathinfo);
-            var context = TestingMocks.MockContext(verb, pathinfo);
-
-            route.Matches(context).ShouldBe(true);
-        }
-
-        [Fact]
-        public void route_matches_true_with_everything()
-        {
-            var route = new Route(typeof(RouteTestingHelper).GetMethod("RouteOne"));
-            var context = TestingMocks.MockContext(HttpMethod.GET, "/path/to/resource");
-
-            route.Matches(context).ShouldBe(true);
-        }
-
-        [Fact]
-        public void route_matches_true_with_equivalent_httpmethod()
-        {
-            var pathinfo = "/path/to/resource";
-            var route = new Route(typeof(RouteTestingHelper).GetMethod("RouteOne"), HttpMethod.ALL, pathinfo);
-            var context = TestingMocks.MockContext(HttpMethod.GET, pathinfo);
-
-            route.Matches(context).ShouldBe(true);
-        }
-
-        [Fact]
-        public void route_matches_true_with_no_httpmethod()
-        {
-            var pathinfo = "/path/to/resource";
-            var route = new Route(typeof(RouteTestingHelper).GetMethod("RouteOne"), pathinfo);
-            var context = TestingMocks.MockContext(HttpMethod.GET, pathinfo);
-
-            route.Matches(context).ShouldBe(true);
-        }
-
-        [Fact]
-        public void route_matches_true_with_equivalent_pathinfo()
-        {
-            var route = new Route(typeof(RouteTestingHelper).GetMethod("RouteOne"), HttpMethod.GET);
-            var context = TestingMocks.MockContext(HttpMethod.GET, "/path/to/resource");
-
-            route.Matches(context).ShouldBe(true);
-        }
-
-        [Fact]
-        public void route_matches_true_with_equivalent_pathinfo_with_params()
-        {
-            var route = new Route(typeof(RouteTestingHelper).GetMethod("RouteOne"), HttpMethod.GET, "/path/[param1]/[param2]");
-            var context = TestingMocks.MockContext(HttpMethod.GET, "/path/user/234");
-
-            route.Matches(context).ShouldBe(true);
-        }
-
-        [Fact]
-        public void route_matches_false_with_different_pathinfo()
-        {
-            var verb = HttpMethod.GET;
-            var pathinfo = "/path/to/resource";
-
-            var route = new Route(typeof(RouteTestingHelper).GetMethod("RouteOne"), verb, $"{pathinfo}1");
-            var context = TestingMocks.MockContext(verb, $"{pathinfo}2");
-
-            route.Matches(context).ShouldBe(false);
-        }
-
-        [Fact]
-        public void route_matches_false_with_different_httpmethod()
-        {
-            var pathinfo = "/path/to/resource";
-            var route = new Route(typeof(RouteTestingHelper).GetMethod("RouteOne"), HttpMethod.GET, pathinfo);
-            var context = TestingMocks.MockContext(HttpMethod.POST, pathinfo);
-
-            route.Matches(context).ShouldBe(false);
-        }
-
-        [Fact]
-        public void route_matches_false_with_pathinfo_params()
-        {
-            var route = new Route(typeof(RouteTestingHelper).GetMethod("RouteOne"), "/api/user/[id]");
-            var context = TestingMocks.MockContext(HttpMethod.GET, "/api/user/");
-
-            route.Matches(context).ShouldBe(false);
-        }
-
-        [Fact]
-        public void route_invoke_using_method()
-        {
-            var route = new Route(typeof(RouteTestingHelper).GetMethod("RouteOne"));
-            var context = TestingMocks.MockContext();
-
-            route.Invoke(context);
-
-            RouteTestingHelper.WhoTriggeredMe().ShouldBe("RouteOne");
-        }
-
-        [Fact]
-        public void route_invoke_using_static_method()
-        {
-            var route = new Route(typeof(RouteTestingHelper).GetMethod("StaticRoute"));
-            var context = TestingMocks.MockContext();
-
-            route.Invoke(context);
-
-            RouteTestingHelper.WhoTriggeredMe().ShouldBe("StaticRoute");
-        }
-
-        [Fact]
-        public void route_invoke_using_function()
-        {
-            var triggeredBy = "Anon";
-            var context = TestingMocks.MockContext();
-            var route = new Route(ctx =>
-            {
-                RouteTestingHelper.WasTriggeredBy(triggeredBy);
-                return ctx;
-            });
-
-            route.Invoke(context);
-
-            RouteTestingHelper.WhoTriggeredMe().ShouldBe(triggeredBy);
-        }
-
-        [Fact]
-        public void route_invoke_using_function_wrapped_method()
-        {
-            Func<IHttpContext, IHttpContext> function = new RouteTestingHelper().RouteTwo;
-            var route = new Route(function);
-            var context = TestingMocks.MockContext();
-
-            route.Invoke(context);
-
-            RouteTestingHelper.WhoTriggeredMe().ShouldBe("RouteTwo");
-        }
-
-        [Fact]
-        public void route_convert_method_to_func_throws_exception_when_methodinfo_is_null()
-        {
-            Should.Throw<ArgumentNullException>(() => Route.ConvertMethodToFunc(null));
+            route.ToString().ShouldBe($"{HttpMethod.GET} {pathinfo} > {fname}");
         }
     }
 }

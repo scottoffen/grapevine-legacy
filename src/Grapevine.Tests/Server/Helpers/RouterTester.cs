@@ -2,7 +2,7 @@
 using System.Reflection;
 using Grapevine.Server;
 
-namespace Grapevine.Tests.Server
+namespace Grapevine.Tests.Server.Helpers.RouterTester
 {
     public abstract class AbstractRouter : Router
     {
@@ -39,5 +39,4 @@ namespace Grapevine.Tests.Server
             }
         }
     }
-
 }
