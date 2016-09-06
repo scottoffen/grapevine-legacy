@@ -48,6 +48,9 @@
     <Compile Include="Client\RestClient.cs" />
     <Compile Include="Client\RestRequest.cs" />
     <Compile Include="Client\RestResponse.cs" />
+    <Compile Include="Server\Attributes\RestAttributeExtentions.cs" />
+    <Compile Include="Server\Attributes\RestResource.cs" />
+    <Compile Include="Server\Attributes\RestRoute.cs" />
     <Compile Include="Server\DynamicPropertiesExtensions.cs" />
     <Compile Include="Server\Exceptions\DynamicValueNotFoundException.cs" />
     <Compile Include="Server\Exceptions\RouteMethodArgumentException.cs" />
@@ -63,7 +66,6 @@
     <Compile Include="Server\ServerSettings.cs" />
     <Compile Include="Server\PublicFolder.cs" />
     <Compile Include="Server\RestCluster.cs" />
-    <Compile Include="Server\RestAttributes.cs" />
     <Compile Include="Server\RestServer.cs" />
     <Compile Include="Server\Route.cs" />
     <Compile Include="Server\Router.cs" />

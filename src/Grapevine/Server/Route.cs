@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Grapevine.Util;
 using System.Text.RegularExpressions;
+using Grapevine.Server.Attributes;
 using Grapevine.Server.Exceptions;
 
 namespace Grapevine.Server
