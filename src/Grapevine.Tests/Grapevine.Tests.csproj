@@ -81,9 +81,11 @@
     <Compile Include="Client\RestClientTester.cs" />
     <Compile Include="Client\RestRequestTester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Server\Attributes\RestRouteTester.cs" />
     <Compile Include="Server\DynamicPropertiesTester.cs" />
     <Compile Include="Server\FluentRouteCreatorTester.cs" />
     <Compile Include="Server\Helpers\MockContext.cs" />
+    <Compile Include="Server\Attributes\Helpers\RestRouteTesterHelper.cs" />
     <Compile Include="Server\Helpers\RouterTester.cs" />
     <Compile Include="Server\Helpers\RouteScannerTesterHelper.cs" />
     <Compile Include="Server\Helpers\RouteTesterHelper.cs" />

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace Grapevine.Server.Attributes
 {
@@ -25,6 +26,26 @@ namespace Grapevine.Server.Attributes
         {
             BasePath = string.Empty;
             Scope = string.Empty;
+        }
+    }
+
+    public static class RestResourceExtensions
+    {
+        /// <summary>
+        /// Returns true if the type is a valid GetRestResource
+        /// </summary>
+        internal static bool IsRestResource(this Type type)
+        {
+            return !type.IsAbstract && type.IsClass && type.GetCustomAttributes(true).Any(a => a is RestResource);
+        }
+
+        /// <summary>
+        /// Returns the value of the GetRestResource attribute; returns null if the type does not have a GetRestResource attribute
+        /// </summary>
+        internal static RestResource GetRestResource(this Type type)
+        {
+            if (!type.IsRestResource()) return null;
+            return (RestResource)type.GetCustomAttributes(true).First(a => a is RestResource);
         }
     }
 }

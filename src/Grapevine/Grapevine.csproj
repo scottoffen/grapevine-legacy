@@ -48,7 +48,6 @@
     <Compile Include="Client\RestClient.cs" />
     <Compile Include="Client\RestRequest.cs" />
     <Compile Include="Client\RestResponse.cs" />
-    <Compile Include="Server\Attributes\RestAttributeExtentions.cs" />
     <Compile Include="Server\Attributes\RestResource.cs" />
     <Compile Include="Server\Attributes\RestRoute.cs" />
     <Compile Include="Server\DynamicPropertiesExtensions.cs" />

@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Grapevine.Util;
 
 namespace Grapevine.Server.Attributes
@@ -26,6 +29,29 @@ namespace Grapevine.Server.Attributes
         {
             HttpMethod = HttpMethod.ALL;
             PathInfo = string.Empty;
+        }
+    }
+
+    public static class RestRouteExtensions
+    {
+        /// <summary>
+        /// Returns an enumerable of all RestRoute attributes on a method
+        /// </summary>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        internal static IEnumerable<RestRoute> GetRouteAttributes(this MethodInfo method)
+        {
+            return method.GetCustomAttributes(true).Where(a => a is RestRoute).Cast<RestRoute>();
+        }
+
+        /// <summary>
+        /// Returns true if the method is a valid RestRoute
+        /// </summary>
+        internal static bool IsRestRoute(this MethodInfo method)
+        {
+            return !method.IsAbstract && !method.IsConstructor && !method.IsPrivate && !method.IsVirtual &&
+                   !method.IsSpecialName && method.DeclaringType == method.ReflectedType &&
+                   method.GetCustomAttributes(true).Any(a => a is RestRoute);
         }
     }
 }
