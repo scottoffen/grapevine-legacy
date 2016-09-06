@@ -42,28 +42,46 @@ namespace Grapevine.Tests.Server.Helpers
             return (string)field?.GetValue(scanner);
         }
 
-        internal static bool CheckIsExcluded(this IRouteScanner scanner, Type type)
+        internal static bool CheckIsInScope(this IRouteScanner scanner, Type type)
         {
             var memberInfo = scanner.GetType();
-            var method = memberInfo?.GetMethod("IsExcluded", BindingFlags.Instance | BindingFlags.NonPublic);
+            var method = memberInfo?.GetMethod("IsInScope", BindingFlags.Instance | BindingFlags.NonPublic);
             return (bool)method.Invoke(scanner, new object[] { type });
         }
 
-        // TODO: How do I make sure I'm hitting the right overloaded method
-        // TODO: How do I make a call using a generic parameter
+        internal static bool CheckIsExcluded(this IRouteScanner scanner, Type type)
+        {
+            var memberInfo = scanner.GetType();
+            var method = memberInfo?.GetMethod("IsExcluded", BindingFlags.Instance | BindingFlags.NonPublic, null, new [] { typeof(Type) }, null);
+            return (bool)method.Invoke(scanner, new object[] { type });
+        }
 
         internal static bool CheckIsExcluded(this IRouteScanner scanner, string nameSpace)
         {
             var memberInfo = scanner.GetType();
-            var method = memberInfo?.GetMethod("IsExcluded", BindingFlags.Instance | BindingFlags.NonPublic);
+            var method = memberInfo?.GetMethod("IsExcluded", BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(string) }, null);
             return (bool)method.Invoke(scanner, new object[] { nameSpace });
         }
 
         internal static bool CheckIsIncluded(this IRouteScanner scanner, Type type)
         {
             var memberInfo = scanner.GetType();
-            var method = memberInfo?.GetMethod("IsIncluded", BindingFlags.Instance | BindingFlags.NonPublic);
+            var method = memberInfo?.GetMethod("IsIncluded", BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(Type) }, null);
             return (bool)method.Invoke(scanner, new object[] { type });
+        }
+
+        internal static bool CheckIsIncluded(this IRouteScanner scanner, string nameSpace)
+        {
+            var memberInfo = scanner.GetType();
+            var method = memberInfo?.GetMethod("IsIncluded", BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(string) }, null);
+            return (bool)method.Invoke(scanner, new object[] { nameSpace });
+        }
+
+        internal static string BasePathSanitizer(this IRouteScanner scanner, string basePath)
+        {
+            var memberInfo = scanner.GetType();
+            var method = memberInfo?.GetMethod("SanitizeBasePath", BindingFlags.Static | BindingFlags.NonPublic);
+            return (string)method.Invoke(null, new object[] { basePath });
         }
     }
 }

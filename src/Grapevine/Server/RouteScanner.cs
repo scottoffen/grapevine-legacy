@@ -204,8 +204,7 @@ namespace Grapevine.Server
 
         private static string SanitizeBasePath(string basePath)
         {
-            var basepath = basePath?.Trim() ?? string.Empty;
-            if (basepath.EndsWith("/")) basepath = basepath.TrimEnd('/');
+            var basepath = basePath?.Trim().TrimEnd('/') ?? string.Empty;
             if (!basepath.StartsWith("/")) basepath = $"/{basepath}";
             return basepath;
         }

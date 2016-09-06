@@ -194,5 +194,126 @@ namespace Grapevine.Tests.Server
 
             scanner.GetScope().Equals(scope).ShouldBeTrue();
         }
+
+        [Fact]
+        public void scanner_includes_is_true_if_includes_is_empty()
+        {
+            var scanner = new RouteScanner();
+            scanner.CheckIsIncluded("Some.Random.Namespace").ShouldBeTrue();
+            scanner.CheckIsIncluded(typeof(Route)).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void scanner_includes_is_true_if_type_is_in_includes()
+        {
+            var scanner = new RouteScanner();
+            scanner.Include(typeof(Route));
+            scanner.CheckIsIncluded(typeof(Route)).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void scanner_includes_is_true_if_generic_type_is_in_includes()
+        {
+            var scanner = new RouteScanner();
+            scanner.Include<Route>();
+            scanner.CheckIsIncluded(typeof(Route)).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void scanner_includes_is_true_if_namespace_is_in_includes()
+        {
+            var scanner = new RouteScanner();
+            scanner.Include("Some.Random.Namespace");
+            scanner.CheckIsIncluded("Some.Random.Namespace").ShouldBeTrue();
+        }
+
+        [Fact]
+        public void scanner_includes_is_false_if_type_is_not_in_includes()
+        {
+            var scanner = new RouteScanner();
+            scanner.Include<Route>();
+            scanner.CheckIsIncluded(typeof(Router)).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void scanner_includes_is_false_if_namespace_is_not_in_includes()
+        {
+            var scanner = new RouteScanner();
+            scanner.Include("Some.Other.Namespace");
+            scanner.CheckIsIncluded("Some.Random.Namespace").ShouldBeFalse();
+        }
+
+        [Fact]
+        public void scanner_excludes_is_false_if_excludes_is_empty()
+        {
+            var scanner = new RouteScanner();
+            scanner.CheckIsExcluded("Some.Other.Namespace").ShouldBeFalse();
+            scanner.CheckIsExcluded(typeof(Route)).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void scanner_excludes_is_true_if_type_is_in_excludes()
+        {
+            var scanner = new RouteScanner();
+            scanner.Exclude(typeof(Route));
+            scanner.CheckIsExcluded(typeof(Route)).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void scanner_excludes_is_true_if_generic_type_is_in_excludes()
+        {
+            var scanner = new RouteScanner();
+            scanner.Exclude<Route>();
+            scanner.CheckIsExcluded(typeof(Route)).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void scanner_excludes_is_true_if_namespace_is_in_excludes()
+        {
+            var scanner = new RouteScanner();
+            scanner.Exclude("Some.Random.Namespace");
+            scanner.CheckIsExcluded("Some.Random.Namespace").ShouldBeTrue();
+        }
+
+        [Fact]
+        public void scanner_excludes_is_false_if_type_is_not_in_excludes()
+        {
+            var scanner = new RouteScanner();
+            scanner.Exclude<Route>();
+            scanner.CheckIsExcluded(typeof(Router)).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void scanner_excludes_is_false_if_namespace_is_not_in_excludes()
+        {
+            var scanner = new RouteScanner();
+            scanner.Exclude("Some.Random.Namespace");
+            scanner.CheckIsExcluded("Some.Other.Namespace").ShouldBeFalse();
+        }
+
+        /* IsInScope */
+
+        /* Scan Method */
+
+        /* Scan Type */
+
+        /* Scan Assembly */
+
+        /* Scan */
+
+        [Fact]
+        public void scanner_sanitizes_basepath()
+        {
+            var scanner = new RouteScanner();
+            scanner.BasePathSanitizer(null).ShouldBe("/");
+            scanner.BasePathSanitizer("path").ShouldBe("/path");
+            scanner.BasePathSanitizer("/path").ShouldBe("/path");
+            scanner.BasePathSanitizer("path/").ShouldBe("/path");
+            scanner.BasePathSanitizer(" path").ShouldBe("/path");
+            scanner.BasePathSanitizer("path ").ShouldBe("/path");
+            scanner.BasePathSanitizer(" path ").ShouldBe("/path");
+            scanner.BasePathSanitizer(" path/ ").ShouldBe("/path");
+            scanner.BasePathSanitizer(" /path ").ShouldBe("/path");
+        }
     }
 }
