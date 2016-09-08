@@ -10,24 +10,63 @@ namespace Grapevine.Server
 {
     public interface IRouteScanner
     {
+        /// <summary>
+        /// Set a rule to exclude types in the specified namespace when auto-scanning for routes
+        /// </summary>
+        /// <param name="nameSpace"></param>
         void Exclude(string nameSpace);
 
+        /// <summary>
+        /// Set a rule to exclude the specified type when auto-scanning for routes
+        /// </summary>
+        /// <param name="type"></param>
         void Exclude(Type type);
 
+        /// <summary>
+        /// Set a rule to exclude the generic type when auto-scanning for routes
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
         void Exclude<T>();
 
+        /// <summary>
+        /// Set a rule to exclude the specified assembly when auto-scanning for routes
+        /// </summary>
+        /// <param name="assembly"></param>
         void Exclude(Assembly assembly);
 
+        /// <summary>
+        /// Set a rule to include types in the specified namespace when auto-scanning for routes
+        /// </summary>
+        /// <param name="nameSpace"></param>
         void Include(string nameSpace);
 
+        /// <summary>
+        /// Set a rule to include the specified type when auto-scanning for routes
+        /// </summary>
+        /// <param name="type"></param>
         void Include(Type type);
 
+        /// <summary>
+        /// Set a rule to include the generic type when auto-scanning for routes
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
         void Include<T>();
 
+        /// <summary>
+        /// Set a rule to include the specified assembly when auto-scanning for routes
+        /// </summary>
+        /// <param name="assembly"></param>
         void Include(Assembly assembly);
 
+        /// <summary>
+        /// Gets or sets the logger
+        /// </summary>
         IGrapevineLogger Logger { get; set; }
 
+        /// <summary>
+        /// Set a rule to include only RestResources with the specified scope when auto-scanning for routes
+        /// </summary>
+        /// <param name="scope"></param>
         void SetScope(string scope);
 
         /// <summary>
