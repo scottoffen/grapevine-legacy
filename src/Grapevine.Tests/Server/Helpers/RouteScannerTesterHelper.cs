@@ -35,6 +35,20 @@ namespace Grapevine.Tests.Server.Helpers
             return (List<Type>)field?.GetValue(scanner);
         }
 
+        internal static List<Assembly> ExcludedAssemblies(this IRouteScanner scanner)
+        {
+            var memberInfo = scanner.GetType();
+            var field = memberInfo?.GetField("_excludedAssemblies", BindingFlags.Instance | BindingFlags.NonPublic);
+            return (List<Assembly>)field?.GetValue(scanner);
+        }
+
+        internal static List<Assembly> IncludedAssemblies(this IRouteScanner scanner)
+        {
+            var memberInfo = scanner.GetType();
+            var field = memberInfo?.GetField("_includedAssemblies", BindingFlags.Instance | BindingFlags.NonPublic);
+            return (List<Assembly>)field?.GetValue(scanner);
+        }
+
         internal static string GetScope(this IRouteScanner scanner)
         {
             var memberInfo = scanner.GetType();
@@ -63,6 +77,13 @@ namespace Grapevine.Tests.Server.Helpers
             return (bool)method.Invoke(scanner, new object[] { nameSpace });
         }
 
+        internal static bool CheckIsExcluded(this IRouteScanner scanner, Assembly assembly)
+        {
+            var memberInfo = scanner.GetType();
+            var method = memberInfo?.GetMethod("IsExcluded", BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(Assembly) }, null);
+            return (bool)method.Invoke(scanner, new object[] { assembly });
+        }
+
         internal static bool CheckIsIncluded(this IRouteScanner scanner, Type type)
         {
             var memberInfo = scanner.GetType();
@@ -75,6 +96,13 @@ namespace Grapevine.Tests.Server.Helpers
             var memberInfo = scanner.GetType();
             var method = memberInfo?.GetMethod("IsIncluded", BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(string) }, null);
             return (bool)method.Invoke(scanner, new object[] { nameSpace });
+        }
+
+        internal static bool CheckIsIncluded(this IRouteScanner scanner, Assembly assembly)
+        {
+            var memberInfo = scanner.GetType();
+            var method = memberInfo?.GetMethod("IsIncluded", BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(Assembly) }, null);
+            return (bool)method.Invoke(scanner, new object[] { assembly });
         }
 
         internal static string BasePathSanitizer(this IRouteScanner scanner, string basePath)

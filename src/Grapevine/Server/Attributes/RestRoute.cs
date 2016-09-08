@@ -49,9 +49,22 @@ namespace Grapevine.Server.Attributes
         /// </summary>
         internal static bool IsRestRoute(this MethodInfo method)
         {
-            return !method.IsAbstract && !method.IsConstructor && !method.IsPrivate && !method.IsVirtual &&
-                   !method.IsSpecialName && method.DeclaringType == method.ReflectedType &&
-                   method.GetCustomAttributes(true).Any(a => a is RestRoute);
+            // Must be a public method
+            if (!method.IsPublic) return false;
+
+            // Can not be an abstract method
+            if (method.IsAbstract) return false;
+
+            // Should not be an overrideable method (sealed if needed)
+            if (method.IsVirtual && !method.IsFinal) return false;
+
+            // Can not have a special name (getters and setters)
+            if (method.IsSpecialName) return false;
+
+            // Can not be a method that was inherited
+            if (method.DeclaringType != method.ReflectedType) return false;
+
+            return method.GetCustomAttributes(true).Any(a => a is RestRoute);
         }
     }
 }

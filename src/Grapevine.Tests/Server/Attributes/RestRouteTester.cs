@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Reflection;
 using Grapevine.Server.Attributes;
 using Grapevine.Tests.Server.Attributes.Helpers;
 using Grapevine.Util;
@@ -66,5 +67,40 @@ namespace Grapevine.Tests.Server.Attributes
             attrs[1].PathInfo.Equals("/index").ShouldBeTrue();
         }
 
+        [Fact]
+        public void rest_route_ignores_non_public_methods()
+        {
+            typeof(OneValidRoute).GetMethod("PrivateMethod", BindingFlags.NonPublic | BindingFlags.Instance).IsRestRoute().ShouldBeFalse();
+            typeof(OneValidRoute).GetMethod("InternalMethod", BindingFlags.NonPublic | BindingFlags.Instance).IsRestRoute().ShouldBeFalse();
+            typeof(OneValidRoute).GetMethod("ProtectedMethod", BindingFlags.NonPublic | BindingFlags.Instance).IsRestRoute().ShouldBeFalse();
+        }
+
+        [Fact]
+        public void rest_route_ignores_abstract_methods()
+        {
+            typeof(AbstractRoutes).GetMethod("AbstractMethod").IsRestRoute().ShouldBeFalse();
+        }
+
+        [Fact]
+        public void rest_route_ignores_methods_with_special_names()
+        {
+            typeof(OneValidRoute).GetMethod("get_Stuff").IsRestRoute().ShouldBeFalse();
+            typeof(OneValidRoute).GetMethod("set_Stuff").IsRestRoute().ShouldBeFalse();
+        }
+
+        [Fact]
+        public void rest_route_ignores_non_final_methods()
+        {
+            typeof(AbstractRoutes).GetMethod("InheritedMethod").IsRestRoute().ShouldBeFalse();
+            //typeof(OneValidRoute).GetMethod("InheritedMethod").IsRestRoute().ShouldBeTrue();
+        }
+
+        [Fact]
+        public void rest_route_is_rest_route_returns_true_on_valid_route()
+        {
+            typeof(OneValidRoute).GetMethod("TheValidRoute").IsRestRoute().ShouldBeTrue();
+        }
+
+        /* Need test for declared type and reflected type inequality */
     }
 }

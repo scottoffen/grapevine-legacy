@@ -37,4 +37,56 @@ namespace Grapevine.Tests.Server.Attributes.Helpers
             return context;
         }
     }
+
+    public abstract class AbstractRoutes
+    {
+        [RestRoute]
+        public virtual IHttpContext InheritedMethod(IHttpContext context)
+        {
+            return context;
+        }
+
+        [RestRoute]
+        public abstract IHttpContext AbstractMethod(IHttpContext context);
+    }
+
+    public class OneValidRoute : AbstractRoutes
+    {
+        public string Stuff { get; set; }
+
+        public OneValidRoute()
+        {
+            Stuff = string.Empty;
+        }
+
+        [RestRoute]
+        private IHttpContext PrivateMethod(IHttpContext context)
+        {
+            return context;
+        }
+
+        [RestRoute]
+        protected IHttpContext ProtectedMethod(IHttpContext context)
+        {
+            return PrivateMethod(context);
+        }
+
+        [RestRoute]
+        internal IHttpContext InternalMethod(IHttpContext context)
+        {
+            return context;
+        }
+
+        [RestRoute]
+        public IHttpContext TheValidRoute(IHttpContext context)
+        {
+            return context;
+        }
+
+        [RestRoute]
+        public sealed override IHttpContext AbstractMethod(IHttpContext context)
+        {
+            return context;
+        }
+    }
 }

@@ -243,7 +243,7 @@ namespace Grapevine.Server
         {
             var routes = new List<IRoute>();
 
-            Logger.Trace($"Scanning resources for routes...");
+            Logger.Trace("Scanning resources for routes...");
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.GlobalAssemblyCache && a.GetName().Name != "Grapevine"))
             {
@@ -282,7 +282,8 @@ namespace Grapevine.Server
         public IList<IRoute> ScanType(Type type, string basePath)
         {
             var routes = new List<IRoute>();
-            if (IsExcluded(type.Namespace) || !IsIncluded(type.Namespace) || !IsInScope(type)) return routes;
+            if (type.IsAbstract) return routes;
+            if (type.IsAbstract || !type.IsClass || IsExcluded(type.Namespace) || !IsIncluded(type.Namespace) || !IsInScope(type)) return routes;
 
             Logger.Trace($"Generating routes from type {type.Name}");
 
