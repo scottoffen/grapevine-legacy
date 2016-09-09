@@ -245,21 +245,16 @@ namespace Grapevine.Server
         }
 
         /// <summary>
-        /// Returns a generic delegate for the given MethodInfo
+        /// Returns a generic delegate for the given MethodInfo if it is rest route eligible
         /// </summary>
-        /// <param name="methodInfo"></param>
+        /// <param name="method"></param>
         /// <returns></returns>
-        public static Func<IHttpContext, IHttpContext> ConvertMethodToFunc(MethodInfo methodInfo)
+        public static Func<IHttpContext, IHttpContext> ConvertMethodToFunc(MethodInfo method)
         {
-            if (methodInfo == null) throw new ArgumentNullException(nameof(methodInfo));
-            if (methodInfo.ReturnType != typeof(IHttpContext)) throw new RouteMethodArgumentException($"{methodInfo.Name}: Return type must be of type {typeof(IHttpContext).Name}");
+            method.IsRestRouteEligible(true); // throws an aggregate exception if the method is not eligible
 
-            var args = methodInfo.GetParameters();
-            if (args.Length != 1) throw new RouteMethodArgumentException($"{methodInfo.Name}: must have one and only one argument to be used as a {typeof(RestRoute).Name}");
-            if (args[0].ParameterType != typeof(IHttpContext)) throw new RouteMethodArgumentException($"{methodInfo.Name}: argument must be of type {typeof(IHttpContext).Name}");
-
-            var instance = (methodInfo.IsStatic || methodInfo.ReflectedType == null) ? null : Activator.CreateInstance(methodInfo.ReflectedType);
-            Func<IHttpContext, IHttpContext> function = context => (IHttpContext)methodInfo.Invoke(instance, new object[] { context });
+            var instance = (method.IsStatic || method.ReflectedType == null) ? null : Activator.CreateInstance(method.ReflectedType);
+            Func<IHttpContext, IHttpContext> function = context => (IHttpContext)method.Invoke(instance, new object[] { context });
 
             return function;
         }

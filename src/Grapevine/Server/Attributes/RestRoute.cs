@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Grapevine.Server.Exceptions;
 using Grapevine.Util;
 
 namespace Grapevine.Server.Attributes
@@ -45,26 +46,59 @@ namespace Grapevine.Server.Attributes
         }
 
         /// <summary>
-        /// Returns true if the method is a valid RestRoute
+        /// Returns a value indicating whether the method is a valid RestRoute
         /// </summary>
-        internal static bool IsRestRoute(this MethodInfo method)
+        internal static bool IsRestRoute(this MethodInfo method, bool throwExceptionWhenFalse = false)
         {
-            // Must be a public method
-            if (!method.IsPublic) return false;
+            return method.GetCustomAttributes(true).Any(a => a is RestRoute) && method.IsRestRouteEligible(throwExceptionWhenFalse);
+        }
 
-            // Can not be an abstract method
-            if (method.IsAbstract) return false;
+        /// <summary>
+        /// Returns a value indicating that the method can be used to create a Route object
+        /// </summary>
+        /// <param name="method"></param>
+        /// <param name="throwExceptionWhenFalse"></param>
+        /// <returns></returns>
+        internal static bool IsRestRouteEligible(this MethodInfo method, bool throwExceptionWhenFalse = false)
+        {
 
-            // Should not be an overrideable method (sealed if needed)
-            if (method.IsVirtual && !method.IsFinal) return false;
+            if (method == null) throw new ArgumentNullException(nameof(method));
+
+            var exceptions = new List<Exception>();
+
+            // Can the method be invoked?
+            if (!method.CanInvoke()) exceptions.Add(new InvalidRouteMethodException($"{method.Name} cannot be invoked"));
 
             // Can not have a special name (getters and setters)
-            if (method.IsSpecialName) return false;
+            if (method.IsSpecialName) exceptions.Add(new InvalidRouteMethodException($"{method.Name} may be treated in a special way by some compilers (such as property accessors and operator overloading methods)"));
 
-            // Can not be a method that was inherited
-            if (method.DeclaringType != method.ReflectedType) return false;
+            // Method must have a return value of IHttpContext
+            if (method.ReturnType != typeof(IHttpContext)) exceptions.Add(new InvalidRouteMethodException($"{method.Name} must have a return value of type {typeof(IHttpContext).Name}"));
 
-            return method.GetCustomAttributes(true).Any(a => a is RestRoute);
+            var args = method.GetParameters();
+
+            // Method must have only one argument
+            if (args.Length != 1) exceptions.Add(new InvalidRouteMethodException($"{method.Name} must accept one and only one argument"));
+
+            // First argument to method must be of type IHttpContext
+            if (args.Length > 0 && args[0].ParameterType != typeof(IHttpContext)) exceptions.Add(new InvalidRouteMethodException($"{method.Name}: first argument must be of type {typeof(IHttpContext).Name}"));
+
+            // Return boolean value
+            if (exceptions.Count == 0) return true;
+            if (!throwExceptionWhenFalse) return false;
+
+            // Throw exeception
+            throw new InvalidRouteMethodExceptions(exceptions.ToArray());
+        }
+
+        /// <summary>
+        /// Returns a value indicating that the method can be invoked via reflection
+        /// </summary>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        internal static bool CanInvoke(this MethodInfo method)
+        {
+            return !method.IsAbstract && (method.ReflectedType == null || !method.ReflectedType.IsAbstract);
         }
     }
 }

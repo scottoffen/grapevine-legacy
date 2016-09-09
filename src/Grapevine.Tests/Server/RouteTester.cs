@@ -23,7 +23,7 @@ namespace Grapevine.Tests.Server
         public void route_convert_method_to_func_throws_exception_if_methodinfo_return_type_is_not_ihttpcontext()
         {
             var method = typeof(RouteTesterHelper).GetMethod("DoesNotReturnContext");
-            Should.Throw<RouteMethodArgumentException>(() => { Route.ConvertMethodToFunc(method); });
+            Should.Throw<InvalidRouteMethodExceptions>(() => { Route.ConvertMethodToFunc(method); });
         }
 
         [Fact]
@@ -32,15 +32,15 @@ namespace Grapevine.Tests.Server
             var methodA = typeof(RouteTesterHelper).GetMethod("MethodTakesZeroArgs");
             var methodB = typeof(RouteTesterHelper).GetMethod("MethodTakesTwoArgs");
 
-            Should.Throw<RouteMethodArgumentException>(() => { Route.ConvertMethodToFunc(methodA); });
-            Should.Throw<RouteMethodArgumentException>(() => { Route.ConvertMethodToFunc(methodB); });
+            Should.Throw<InvalidRouteMethodExceptions>(() => { Route.ConvertMethodToFunc(methodA); });
+            Should.Throw<InvalidRouteMethodExceptions>(() => { Route.ConvertMethodToFunc(methodB); });
         }
 
         [Fact]
         public void route_convert_method_to_func_throws_exception_if_methodinfo_first_argument_is_not_ihttpcontext()
         {
             var method = typeof(RouteTesterHelper).GetMethod("DoesNotTakeContextArg");
-            Should.Throw<RouteMethodArgumentException>(() => { var route = new Route(method); });
+            Should.Throw<InvalidRouteMethodExceptions>(() => { var route = new Route(method); });
         }
 
         [Fact]

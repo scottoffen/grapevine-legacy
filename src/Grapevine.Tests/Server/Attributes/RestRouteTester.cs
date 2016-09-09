@@ -68,14 +68,6 @@ namespace Grapevine.Tests.Server.Attributes
         }
 
         [Fact]
-        public void rest_route_ignores_non_public_methods()
-        {
-            typeof(OneValidRoute).GetMethod("PrivateMethod", BindingFlags.NonPublic | BindingFlags.Instance).IsRestRoute().ShouldBeFalse();
-            typeof(OneValidRoute).GetMethod("InternalMethod", BindingFlags.NonPublic | BindingFlags.Instance).IsRestRoute().ShouldBeFalse();
-            typeof(OneValidRoute).GetMethod("ProtectedMethod", BindingFlags.NonPublic | BindingFlags.Instance).IsRestRoute().ShouldBeFalse();
-        }
-
-        [Fact]
         public void rest_route_ignores_abstract_methods()
         {
             typeof(AbstractRoutes).GetMethod("AbstractMethod").IsRestRoute().ShouldBeFalse();

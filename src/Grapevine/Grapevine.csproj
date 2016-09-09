@@ -52,7 +52,7 @@
     <Compile Include="Server\Attributes\RestRoute.cs" />
     <Compile Include="Server\DynamicPropertiesExtensions.cs" />
     <Compile Include="Server\Exceptions\DynamicValueNotFoundException.cs" />
-    <Compile Include="Server\Exceptions\RouteMethodArgumentException.cs" />
+    <Compile Include="Server\Exceptions\InvalidRouteMethodException.cs" />
     <Compile Include="Server\Exceptions\RouteNotFoundException.cs" />
     <Compile Include="Server\Exceptions\ServerStateException.cs" />
     <Compile Include="Server\Exceptions\UnableToStartHostException.cs" />
