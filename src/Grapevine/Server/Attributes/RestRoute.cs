@@ -98,6 +98,7 @@ namespace Grapevine.Server.Attributes
         /// <returns></returns>
         internal static bool CanInvoke(this MethodInfo method)
         {
+            // static methods can always be invoked
             return !method.IsAbstract && (method.ReflectedType == null || !method.ReflectedType.IsAbstract);
         }
     }

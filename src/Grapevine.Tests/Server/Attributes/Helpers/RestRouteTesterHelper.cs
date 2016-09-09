@@ -38,55 +38,105 @@ namespace Grapevine.Tests.Server.Attributes.Helpers
         }
     }
 
-    public abstract class AbstractRoutes
+    public abstract class TypicalAbstractClass
     {
-        [RestRoute]
-        public virtual IHttpContext InheritedMethod(IHttpContext context)
+        public void TypicalNonAbstractMethod()
         {
-            return context;
         }
 
-        [RestRoute]
-        public abstract IHttpContext AbstractMethod(IHttpContext context);
+        public abstract void TypicalAbstractMethod();
+
+        public abstract class TypicalNestedAbstractClass
+        {
+            public void TypicalNonAbstractMethod()
+            {
+            }
+
+            public abstract void TypicalAbstractMethod();
+        }
     }
 
-    public class OneValidRoute : AbstractRoutes
+    public class TypicalClass
     {
-        public string Stuff { get; set; }
-
-        public OneValidRoute()
+        public void TypicalMethod()
         {
-            Stuff = string.Empty;
-        }
-
-        [RestRoute]
-        private IHttpContext PrivateMethod(IHttpContext context)
-        {
-            return context;
-        }
-
-        [RestRoute]
-        protected IHttpContext ProtectedMethod(IHttpContext context)
-        {
-            return PrivateMethod(context);
-        }
-
-        [RestRoute]
-        internal IHttpContext InternalMethod(IHttpContext context)
-        {
-            return context;
-        }
-
-        [RestRoute]
-        public IHttpContext TheValidRoute(IHttpContext context)
-        {
-            return context;
-        }
-
-        [RestRoute]
-        public sealed override IHttpContext AbstractMethod(IHttpContext context)
-        {
-            return context;
         }
     }
+
+    public interface TypicalInterface
+    {
+        void TypicalInterfaceMethod();
+    }
+
+    public class TypicalInterfaceConcretion : TypicalInterface
+    {
+        public void TypicalMethod()
+        {
+        }
+
+        public void TypicalInterfaceMethod()
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+
+    public class TypicalAbstractConcretion : TypicalAbstractClass
+    {
+        public void TypicalMethod()
+        {
+        }
+
+        public override void TypicalAbstractMethod()
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+
+    public class ContainsNestedAbstract
+    {
+        public abstract class NestedAbstractClass
+        {
+
+        }
+    }
+
+    //public class OneValidRoute : AbstractRoutes
+    //{
+    //    public string Stuff { get; set; }
+
+    //    public OneValidRoute()
+    //    {
+    //        Stuff = string.Empty;
+    //    }
+
+    //    [RestRoute]
+    //    private IHttpContext PrivateMethod(IHttpContext context)
+    //    {
+    //        return context;
+    //    }
+
+    //    [RestRoute]
+    //    protected IHttpContext ProtectedMethod(IHttpContext context)
+    //    {
+    //        return PrivateMethod(context);
+    //    }
+
+    //    [RestRoute]
+    //    internal IHttpContext InternalMethod(IHttpContext context)
+    //    {
+    //        return context;
+    //    }
+
+    //    [RestRoute]
+    //    public IHttpContext TheValidRoute(IHttpContext context)
+    //    {
+    //        return context;
+    //    }
+
+    //    [RestRoute]
+    //    public sealed override IHttpContext AbstractMethod(IHttpContext context)
+    //    {
+    //        return context;
+    //    }
+    //}
 }
