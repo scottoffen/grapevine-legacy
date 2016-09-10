@@ -311,23 +311,30 @@ namespace Grapevine.Server
 
             foreach (var attribute in method.GetCustomAttributes(true).Where(a => a is RestRoute).Cast<RestRoute>())
             {
-                var pathinfo = attribute.PathInfo;
-                var prefix = string.Empty;
-
-                if (pathinfo.StartsWith("^"))
-                {
-                    prefix = "^";
-                    pathinfo = pathinfo.TrimStart('^');
-                }
-
-                if (!string.IsNullOrEmpty(pathinfo) && !pathinfo.StartsWith("/")) pathinfo = $"/{pathinfo}";
-
-                var route = new Route(method, attribute.HttpMethod, $"{prefix}{basepath}{pathinfo}");
+                var pathinfo = GeneratePathInfo(attribute.PathInfo, basepath);
+                var route = new Route(method, attribute.HttpMethod, pathinfo);
                 Logger.Trace($"Generated route {route}");
                 routes.Add(route);
             }
 
             return routes;
+        }
+
+        private static string GeneratePathInfo(string pathInfo, string basePath)
+        {
+            var pathinfo = pathInfo;
+            var prefix = string.Empty;
+
+            if (pathinfo.StartsWith("^"))
+            {
+                prefix = "^";
+                pathinfo = pathinfo.TrimStart('^');
+            }
+
+            if (!string.IsNullOrEmpty(pathinfo) && !pathinfo.StartsWith("/")) pathinfo = $"/{pathinfo}";
+            if (!string.IsNullOrEmpty(basePath) && !basePath.StartsWith("/")) basePath = $"/{basePath}";
+
+            return $"{prefix}{basePath}{pathinfo}";
         }
 
         private static string SanitizeBasePath(string basePath)

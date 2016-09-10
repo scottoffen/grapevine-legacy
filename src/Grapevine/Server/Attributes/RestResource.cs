@@ -36,7 +36,9 @@ namespace Grapevine.Server.Attributes
         /// </summary>
         internal static bool IsRestResource(this Type type)
         {
-            return !type.IsAbstract && type.IsClass && type.GetCustomAttributes(true).Any(a => a is RestResource);
+            if (!type.IsClass) return false;
+            if (type.IsAbstract) return false;
+            return type.GetCustomAttributes(true).Any(a => a is RestResource);
         }
 
         /// <summary>

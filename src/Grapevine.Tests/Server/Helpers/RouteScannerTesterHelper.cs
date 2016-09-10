@@ -2,9 +2,16 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Grapevine.Server;
+using Grapevine.Server.Attributes;
 
 namespace Grapevine.Tests.Server.Helpers
 {
+    [RestResource(Scope = "ScopeA")]
+    public class ClassInScopeA {  /* class body intentionally left blank */ }
+
+    [RestResource(Scope = "ScopeB")]
+    public class ClassInScopeB {  /* class body intentionally left blank */ }
+
     public static class RouteScannerExtensions
     {
         internal static List<string> ExcludedNamespaces(this IRouteScanner scanner)
@@ -105,11 +112,18 @@ namespace Grapevine.Tests.Server.Helpers
             return (bool)method.Invoke(scanner, new object[] { assembly });
         }
 
-        internal static string BasePathSanitizer(this IRouteScanner scanner, string basePath)
+        internal static string PathInfoGenerator(this IRouteScanner scanner, string pathinfo, string basepath)
+        {
+            var memberInfo = scanner.GetType();
+            var method = memberInfo?.GetMethod("GeneratePathInfo", BindingFlags.Static | BindingFlags.NonPublic);
+            return (string)method.Invoke(null, new object[] { pathinfo, basepath });
+        }
+
+        internal static string BasePathSanitizer(this IRouteScanner scanner, string basepath)
         {
             var memberInfo = scanner.GetType();
             var method = memberInfo?.GetMethod("SanitizeBasePath", BindingFlags.Static | BindingFlags.NonPublic);
-            return (string)method.Invoke(null, new object[] { basePath });
+            return (string)method.Invoke(null, new object[] { basepath });
         }
     }
 }

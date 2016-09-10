@@ -81,12 +81,14 @@
     <Compile Include="Client\RestClientTester.cs" />
     <Compile Include="Client\RestRequestTester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Server\Attributes\Helpers\RestResourceTesterHelper.cs" />
+    <Compile Include="Server\Attributes\RestResourceTester.cs" />
     <Compile Include="Server\Attributes\RestRouteTester.cs" />
     <Compile Include="Server\DynamicPropertiesTester.cs" />
     <Compile Include="Server\FluentRouteCreatorTester.cs" />
     <Compile Include="Server\Helpers\MockContext.cs" />
     <Compile Include="Server\Attributes\Helpers\RestRouteTesterHelper.cs" />
-    <Compile Include="Server\Helpers\RouterTester.cs" />
+    <Compile Include="Server\Helpers\RouterTesterHelper.cs" />
     <Compile Include="Server\Helpers\RouteScannerTesterHelper.cs" />
     <Compile Include="Server\Helpers\RouteTesterHelper.cs" />
     <Compile Include="Server\PublicFolderTester.cs" />
@@ -95,7 +97,6 @@
     <Compile Include="Server\RouteScannerTester.cs" />
     <Compile Include="Server\RouteTester.cs" />
     <Compile Include="Server\ServerOptionsTester.cs" />
-    <Compile Include="Server\Helpers\TestingHelpers.cs" />
     <Compile Include="Util\ContentTypeExtensionsTester.cs" />
     <Compile Include="Util\ContentTypeMetadataTester.cs" />
     <Compile Include="Util\ExportedExtensionsTester.cs" />

@@ -1,4 +1,5 @@
-﻿using Grapevine.Server;
+﻿using System.CodeDom;
+using Grapevine.Server;
 using Grapevine.Server.Attributes;
 using Grapevine.Util;
 
@@ -38,105 +39,109 @@ namespace Grapevine.Tests.Server.Attributes.Helpers
         }
     }
 
-    public abstract class TypicalAbstractClass
+    public class ImplicitConstructor
     {
-        public void TypicalNonAbstractMethod()
+        public int Value { get; set; }
+    }
+
+    public class ExplicitConstructor
+    {
+        public int Value { get; set; }
+
+        public ExplicitConstructor()
         {
-        }
-
-        public abstract void TypicalAbstractMethod();
-
-        public abstract class TypicalNestedAbstractClass
-        {
-            public void TypicalNonAbstractMethod()
-            {
-            }
-
-            public abstract void TypicalAbstractMethod();
+            Value = 30;
         }
     }
 
-    public class TypicalClass
+    public class MultipleConstructor
     {
-        public void TypicalMethod()
+        public int Value { get; set; }
+
+        public MultipleConstructor()
         {
+            Value = 12;
+        }
+
+        public MultipleConstructor(int i)
+        {
+            Value = i;
         }
     }
 
-    public interface TypicalInterface
+    public class NoParameterlessConstructor
     {
-        void TypicalInterfaceMethod();
+        public int Value { get; set; }
+
+        public NoParameterlessConstructor(int i)
+        {
+            Value = i;
+        }
+
+        public void TestMethod() { /* intentionally left blank */ }
     }
 
-    public class TypicalInterfaceConcretion : TypicalInterface
+    public interface TestInterface
     {
-        public void TypicalMethod()
-        {
-        }
-
-        public void TypicalInterfaceMethod()
-        {
-            throw new System.NotImplementedException();
-        }
+        void TestInterfaceMethod();
     }
 
-    public class TypicalAbstractConcretion : TypicalAbstractClass
+    public struct TestStruct
     {
-        public void TypicalMethod()
-        {
-        }
+        public int Id { get; set; }
 
-        public override void TypicalAbstractMethod()
-        {
-            throw new System.NotImplementedException();
-        }
+        public void TestStructMethod() { /* intentionally left blank */ }
     }
 
-    public class ContainsNestedAbstract
+    public abstract class TestAbstract
     {
-        public abstract class NestedAbstractClass
-        {
+        public abstract void TestAbstractMethod();
 
-        }
+        public virtual void TestVirtualMethod() { /* intentionally left blank */ }
     }
 
-    //public class OneValidRoute : AbstractRoutes
-    //{
-    //    public string Stuff { get; set; }
+    public class TestClass
+    {
+        public string TestProperty { get; set; }
 
-    //    public OneValidRoute()
-    //    {
-    //        Stuff = string.Empty;
-    //    }
+        public static void TestStaticMethod() { /* intentionally left blank */ }
 
-    //    [RestRoute]
-    //    private IHttpContext PrivateMethod(IHttpContext context)
-    //    {
-    //        return context;
-    //    }
+        public void TestMethod() { /* intentionally left blank */ }
 
-    //    [RestRoute]
-    //    protected IHttpContext ProtectedMethod(IHttpContext context)
-    //    {
-    //        return PrivateMethod(context);
-    //    }
+        public IHttpContext TakesZeroArgs()
+        {
+            return null;
+        }
 
-    //    [RestRoute]
-    //    internal IHttpContext InternalMethod(IHttpContext context)
-    //    {
-    //        return context;
-    //    }
+        [RestRoute]
+        public IHttpContext ValidRoute(IHttpContext context)
+        {
+            return context;
+        }
 
-    //    [RestRoute]
-    //    public IHttpContext TheValidRoute(IHttpContext context)
-    //    {
-    //        return context;
-    //    }
+        public IHttpContext TakesTwoArgs(IHttpContext context, int y)
+        {
+            return context;
+        }
 
-    //    [RestRoute]
-    //    public sealed override IHttpContext AbstractMethod(IHttpContext context)
-    //    {
-    //        return context;
-    //    }
-    //}
+        public IHttpContext TakesWrongArgs(int y)
+        {
+            return null;
+        }
+
+        public void HasNoReturnValue(IHttpContext context) { /* intentionally left blank */ }
+
+        public int ReturnValueIsWrongType(IHttpContext context)
+        {
+            return 1;
+        }
+
+        [RestRoute]
+        public void HasAttributeButIsNotEligible() { /* intentionally left blank */ }
+
+        public IHttpContext IsEligibleButNoAttribute(IHttpContext context)
+        {
+            return context;
+        }
+    }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using Grapevine.Server;
-using Grapevine.Util;
 using Grapevine.Util.Loggers;
 using Shouldly;
 using Xunit;
@@ -19,7 +18,7 @@ namespace Grapevine.Tests.Server
 
         //    options.Router.ShouldNotBeNull();
         //    options.Router.ShouldBeOfType<Router>();
-            
+
         //    options.PublicFolder.ShouldNotBeNull();
         //    options.PublicFolder.ShouldBeOfType<PublicFolder>();
 
@@ -44,8 +43,8 @@ namespace Grapevine.Tests.Server
         //{
         //    var options = new ServerSettings();
 
-        //    Action action1 = () => {  };
-        //    Action action2 = () => {  };
+        //    Action action1 = () => { };
+        //    Action action2 = () => { };
 
         //    options.OnStart = action1;
 
@@ -65,8 +64,8 @@ namespace Grapevine.Tests.Server
         //{
         //    var options = new ServerSettings();
 
-        //    Action action1 = () => {  };
-        //    Action action2 = () => {  };
+        //    Action action1 = () => { };
+        //    Action action2 = () => { };
 
         //    options.OnStop = action1;
 

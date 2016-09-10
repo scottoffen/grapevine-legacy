@@ -13,13 +13,6 @@ namespace Grapevine.Server
         protected const bool IsFilePath = true;
         private string _folderPath;
 
-        public PublicFolder()
-        {
-            var path = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
-            if (path != null) _folderPath = Path.Combine(path, DefaultFolder);
-            if (!FolderExists(_folderPath)) CreateFolder(_folderPath);
-        }
-
         /// <summary>
         /// Gets or sets the default file to return when a directory is requested
         /// </summary>
@@ -35,8 +28,21 @@ namespace Grapevine.Server
         /// </summary>
         public string FolderPath
         {
-            get { return _folderPath; }
-            set { _folderPath = FolderExists(value) ? value : CreateFolder(value); }
+            get
+            {
+                if (_folderPath != null) return _folderPath;
+
+                var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
+                var path = Path.GetDirectoryName(assembly.Location) ?? string.Empty;
+                _folderPath = Path.Combine(path, DefaultFolder);
+                if (!FolderExists(_folderPath)) _folderPath = CreateFolder(_folderPath);
+
+                return _folderPath;
+            }
+            set
+            {
+                _folderPath = FolderExists(value) ? value : CreateFolder(value);
+            }
         }
 
         /// <summary>
@@ -44,12 +50,10 @@ namespace Grapevine.Server
         /// </summary>
         public IHttpContext SendPublicFile(IHttpContext context)
         {
-            if ((context.Request.HttpMethod != HttpMethod.GET && context.Request.HttpMethod != HttpMethod.HEAD) || string.IsNullOrWhiteSpace(_folderPath)) return context;
+            if ((context.Request.HttpMethod != HttpMethod.GET && context.Request.HttpMethod != HttpMethod.HEAD) ||
+                string.IsNullOrWhiteSpace(_folderPath)) return context;
 
-            var path = string.IsNullOrWhiteSpace(Prefix) ? context.Request.PathInfo : context.Request.PathInfo.Replace(Prefix, "");
-            path = path.TrimStart('/', '\\');
-
-            var filepath = GetFilePath(path);
+            var filepath = GetFilePath(context.Request.PathInfo);
             if (filepath != null) context.Response.SendResponse(filepath, IsFilePath);
 
             return context;
@@ -78,8 +82,10 @@ namespace Grapevine.Server
         /// </summary>
         private string GetFilePath(string pathinfo)
         {
-            if (string.IsNullOrWhiteSpace(_folderPath)) return null;
-            var path = pathinfo.Replace("/", Path.DirectorySeparatorChar.ToString());
+            if (string.IsNullOrWhiteSpace(_folderPath) || pathinfo == null) return null;
+
+            var path = string.IsNullOrWhiteSpace(Prefix) ? pathinfo : pathinfo.Replace(Prefix, "");
+            path = path.TrimStart('/', '\\').Replace("/", Path.DirectorySeparatorChar.ToString());
             path = Path.Combine(_folderPath, path);
 
             if (File.Exists(path)) return path;

@@ -50,7 +50,12 @@ namespace Grapevine.Server.Attributes
         /// </summary>
         internal static bool IsRestRoute(this MethodInfo method, bool throwExceptionWhenFalse = false)
         {
-            return method.GetCustomAttributes(true).Any(a => a is RestRoute) && method.IsRestRouteEligible(throwExceptionWhenFalse);
+            if (method.GetCustomAttributes(true).Any(a => a is RestRoute))
+                return method.IsRestRouteEligible(throwExceptionWhenFalse);
+            if (!throwExceptionWhenFalse) return false;
+
+            var exception = new InvalidRouteMethodException($"{method.Name} does not have the RestRoute attribute");
+            throw new InvalidRouteMethodExceptions(new Exception[] {exception});
         }
 
         /// <summary>
@@ -61,13 +66,15 @@ namespace Grapevine.Server.Attributes
         /// <returns></returns>
         internal static bool IsRestRouteEligible(this MethodInfo method, bool throwExceptionWhenFalse = false)
         {
-
             if (method == null) throw new ArgumentNullException(nameof(method));
 
             var exceptions = new List<Exception>();
 
             // Can the method be invoked?
             if (!method.CanInvoke()) exceptions.Add(new InvalidRouteMethodException($"{method.Name} cannot be invoked"));
+
+            // Does the type have a parameterless constructor?
+            if (method.ReflectedType != null && !method.ReflectedType.HasParameterlessConstructor()) exceptions.Add(new InvalidRouteMethodException($"{method.Name} does not have a parameterless constructor"));
 
             // Can not have a special name (getters and setters)
             if (method.IsSpecialName) exceptions.Add(new InvalidRouteMethodException($"{method.Name} may be treated in a special way by some compilers (such as property accessors and operator overloading methods)"));
@@ -98,8 +105,44 @@ namespace Grapevine.Server.Attributes
         /// <returns></returns>
         internal static bool CanInvoke(this MethodInfo method)
         {
-            // static methods can always be invoked
-            return !method.IsAbstract && (method.ReflectedType == null || !method.ReflectedType.IsAbstract);
+            /*
+             * The first set of checks are on the method itself:
+             * - Static methods can always be invoked
+             * - Abstract methods can never be invoked
+             */
+            if (method.IsStatic) return true;
+            if (method.IsAbstract) return false;
+
+            /*
+             * The second set of checks are on the type the method
+             * comes from. This uses the ReflectedType property,
+             * which will be the same property used by the Route
+             * class to invoke the method later on.
+             * - ReflectedType can not be null
+             * - ReflectedType can not be abstract
+             * - ReflectedType must be a class (vs an interface or struct, etc.)
+             */
+            var type = method.ReflectedType;
+            if (type == null) return false;
+            if (!type.IsClass) return false;
+            if (type.IsAbstract) return false;
+
+            /*
+             * If these checks have all passed, then we can be fairly certain
+             * that the method can be invoked later on during routing.
+             */
+
+            return (true);
+        }
+
+        /// <summary>
+        /// Returns a value indicating whether the type has a constructor that takes no parameters
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        internal static bool HasParameterlessConstructor(this Type type)
+        {
+            return (type.GetConstructor(Type.EmptyTypes) != null);
         }
     }
 }

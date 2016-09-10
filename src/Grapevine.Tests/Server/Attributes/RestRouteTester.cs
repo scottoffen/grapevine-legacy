@@ -1,8 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Reflection;
 using Grapevine.Server.Attributes;
+using Grapevine.Server.Exceptions;
 using Grapevine.Tests.Server.Attributes.Helpers;
 using Grapevine.Util;
+using Rhino.Mocks;
 using Shouldly;
 using Xunit;
 
@@ -10,6 +13,22 @@ namespace Grapevine.Tests.Server.Attributes
 {
     public class RestRouteTester
     {
+        public RestRouteTester()
+        {
+            Castle.DynamicProxy.Generators.AttributesToAvoidReplicating.Add(
+                typeof(System.Security.Permissions.ReflectionPermissionAttribute));
+            Castle.DynamicProxy.Generators.AttributesToAvoidReplicating.Add(
+                typeof(System.Security.Permissions.PermissionSetAttribute));
+        }
+
+        [Fact]
+        public void rest_route_returns_empty_list_when_attribute_not_present()
+        {
+            var attributes = typeof(TestClass).GetMethod("IsEligibleButNoAttribute").GetRouteAttributes();
+            attributes.ShouldNotBeNull();
+            attributes.Count().ShouldBe(0);
+        }
+
         [Fact]
         public void rest_route_no_args_gets_default_properties()
         {
@@ -33,7 +52,7 @@ namespace Grapevine.Tests.Server.Attributes
         }
 
         [Fact]
-        public void rest_route_pathinfo_parameter_only()
+        public void rest_route_pathinfo_arg_only()
         {
             var method = typeof(RestRouteTesterHelper).GetMethod("RouteHasPathInfoOnly");
             var attrs = method.GetRouteAttributes().ToList();
@@ -44,7 +63,7 @@ namespace Grapevine.Tests.Server.Attributes
         }
 
         [Fact]
-        public void rest_route_both_parameters()
+        public void rest_route_both_args()
         {
             var method = typeof(RestRouteTesterHelper).GetMethod("RouteHasBothArgs");
             var attrs = method.GetRouteAttributes().ToList();
@@ -68,188 +87,138 @@ namespace Grapevine.Tests.Server.Attributes
         }
 
         [Fact]
-        public void reflected_and_declaring_types_for_methods_on_interface()
+        public void has_parameterless_constructor_returns_correct_value()
         {
-            /* Interface Reflected and Declaring Types */
-            typeof(TypicalInterface).GetMethod("TypicalInterfaceMethod").ReflectedType.ShouldNotBeNull();
-            typeof(TypicalInterface).GetMethod("TypicalInterfaceMethod").ReflectedType.ShouldBe(typeof(TypicalInterface));
-            typeof(TypicalInterface).GetMethod("TypicalInterfaceMethod").ReflectedType.IsInterface.ShouldBeTrue();
-            typeof(TypicalInterface).GetMethod("TypicalInterfaceMethod").ReflectedType.IsClass.ShouldBeFalse();
-
-            typeof(TypicalInterface).GetMethod("TypicalInterfaceMethod").DeclaringType.ShouldNotBeNull();
-            typeof(TypicalInterface).GetMethod("TypicalInterfaceMethod").DeclaringType.ShouldBe(typeof(TypicalInterface));
-            typeof(TypicalInterface).GetMethod("TypicalInterfaceMethod").DeclaringType.IsInterface.ShouldBeTrue();
-            typeof(TypicalInterface).GetMethod("TypicalInterfaceMethod").DeclaringType.IsClass.ShouldBeFalse();
+            typeof(ImplicitConstructor).HasParameterlessConstructor().ShouldBeTrue();
+            typeof(ExplicitConstructor).HasParameterlessConstructor().ShouldBeTrue();
+            typeof(MultipleConstructor).HasParameterlessConstructor().ShouldBeTrue();
+            typeof(NoParameterlessConstructor).HasParameterlessConstructor().ShouldBeFalse();
         }
 
         [Fact]
-        public void reflected_and_declaring_types_for_methods_on_abstract_class()
+        public void can_invoke_returns_true_for_static_methods()
         {
-            /* Abstract Method in Abstract Class Reflected and Declaring Types */
-            typeof(TypicalAbstractClass).GetMethod("TypicalAbstractMethod").ReflectedType.ShouldNotBeNull();
-            typeof(TypicalAbstractClass).GetMethod("TypicalAbstractMethod").ReflectedType.ShouldBe(typeof(TypicalAbstractClass));
-            typeof(TypicalAbstractClass).GetMethod("TypicalAbstractMethod").ReflectedType.IsAbstract.ShouldBeTrue();
-            typeof(TypicalAbstractClass).GetMethod("TypicalAbstractMethod").ReflectedType.IsClass.ShouldBeTrue();
-
-            typeof(TypicalAbstractClass).GetMethod("TypicalAbstractMethod").DeclaringType.ShouldNotBeNull();
-            typeof(TypicalAbstractClass).GetMethod("TypicalAbstractMethod").DeclaringType.ShouldBe(typeof(TypicalAbstractClass));
-            typeof(TypicalAbstractClass).GetMethod("TypicalAbstractMethod").DeclaringType.IsAbstract.ShouldBeTrue();
-            typeof(TypicalAbstractClass).GetMethod("TypicalAbstractMethod").DeclaringType.IsClass.ShouldBeTrue();
-
-            /* Non-Abstract Method in Abstract Class Reflected and Declaring Types */
-            typeof(TypicalAbstractClass).GetMethod("TypicalNonAbstractMethod").ReflectedType.ShouldNotBeNull();
-            typeof(TypicalAbstractClass).GetMethod("TypicalNonAbstractMethod").ReflectedType.ShouldBe(typeof(TypicalAbstractClass));
-            typeof(TypicalAbstractClass).GetMethod("TypicalNonAbstractMethod").ReflectedType.IsAbstract.ShouldBeTrue();
-            typeof(TypicalAbstractClass).GetMethod("TypicalNonAbstractMethod").ReflectedType.IsClass.ShouldBeTrue();
-
-            typeof(TypicalAbstractClass).GetMethod("TypicalNonAbstractMethod").DeclaringType.ShouldNotBeNull();
-            typeof(TypicalAbstractClass).GetMethod("TypicalNonAbstractMethod").DeclaringType.ShouldBe(typeof(TypicalAbstractClass));
-            typeof(TypicalAbstractClass).GetMethod("TypicalNonAbstractMethod").DeclaringType.IsAbstract.ShouldBeTrue();
-            typeof(TypicalAbstractClass).GetMethod("TypicalNonAbstractMethod").DeclaringType.IsClass.ShouldBeTrue();
+            typeof(TestClass).GetMethod("TestStaticMethod").CanInvoke().ShouldBeTrue();
         }
 
         [Fact]
-        public void reflected_and_declaring_types_for_methods_on_nested_abstract_class()
+        public void can_invoke_returns_false_when_method_is_abstract()
         {
-            /* Abstract Method in Abstract Class Reflected and Declaring Types */
-            typeof(TypicalAbstractClass.TypicalNestedAbstractClass).GetMethod("TypicalAbstractMethod").ReflectedType.ShouldNotBeNull();
-            typeof(TypicalAbstractClass.TypicalNestedAbstractClass).GetMethod("TypicalAbstractMethod").ReflectedType.ShouldBe(typeof(TypicalAbstractClass.TypicalNestedAbstractClass));
-            typeof(TypicalAbstractClass.TypicalNestedAbstractClass).GetMethod("TypicalAbstractMethod").ReflectedType.IsAbstract.ShouldBeTrue();
-            typeof(TypicalAbstractClass.TypicalNestedAbstractClass).GetMethod("TypicalAbstractMethod").ReflectedType.IsClass.ShouldBeTrue();
-
-            typeof(TypicalAbstractClass.TypicalNestedAbstractClass).GetMethod("TypicalAbstractMethod").DeclaringType.ShouldNotBeNull();
-            typeof(TypicalAbstractClass.TypicalNestedAbstractClass).GetMethod("TypicalAbstractMethod").DeclaringType.ShouldBe(typeof(TypicalAbstractClass.TypicalNestedAbstractClass));
-            typeof(TypicalAbstractClass.TypicalNestedAbstractClass).GetMethod("TypicalAbstractMethod").DeclaringType.IsAbstract.ShouldBeTrue();
-            typeof(TypicalAbstractClass.TypicalNestedAbstractClass).GetMethod("TypicalAbstractMethod").DeclaringType.IsClass.ShouldBeTrue();
-
-            /* Non-Abstract Method in Abstract Class Reflected and Declaring Types */
-            typeof(TypicalAbstractClass.TypicalNestedAbstractClass).GetMethod("TypicalNonAbstractMethod").ReflectedType.ShouldNotBeNull();
-            typeof(TypicalAbstractClass.TypicalNestedAbstractClass).GetMethod("TypicalNonAbstractMethod").ReflectedType.ShouldBe(typeof(TypicalAbstractClass.TypicalNestedAbstractClass));
-            typeof(TypicalAbstractClass.TypicalNestedAbstractClass).GetMethod("TypicalNonAbstractMethod").ReflectedType.IsAbstract.ShouldBeTrue();
-            typeof(TypicalAbstractClass.TypicalNestedAbstractClass).GetMethod("TypicalNonAbstractMethod").ReflectedType.IsClass.ShouldBeTrue();
-
-            typeof(TypicalAbstractClass.TypicalNestedAbstractClass).GetMethod("TypicalNonAbstractMethod").DeclaringType.ShouldNotBeNull();
-            typeof(TypicalAbstractClass.TypicalNestedAbstractClass).GetMethod("TypicalNonAbstractMethod").DeclaringType.ShouldBe(typeof(TypicalAbstractClass.TypicalNestedAbstractClass));
-            typeof(TypicalAbstractClass.TypicalNestedAbstractClass).GetMethod("TypicalNonAbstractMethod").DeclaringType.IsAbstract.ShouldBeTrue();
-            typeof(TypicalAbstractClass.TypicalNestedAbstractClass).GetMethod("TypicalNonAbstractMethod").DeclaringType.IsClass.ShouldBeTrue();
+            typeof(TestAbstract).GetMethod("TestAbstractMethod").CanInvoke().ShouldBeFalse();
         }
 
         [Fact]
-        public void reflected_and_declaring_types_for_methods_on_abstract_concretion_class()
+        public void can_invoke_returns_false_when_reflectedtype_is_null()
         {
-            /* Abstract Method in Abstract Class Reflected and Declaring Types */
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalMethod").ReflectedType.ShouldNotBeNull();
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalMethod").ReflectedType.ShouldBe(typeof(TypicalAbstractConcretion));
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalMethod").ReflectedType.IsAbstract.ShouldBeFalse();
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalMethod").ReflectedType.IsClass.ShouldBeTrue();
+            var method = MockRepository.Mock<MethodInfo>();
+            method.Stub(m => m.ReflectedType).Return(null);
 
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalMethod").DeclaringType.ShouldNotBeNull();
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalMethod").DeclaringType.ShouldBe(typeof(TypicalAbstractConcretion));
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalMethod").DeclaringType.IsAbstract.ShouldBeFalse();
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalMethod").DeclaringType.IsClass.ShouldBeTrue();
-
-            /* Abstract Method in Abstract Class Reflected and Declaring Types */
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalAbstractMethod").ReflectedType.ShouldNotBeNull();
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalAbstractMethod").ReflectedType.ShouldBe(typeof(TypicalAbstractConcretion));
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalAbstractMethod").ReflectedType.IsAbstract.ShouldBeFalse();
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalAbstractMethod").ReflectedType.IsClass.ShouldBeTrue();
-
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalAbstractMethod").DeclaringType.ShouldNotBeNull();
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalAbstractMethod").DeclaringType.ShouldBe(typeof(TypicalAbstractConcretion));
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalAbstractMethod").DeclaringType.IsAbstract.ShouldBeFalse();
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalAbstractMethod").DeclaringType.IsClass.ShouldBeTrue();
-
-            /* Non-Abstract Method in Abstract Class Reflected and Declaring Types */
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalNonAbstractMethod").ReflectedType.ShouldNotBeNull();
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalNonAbstractMethod").ReflectedType.ShouldBe(typeof(TypicalAbstractConcretion));
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalNonAbstractMethod").ReflectedType.IsAbstract.ShouldBeFalse();
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalNonAbstractMethod").ReflectedType.IsClass.ShouldBeTrue();
-
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalNonAbstractMethod").DeclaringType.ShouldNotBeNull();
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalNonAbstractMethod").DeclaringType.ShouldBe(typeof(TypicalAbstractClass));
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalNonAbstractMethod").DeclaringType.IsAbstract.ShouldBeTrue();
-            typeof(TypicalAbstractConcretion).GetMethod("TypicalNonAbstractMethod").DeclaringType.IsClass.ShouldBeTrue();
+            method.IsStatic.ShouldBeFalse();
+            method.IsAbstract.ShouldBeFalse();
+            method.CanInvoke().ShouldBeFalse();
         }
 
         [Fact]
-        public void reflected_and_declaring_types_for_methods_on_class()
+        public void can_invoke_returns_false_when_reflected_type_is_not_a_class()
         {
-            /* Method in Class Reflected and Declaring Types */
-            typeof(TypicalClass).GetMethod("TypicalMethod").ReflectedType.ShouldNotBeNull();
-            typeof(TypicalClass).GetMethod("TypicalMethod").ReflectedType.ShouldBe(typeof(TypicalClass));
-            typeof(TypicalClass).GetMethod("TypicalMethod").ReflectedType.IsInterface.ShouldBeFalse();
-            typeof(TypicalClass).GetMethod("TypicalMethod").ReflectedType.IsAbstract.ShouldBeFalse();
-            typeof(TypicalClass).GetMethod("TypicalMethod").ReflectedType.IsClass.ShouldBeTrue();
-
-            typeof(TypicalClass).GetMethod("TypicalMethod").DeclaringType.ShouldNotBeNull();
-            typeof(TypicalClass).GetMethod("TypicalMethod").DeclaringType.ShouldBe(typeof(TypicalClass));
-            typeof(TypicalClass).GetMethod("TypicalMethod").DeclaringType.IsInterface.ShouldBeFalse();
-            typeof(TypicalClass).GetMethod("TypicalMethod").DeclaringType.IsAbstract.ShouldBeFalse();
-            typeof(TypicalClass).GetMethod("TypicalMethod").DeclaringType.IsClass.ShouldBeTrue();
+            typeof(TestInterface).GetMethod("TestInterfaceMethod").CanInvoke().ShouldBeFalse();
+            typeof(TestStruct).GetMethod("TestStructMethod").CanInvoke().ShouldBeFalse();
         }
 
         [Fact]
-        public void reflected_and_declaring_types_for_methods_on_class_implementing_interface()
+        public void can_invoke_returns_false_when_reflected_type_is_abstract()
         {
-            /* Method in Class Reflected and Declaring Types */
-            typeof(TypicalInterfaceConcretion).GetMethod("TypicalMethod").ReflectedType.ShouldNotBeNull();
-            typeof(TypicalInterfaceConcretion).GetMethod("TypicalMethod").ReflectedType.ShouldBe(typeof(TypicalInterfaceConcretion));
-            typeof(TypicalInterfaceConcretion).GetMethod("TypicalMethod").ReflectedType.IsInterface.ShouldBeFalse();
-            typeof(TypicalInterfaceConcretion).GetMethod("TypicalMethod").ReflectedType.IsAbstract.ShouldBeFalse();
-            typeof(TypicalInterfaceConcretion).GetMethod("TypicalMethod").ReflectedType.IsClass.ShouldBeTrue();
-
-            typeof(TypicalInterfaceConcretion).GetMethod("TypicalMethod").DeclaringType.ShouldNotBeNull();
-            typeof(TypicalInterfaceConcretion).GetMethod("TypicalMethod").DeclaringType.ShouldBe(typeof(TypicalInterfaceConcretion));
-            typeof(TypicalInterfaceConcretion).GetMethod("TypicalMethod").DeclaringType.IsInterface.ShouldBeFalse();
-            typeof(TypicalInterfaceConcretion).GetMethod("TypicalMethod").DeclaringType.IsAbstract.ShouldBeFalse();
-            typeof(TypicalInterfaceConcretion).GetMethod("TypicalMethod").DeclaringType.IsClass.ShouldBeTrue();
-
-            /* Method in Class Reflected and Declaring Types */
-            typeof(TypicalInterfaceConcretion).GetMethod("TypicalInterfaceMethod").ReflectedType.ShouldNotBeNull();
-            typeof(TypicalInterfaceConcretion).GetMethod("TypicalInterfaceMethod").ReflectedType.ShouldBe(typeof(TypicalInterfaceConcretion));
-            typeof(TypicalInterfaceConcretion).GetMethod("TypicalInterfaceMethod").ReflectedType.IsInterface.ShouldBeFalse();
-            typeof(TypicalInterfaceConcretion).GetMethod("TypicalInterfaceMethod").ReflectedType.IsAbstract.ShouldBeFalse();
-            typeof(TypicalInterfaceConcretion).GetMethod("TypicalInterfaceMethod").ReflectedType.IsClass.ShouldBeTrue();
-
-            typeof(TypicalInterfaceConcretion).GetMethod("TypicalInterfaceMethod").DeclaringType.ShouldNotBeNull();
-            typeof(TypicalInterfaceConcretion).GetMethod("TypicalInterfaceMethod").DeclaringType.ShouldBe(typeof(TypicalInterfaceConcretion));
-            typeof(TypicalInterfaceConcretion).GetMethod("TypicalInterfaceMethod").DeclaringType.IsInterface.ShouldBeFalse();
-            typeof(TypicalInterfaceConcretion).GetMethod("TypicalInterfaceMethod").DeclaringType.IsAbstract.ShouldBeFalse();
-            typeof(TypicalInterfaceConcretion).GetMethod("TypicalInterfaceMethod").DeclaringType.IsClass.ShouldBeTrue();
+            typeof(TestAbstract).GetMethod("TestVirtualMethod").CanInvoke().ShouldBeFalse();
         }
-
 
         [Fact]
-        public void can_invoke_returns_false_when_class_is_abstract()
+        public void can_invoke_returns_true_on_invokable_method()
         {
-            //typeof(AbstractRoutes).ReflectedType.ShouldBeNull();
-            //typeof(AbstractRoutes).GetMethod("NonAbstractMethod").CanInvoke().ShouldBeFalse();
+            typeof(TestClass).GetMethod("TestMethod").CanInvoke().ShouldBeTrue();
         }
 
-        //[Fact]
-        //public void rest_route_ignores_abstract_methods()
-        //{
-        //    typeof(AbstractRoutes).GetMethod("AbstractMethod").IsRestRoute().ShouldBeFalse();
-        //}
+        [Fact]
+        public void is_rr_eligible_returns_false_when_methodinfo_is_null()
+        {
+            MethodInfo method = null;
+            Action<MethodInfo> action = info => info.IsRestRouteEligible();
+            Should.Throw<ArgumentNullException>(() => action(method));
+        }
 
-        //[Fact]
-        //public void rest_route_ignores_methods_with_special_names()
-        //{
-        //    typeof(OneValidRoute).GetMethod("get_Stuff").IsRestRoute().ShouldBeFalse();
-        //    typeof(OneValidRoute).GetMethod("set_Stuff").IsRestRoute().ShouldBeFalse();
-        //}
+        [Fact]
+        public void is_rr_eligible_returns_false_when_methodinfo_is_not_invokable()
+        {
+            typeof(TestAbstract).GetMethod("TestAbstractMethod").IsRestRouteEligible().ShouldBeFalse();
+        }
 
-        //[Fact]
-        //public void rest_route_ignores_non_final_methods()
-        //{
-        //    typeof(AbstractRoutes).GetMethod("InheritedMethod").IsRestRoute().ShouldBeFalse();
-        //    //typeof(OneValidRoute).GetMethod("InheritedMethod").IsRestRoute().ShouldBeTrue();
-        //}
+        [Fact]
+        public void is_rr_eligible_returns_false_when_method_reflectedtype_has_no_parameterless_constructor()
+        {
+            typeof(NoParameterlessConstructor).GetMethod("TestMethod").IsRestRouteEligible().ShouldBeFalse();
+        }
 
-        //[Fact]
-        //public void rest_route_is_rest_route_returns_true_on_valid_route()
-        //{
-        //    typeof(OneValidRoute).GetMethod("TheValidRoute").IsRestRoute().ShouldBeTrue();
-        //}
+        [Fact]
+        public void is_rr_eligible_returns_false_when_method_is_special_name()
+        {
+            typeof(TestClass).GetMethod("get_TestProperty").IsRestRouteEligible().ShouldBeFalse();
+        }
+
+        [Fact]
+        public void is_rr_eligible_returns_false_when_return_type_is_not_ihttpcontext()
+        {
+            typeof(TestClass).GetMethod("HasNoReturnValue").IsRestRouteEligible().ShouldBeFalse();
+            typeof(TestClass).GetMethod("ReturnValueIsWrongType").IsRestRouteEligible().ShouldBeFalse();
+        }
+
+        [Fact]
+        public void is_rr_eligible_returns_false_when_method_accepts_more_or_less_than_one_argument()
+        {
+            typeof(TestClass).GetMethod("TakesZeroArgs").IsRestRouteEligible().ShouldBeFalse();
+            typeof(TestClass).GetMethod("TakesTwoArgs").IsRestRouteEligible().ShouldBeFalse();
+        }
+
+        [Fact]
+        public void is_rr_eligible_returns_false_when_first_argument_is_not_ihttpcontext()
+        {
+            typeof(TestClass).GetMethod("TakesWrongArgs").IsRestRouteEligible().ShouldBeFalse();
+        }
+
+        [Fact]
+        public void is_rr_eligible_throws_aggregate_exception_when_method_is_not_eligible_and_throw_exceptions_is_true()
+        {
+            Should.Throw<InvalidRouteMethodExceptions>(
+                () => typeof(TestClass).GetMethod("TakesWrongArgs").IsRestRouteEligible(true));
+        }
+
+        [Fact]
+        public void is_rr_eligible_returns_true_when_method_is_eligible()
+        {
+            typeof(TestClass).GetMethod("ValidRoute").IsRestRouteEligible().ShouldBeTrue();
+        }
+
+        [Fact]
+        public void is_rest_route_returns_false_when_method_is_not_eligible()
+        {
+            typeof(TestClass).GetMethod("HasAttributeButIsNotEligible").IsRestRoute().ShouldBeFalse();
+        }
+
+        [Fact]
+        public void is_rest_route_returns_false_when_restroute_attribute_is_not_present()
+        {
+            typeof(TestClass).GetMethod("IsEligibleButNoAttribute").IsRestRoute().ShouldBeFalse();
+        }
+
+        [Fact]
+        public void is_rest_route_throws_exception_when_false_and_throw_exceptions_is_true()
+        {
+            Should.Throw<InvalidRouteMethodExceptions>(() => typeof(TestClass).GetMethod("HasAttributeButIsNotEligible").IsRestRoute(true));
+            Should.Throw<InvalidRouteMethodExceptions>(() => typeof(TestClass).GetMethod("IsEligibleButNoAttribute").IsRestRoute(true));
+        }
+
+        [Fact]
+        public void is_rest_route_returns_true_when_attribute_is_present_and_method_is_eligible()
+        {
+
+        }
     }
 }
