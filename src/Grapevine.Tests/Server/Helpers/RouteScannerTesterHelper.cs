@@ -3,9 +3,55 @@ using System.Collections.Generic;
 using System.Reflection;
 using Grapevine.Server;
 using Grapevine.Server.Attributes;
+using Grapevine.Util;
 
 namespace Grapevine.Tests.Server.Helpers
 {
+    public class MethodsToScan
+    {
+        [RestRoute]
+        public void InvalidRoute() { /* method intentionally left blank */ }
+
+        public IHttpContext HasNoAttributes(IHttpContext context) { return context; }
+
+        [RestRoute(HttpMethod = HttpMethod.GET, PathInfo = "/stuff")]
+        public IHttpContext HasOneAttribute(IHttpContext context) { return context; }
+
+        [RestRoute(HttpMethod = HttpMethod.DELETE, PathInfo = "/more/stuff")]
+        [RestRoute(HttpMethod = HttpMethod.POST, PathInfo = "/stuff/[id]")]
+        public IHttpContext HasMultipleAttributes(IHttpContext context) { return context; }
+    }
+
+    [RestResource]
+    public class TypeWithoutBasePath
+    {
+        [RestRoute(HttpMethod = HttpMethod.GET, PathInfo = "/stuff")]
+        public IHttpContext HasOneAttribute(IHttpContext context) { return context; }
+
+    }
+
+    [RestResource(BasePath = "/with")]
+    public class TypeWithBasePath
+    {
+        [RestRoute(HttpMethod = HttpMethod.GET, PathInfo = "/stuff")]
+        public IHttpContext HasOneAttribute(IHttpContext context) { return context; }
+
+    }
+
+    public abstract class AbstractToScan
+    {
+        [RestRoute(HttpMethod = HttpMethod.GET, PathInfo = "/stuff")]
+        public IHttpContext HasOneAttribute(IHttpContext context) { return context; }
+    }
+
+    public interface InterfaceToScan
+    {
+        [RestRoute(HttpMethod = HttpMethod.GET, PathInfo = "/stuff")]
+        IHttpContext HasOneAttribute(IHttpContext context);
+    }
+
+    public class EmptyClassToScan {  /* class body intentionally left blank */ }
+
     [RestResource(Scope = "ScopeA")]
     public class ClassInScopeA {  /* class body intentionally left blank */ }
 
@@ -117,6 +163,13 @@ namespace Grapevine.Tests.Server.Helpers
             var memberInfo = scanner.GetType();
             var method = memberInfo?.GetMethod("GeneratePathInfo", BindingFlags.Static | BindingFlags.NonPublic);
             return (string)method.Invoke(null, new object[] { pathinfo, basepath });
+        }
+
+        internal static string BasePathGenerator(this IRouteScanner scanner, string basepath, Type type)
+        {
+            var memberInfo = scanner.GetType();
+            var method = memberInfo?.GetMethod("GenerateBasePath", BindingFlags.Static | BindingFlags.NonPublic);
+            return (string)method.Invoke(null, new object[] { basepath, type });
         }
 
         internal static string BasePathSanitizer(this IRouteScanner scanner, string basepath)

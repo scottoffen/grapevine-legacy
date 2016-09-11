@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grapevine.Local", "Grapevin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grapevine.Tests", "Grapevine.Tests\Grapevine.Tests.csproj", "{286B5DFD-1AE6-4478-9650-5DE4C348B0F2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grapevine.Tests.Assembly", "Grapevine.Tests.Assembly\Grapevine.Tests.Assembly.csproj", "{57CCC133-CF53-4D0C-9452-C661E86A5216}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{286B5DFD-1AE6-4478-9650-5DE4C348B0F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{286B5DFD-1AE6-4478-9650-5DE4C348B0F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{286B5DFD-1AE6-4478-9650-5DE4C348B0F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57CCC133-CF53-4D0C-9452-C661E86A5216}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57CCC133-CF53-4D0C-9452-C661E86A5216}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57CCC133-CF53-4D0C-9452-C661E86A5216}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57CCC133-CF53-4D0C-9452-C661E86A5216}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

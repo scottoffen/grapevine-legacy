@@ -149,10 +149,10 @@ namespace Grapevine.Server
         IRouter Register<T>();
 
         /// <summary>
-        /// Adds all RestRoutes found in all RestResources in the current assembly to the routing table
+        /// Adds all RestRoutes found in all RestResources in the specified assembly to the routing table
         /// </summary>
         /// <returns>IRouter</returns>
-        IRouter RegisterAssembly();
+        IRouter Register(Assembly assembly);
 
         /// <summary>
         /// Routes the IHttpContext through all enabled registered routes that match the IHttpConext provided; returns true if at least one route is invoked
@@ -288,9 +288,9 @@ namespace Grapevine.Server
             return Register(typeof(T));
         }
 
-        public IRouter RegisterAssembly()
+        public IRouter Register(Assembly assembly)
         {
-            AddToRoutingTable(Scanner.Scan());
+            AddToRoutingTable(Scanner.ScanAssembly(assembly));
             return this;
         }
 
@@ -377,24 +377,5 @@ namespace Grapevine.Server
         {
             routes.ToList().ForEach(AddToRoutingTable);
         }
-    }
-
-    /// <summary>
-    /// Represents the type of assembly to import from
-    /// </summary>
-    public enum AssemblyType
-    {
-        // Difference between .Get*Assembly methods
-        // http://knitinr.blogspot.com/2008/07/systemreflection-get-this-assembly.html
-
-        /// <summary>
-        /// Assembly.GetCallingAssembly
-        /// </summary>
-        Calling,
-
-        /// <summary>
-        /// Assembly.GetEntryAssembly
-        /// </summary>
-        Entry
     }
 }

@@ -46,6 +46,8 @@ namespace Grapevine.Tests.Server.Helpers
 
             request.Stub(r => r.PathInfo).Return(properties.PathInfo);
             request.Stub(r => r.HttpMethod).Return(properties.HttpMethod);
+            request.Stub(r => r.Name).Return(properties.Name);
+            request.Stub(r => r.Id).Return(properties.Id);
 
             return request;
         }
@@ -61,11 +63,15 @@ namespace Grapevine.Tests.Server.Helpers
     {
         public string PathInfo { get; set; }
         public HttpMethod HttpMethod { get; set; }
+        public string Id { get; set; }
+        public string Name { get; set; }
 
         public MockProperties()
         {
             PathInfo = "/";
             HttpMethod = HttpMethod.GET;
+            Id = "1234";
+            Name = "mocked";
         }
     }
 }

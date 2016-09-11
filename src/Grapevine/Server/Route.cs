@@ -118,7 +118,7 @@ namespace Grapevine.Server
         public Route(MethodInfo methodInfo, HttpMethod httpMethod, string pathInfo) : this(httpMethod, pathInfo)
         {
             Function = ConvertMethodToFunc(methodInfo);
-            if (methodInfo.ReflectedType != null) Name = $"{methodInfo.ReflectedType.FullName}.{methodInfo.Name}";
+            Name = $"{methodInfo.ReflectedType.FullName}.{methodInfo.Name}";
             Description = $"{HttpMethod} {PathInfo} > {Name}";
         }
 

@@ -168,7 +168,7 @@ namespace Grapevine.Server
 
             try
             {
-                if (Router.RoutingTable.Count == 0) Router.RegisterAssembly();
+                if (Router.RoutingTable.Count == 0) Router.Scanner.Scan();
 
                 OnBeforeStart?.Invoke();
 

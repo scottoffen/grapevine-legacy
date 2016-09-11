@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Grapevine.Util.Loggers
 {
@@ -20,6 +21,8 @@ namespace Grapevine.Util.Loggers
         /// Contains all the messages that have been logged
         /// </summary>
         public List<LogEvent> Logs { get; }
+
+        public List<string> LogMessages { get { return Logs.Select(l => l.Message).ToList(); } }
 
         public InMemoryLogger() : this(LogLevel.Trace){}
 

@@ -88,6 +88,7 @@
     <Compile Include="Server\FluentRouteCreatorTester.cs" />
     <Compile Include="Server\Helpers\MockContext.cs" />
     <Compile Include="Server\Attributes\Helpers\RestRouteTesterHelper.cs" />
+    <Compile Include="Server\Helpers\PublicFolderTesterHelper.cs" />
     <Compile Include="Server\Helpers\RouterTesterHelper.cs" />
     <Compile Include="Server\Helpers\RouteScannerTesterHelper.cs" />
     <Compile Include="Server\Helpers\RouteTesterHelper.cs" />
@@ -115,6 +116,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Grapevine.Tests.Assembly\Grapevine.Tests.Assembly.csproj">
+      <Project>{57CCC133-CF53-4D0C-9452-C661E86A5216}</Project>
+      <Name>Grapevine.Tests.Assembly</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Grapevine\Grapevine.csproj">
       <Project>{C79E6853-F7A0-426F-883C-169651123256}</Project>
       <Name>Grapevine</Name>

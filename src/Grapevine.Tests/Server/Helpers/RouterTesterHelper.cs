@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Grapevine.Server;
+using Grapevine.Server.Attributes;
+using Grapevine.TestAssembly;
 
 namespace Grapevine.Tests.Server.Helpers
 {
@@ -16,6 +19,20 @@ namespace Grapevine.Tests.Server.Helpers
         /* This is not an IRouter */
     }
 
+    public class MethodsToRegister
+    {
+        [RestRoute]
+        public IHttpContext Method(IHttpContext context) { return context; }
+    }
+
+    public class RouterToImport : Router
+    {
+        public RouterToImport()
+        {
+            AddToRoutingTable(Scanner.ScanAssembly(typeof(DefaultRouter).Assembly));
+        }
+    }
+
     public static class RouterExtensions
     {
         internal static IList<IRoute> GetRoutingTable(this Router router)
@@ -28,7 +45,8 @@ namespace Grapevine.Tests.Server.Helpers
         internal static void AddRouteToTable(this Router router, IRoute route)
         {
             var memberInfo = router.GetType();
-            var method = memberInfo?.GetMethod("AddToRoutingTable", BindingFlags.Instance | BindingFlags.NonPublic);
+            var method = memberInfo?.GetMethod("AddToRoutingTable", BindingFlags.Instance | BindingFlags.NonPublic, null, new []{typeof(IRoute)}, null);
+
             try
             {
                 method.Invoke(router, new object[] { route });

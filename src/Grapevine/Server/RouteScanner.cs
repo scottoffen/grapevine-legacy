@@ -194,7 +194,7 @@ namespace Grapevine.Server
 
         private bool IsExcluded(Type type)
         {
-            if (!_excludedTypes.Contains(type)) return false;
+            if (!_excludedTypes.Contains(type) && !IsExcluded(type.Namespace)) return false;
             Logger.Trace($"Excluding type {type.Name} due to exclusion rules");
             return true;
         }
@@ -245,7 +245,7 @@ namespace Grapevine.Server
 
             Logger.Trace("Scanning resources for routes...");
 
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.GlobalAssemblyCache && a.GetName().Name != "Grapevine"))
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.GlobalAssemblyCache && a.GetName().Name != "Grapevine").OrderBy(a => a.FullName))
             {
                 if (IsExcluded(assembly) || !IsIncluded(assembly)) continue;
                 routes.AddRange(ScanAssembly(assembly));
@@ -282,15 +282,11 @@ namespace Grapevine.Server
         public IList<IRoute> ScanType(Type type, string basePath)
         {
             var routes = new List<IRoute>();
-            if (type.IsAbstract) return routes;
-            if (type.IsAbstract || !type.IsClass || IsExcluded(type.Namespace) || !IsIncluded(type.Namespace) || !IsInScope(type)) return routes;
+            if (type.IsAbstract || !type.IsClass || IsExcluded(type) || !IsIncluded(type) || !IsInScope(type)) return routes;
 
             Logger.Trace($"Generating routes from type {type.Name}");
 
-            var basepath = string.Equals(basePath, string.Empty)
-                ? type.IsRestResource() ? type.GetRestResource().BasePath : string.Empty
-                : basePath;
-
+            var basepath = GenerateBasePath(basePath, type);
             foreach (var method in type.GetMethods().Where(m => m.IsRestRoute()))
             {
                 routes.AddRange(ScanMethod(method, basepath));
@@ -337,11 +333,24 @@ namespace Grapevine.Server
             return $"{prefix}{basePath}{pathinfo}";
         }
 
+        private static string GenerateBasePath(string basePath, Type type)
+        {
+            var bpArgument = basePath ?? string.Empty;
+            var bpOnResource = type.IsRestResource() ? type.GetRestResource().BasePath : string.Empty;
+
+            if (string.IsNullOrWhiteSpace(bpArgument)) return bpOnResource;
+            if (string.IsNullOrWhiteSpace(bpOnResource)) return bpArgument;
+
+            bpArgument = bpArgument.TrimEnd('/');
+            bpOnResource = bpOnResource.TrimStart('/');
+
+            return $"{bpArgument}/{bpOnResource}";
+        }
+
         private static string SanitizeBasePath(string basePath)
         {
-            var basepath = basePath?.Trim().TrimEnd('/') ?? string.Empty;
-            if (!basepath.StartsWith("/")) basepath = $"/{basepath}";
-            return basepath;
+            var basepath = basePath?.Trim().TrimEnd('/').TrimStart('/') ?? string.Empty;
+            return string.IsNullOrWhiteSpace(basepath) ? basepath : $"/{basepath}";
         }
     }
 }

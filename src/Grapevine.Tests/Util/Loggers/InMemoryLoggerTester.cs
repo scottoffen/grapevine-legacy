@@ -9,6 +9,29 @@ namespace Grapevine.Tests.Util.Loggers
     public class InMemoryLoggerTester
     {
         [Fact]
+        public void log_messages_returns_list_of_logged_messages()
+        {
+            const string debug = "Debug Message";
+            const string trace = "Trace Message";
+            const string fatal = "Fatal Message";
+
+            var logger = new InMemoryLogger();
+            logger.Logs.Count.ShouldBe(0);
+
+            logger.Debug(debug);
+            logger.Trace(trace);
+            logger.Fatal(fatal);
+
+            logger.Logs.Count.ShouldBe(3);
+
+            var logs = logger.LogMessages;
+
+            logs[0].ShouldBe(debug);
+            logs[1].ShouldBe(trace);
+            logs[2].ShouldBe(fatal);
+        }
+
+        [Fact]
         public void debug_does_not_log_if_logger_level_is_lower()
         {
             const string msg = "This is the message";
