@@ -396,7 +396,6 @@ namespace Grapevine.Tests.Server
 
             router.Route(MockContext.GetMockContext(), routing);
 
-
             executionOrder[0].ShouldBe("function");
             executionOrder[1].ShouldBe("after");
         }
