@@ -1,4 +1,7 @@
-﻿namespace Grapevine.Util
+﻿using System;
+using System.Linq;
+
+namespace Grapevine.Util
 {
     public static class ContentTypeExtensions
     {
@@ -42,6 +45,13 @@
         public static bool IsBinary(this ContentType ct)
         {
             return GetMetadata(ct).IsBinary;
+        }
+
+        public static ContentType FromString(this ContentType ct, string contentType)
+        {
+            return string.IsNullOrWhiteSpace(contentType)
+                ? ContentType.DEFAULT
+                : Enum.GetValues(typeof(ContentType)).Cast<ContentType>().FirstOrDefault(t => t.ToValue().Equals(contentType));
         }
     }
 }

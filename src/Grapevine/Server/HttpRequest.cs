@@ -229,10 +229,7 @@ namespace Grapevine.Server
 
         public long ContentLength64 => Request.ContentLength64;
 
-        public ContentType ContentType
-        {
-            get { return Enum.GetValues(typeof(ContentType)).Cast<ContentType>().First(t => t.ToValue().Equals(Request.ContentType)); }
-        }
+        public ContentType ContentType => ContentType.DEFAULT.FromString(Request.ContentType);
 
         public CookieCollection Cookies => Request.Cookies;
 

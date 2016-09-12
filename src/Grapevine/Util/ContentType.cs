@@ -5,6 +5,9 @@
     /// </summary>
     public enum ContentType
     {
+        [ContentTypeMetadata(Value = "application/octet-stream", IsBinary = true)]
+        DEFAULT,
+
         [ContentTypeMetadata(Value = "application/x-authorware-bin", IsBinary = true)]
         AAB,
 
@@ -2972,9 +2975,6 @@
         ZIRZ,
 
         [ContentTypeMetadata(Value = "application/vnd.handheld-entertainment+xml", IsText = true)]
-        ZMM,
-
-        [ContentTypeMetadata(Value = "application/octet-stream", IsBinary = true)]
-        DEFAULT
+        ZMM
     }
 }
