@@ -66,7 +66,7 @@ namespace Grapevine.Server
         /// <summary>
         /// Gets the PublicFolder object to use for serving static content
         /// </summary>
-        PublicFolder PublicFolder { get; }
+        IPublicFolder PublicFolder { get; }
 
         /// <summary>
         /// Gets or sets the instance of IRouter to be used by this server to route incoming HTTP requests
@@ -93,7 +93,7 @@ namespace Grapevine.Server
         public Action OnBeforeStop { get; set; }
         public Action OnAfterStop { get; set; }
         public string Port { get; set; }
-        public PublicFolder PublicFolder { get; }
+        public IPublicFolder PublicFolder { get; }
         public IRouter Router { get; set; }
         public bool UseHttps { get; set; }
 

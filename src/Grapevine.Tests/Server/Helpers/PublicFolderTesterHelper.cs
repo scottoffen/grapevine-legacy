@@ -12,12 +12,5 @@ namespace Grapevine.Tests.Server.Helpers
             var method = memberInfo?.GetMethod("GetFilePath", BindingFlags.Instance | BindingFlags.NonPublic);
             return (string) method?.Invoke(folder, new object[] { pathInfo });
         }
-
-        internal static string FolderCreator(this PublicFolder folder, string path)
-        {
-            var memberInfo = folder.GetType();
-            var method = memberInfo?.GetMethod("CreateFolder", BindingFlags.Static | BindingFlags.NonPublic);
-            return (string)method?.Invoke(null, new object[] { path });
-        }
     }
 }

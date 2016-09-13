@@ -148,7 +148,7 @@ namespace Grapevine.Server
             }
         }
 
-        public PublicFolder PublicFolder { get; }
+        public IPublicFolder PublicFolder { get; }
 
         public bool UseHttps
         {
