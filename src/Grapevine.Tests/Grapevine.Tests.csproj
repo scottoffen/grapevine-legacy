@@ -90,6 +90,7 @@
     <Compile Include="Server\Helpers\MockContext.cs" />
     <Compile Include="Server\Attributes\Helpers\RestRouteTesterHelper.cs" />
     <Compile Include="Server\Helpers\PublicFolderTesterHelper.cs" />
+    <Compile Include="Server\Helpers\RestServerTesterHelper.cs" />
     <Compile Include="Server\Helpers\RouterTesterHelper.cs" />
     <Compile Include="Server\Helpers\RouteScannerTesterHelper.cs" />
     <Compile Include="Server\Helpers\RouteTesterHelper.cs" />
