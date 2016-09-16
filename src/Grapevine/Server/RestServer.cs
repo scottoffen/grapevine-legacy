@@ -61,7 +61,7 @@ namespace Grapevine.Server
 
         public RestServer() : this(new ServerSettings()) { }
 
-        public RestServer(ServerSettings options)
+        public RestServer(IServerSettings options)
         {
             Listener = new HttpListener();
             Listening = new Thread(HandleRequests);
@@ -168,9 +168,9 @@ namespace Grapevine.Server
 
             try
             {
-                if (Router.RoutingTable.Count == 0) Router.Scanner.Scan();
-
                 OnBeforeStart?.Invoke();
+
+                if (Router.RoutingTable.Count == 0) Router.Scanner.Scan();
 
                 Listener.Prefixes.Add(ListenerPrefix);
                 Listener.Start();
