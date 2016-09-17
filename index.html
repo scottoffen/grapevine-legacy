@@ -19,7 +19,7 @@
 		<link rel="stylesheet" href="/Grapevine/assets/css/styles.css">
 
 		<!--
-	 	<link rel="apple-touch-icon" href="/Grapevine/assets/img/apple-touch-icon.png">
+		<link rel="apple-touch-icon" href="/Grapevine/assets/img/apple-touch-icon.png">
 		<link rel="apple-touch-icon" sizes="72x72" href="/Grapevine/assets/img/apple-touch-icon-72x72.png">
 		<link rel="apple-touch-icon" sizes="114x114" href="/Grapevine/assets/img/apple-touch-icon-114x114.png">
 		-->
@@ -60,459 +60,268 @@
 						</li>
 						-->
 						<li><a href="https://github.com/sukona/Grapevine" class="text-muted pull-right"><i class="fa fa-github"></i> Fork on GitHub</a></li>
-						<li><a href="https://gitter.im/sukona/Grapevine?utm_source=share-link&utm_medium=link&utm_campaign=share-link">Discuss on Gitter</a></li>
+						<li><a href="https://gitter.im/sukona/Grapevine">Discuss on Gitter</a></li>
+						<li><a href="https://github.com/sukona/Grapevine/blob/master/SUPPORT.md">Support</a></li>
 					</ul>
 				</div>
 			</div>
 		</nav>
 
-		<!--
 		<div class="container">
 			<div class="row">
-				<div class="col-lg-12 text-center">
-				<h2>Embedding A Rest Server In Your Application Should Be Simple</h2>
-				<p class="lead">
-					<a href="https://travis-ci.org/sukona/Grapevine"><img src="https://travis-ci.org/sukona/Grapevine.svg?branch=master"/></a>
-					<a href="https://www.nuget.org/packages/Grapevine/"><img src="https://img.shields.io/nuget/v/Grapevine.svg"></img></a>
-					<a href="https://www.nuget.org/packages/Grapevine/4.0.0-alpha0"><img src="https://img.shields.io/nuget/vpre/Grapevine.svg?label=alpha"/></a>
-					<a href="https://gitter.im/sukona/Grapevine"><img src="https://img.shields.io/gitter/room/sukona/Grapevine.svg"/></a>
-				</p>
+				<div class="col-sm-12">
+					<h2>Grapevine<br><span style="font-weight: lighter;" class="small text-muted">The embeddable, unopinionated minimalist rest framework for .NET</span></h2>
 				</div>
 			</div>
-
 			<div class="row">
-				<div class="col-sm-5 col-sm-offset-1 col-md-4 col-md-offset-1">
-					<h3>Rest Server</h3>
-					<p>Grapevine allows you to easily embed a rest server in your .NET application. Built using HttpListener, Grapevine provides mechanisms for serving up both static files and dynamic resources. Map class methods and generic delegates to HTTP Methods and URL patterns (supports regular expressions, too).</p>
-					<p><a class="btn btn-default" href="/Grapevine/rest_server" role="button">Learn More &raquo;</a></p>
+				<div class="col-sm-4 col-md-4">
+					<h3>Embed</h3>
+					<p>Use Grapevine to embed a restful web server in your application. With no dependency on IIS, you won't be bogged down by unnecessary ceremony to get your server up and running.</p>
 				</div>
 
-				<div class="col-sm-5 col-md-4 col-md-offset-2">
-					<h3>Rest Client</h3>
-					<p>Grapevine allows you to easily consume rest services in your .NET application. Built using HttpWebRequest and HttpWebResponse, Grapevine exposes simple pattern placeholders to send requests and parse responses. Use reusable objects to represent remote resources and parse responses.</p>
-					<p><a class="btn btn-default" href="/Grapevine/rest_client" role="button">Learn More &raquo;</a></p>
+				<div class="col-sm-4 col-md-4">
+					<h3>Web Apps</h3>
+					<p>Use Grapevine to host your killer web app. Lose the cumbersome IIS and bloated System.Web, and say hello to an Express.js inspired router and optional route registration.</p>
+				</div>
+
+				<div class="col-sm-4 col-md-4">
+					<h3>Client</h3>
+					<p>Want to dialog with other restful services without depending on <i>another</i> library? Grapevine provides simple patterns and placeholders to help you consume rest resources easily and quickly.</p>
 				</div>
 			</div>
-		</div>
-		-->
-
-		<div class="container">
+			<hr/>
 			<div class="row">
-				<h1>Grapevine</h1>
-				<p>Grapevine is both a REST server <b>and</b> a REST client. At this point, the majority interest in Grapevine tends to revolve around the server capabilities. Hence, this initial draft of the documentation will focus on the implementation and usage of <code>RestServer</code>.</p>
-				<p>Grapevine is intentionally unopinionated and simple. We don't want to get in your way or force you to do things the way we think they should be done. If we're failing at that and you have any suggestions on how we could improve this, we encourage you to submit an issue on Github.</p>
-				<p>The <code>RestServer</code> contains methods to configure and start an <a href="https://msdn.microsoft.com/en-us/library/system.net.httplistener%28v=vs.110%29.aspx?f=255&MSPPError=-2147217396" target="_blank"><code>HttpListener</code></a> instance. It listens on the specified protocol/host/port combination and drops all incoming http requests into a queue. The server then has number of worker threads that constantly monitor the queue, pull out the <code>HttpListenerContext</code> instance, wraps it in an <code>HttpContext</code> instance and and routes it to the matching <code>Route</code> instances in the servers internal <code>Router</code>.</p>
-			</div>
-
-			<!-- Dynamic Properties -->
-			<div class="row">
-				<h2 id="dynamics">Working With Dynamic Properties</h2>
-				<hr/>
-			</div>
-			<div class="row">
-				<div class="col-md-4">
-					<h3>Using IDynamicProperties</h3>
-					<p>One of the first things to be aware of is the ability to extend an object via dynamic properties. Currently, both <code>IRestServer</code> and <code>IHttpContext</code> require you to implement the <code>IDynamicProperties</code> interface. It is recommended that everything that requires this interface implement it via the <code>DynamicProperties</code> abstract class.</p>
-					<p>Creating a dynamic property is then only a matter of creating some extension methods around the larger interface. The convinience methods <code>ContainsProperty(string key)</code> and <code>GetPropertyValueAs&lt;T&gt;(string key)</code> are already provided via extensions on the <code>IDynamicProperty</code> interface. The example code here shows adding a property called <code>Database</code> to the <code>IRestServer</code> interface.<p>
-					<p>Dynamic properties are useful for sharing custom application context with the code inside your routes without needing to extend any classes.</p>
-					<div class="well well-sm">Note that you will always want to add the properties to the interface, not the concrete class, as everything internally is referenced by interface.</div>
+				<div class="col-sm-12">
+					<h2>Keeping It Simple<br><span style="font-weight: lighter;" class="small text-muted">Getting started with Grapevine</span></h2>
 				</div>
-				<div class="col-md-8">
-					<pre class="codeblock">
+			</div>
+			<div class="row">
+				<div class="col-sm-12">
+					<p>Grapevine is founded on the principle of simplicity. In addition to being intentionally unopinionated - it doesn't want to get in the way of getting your work done - it's Grapevine's simple and declarative approach that sets it apart from other solutions. This guide will be focused on the simplest implementation of Grapevine - a console application.</p>
+
+					<p>Create a new console application project and name it "GrapevineConsole". Add Grapevine in your project, then add the following code to your <code>Main()</code> method.</p>
+
+					<pre>
 						<code class="language-csharp">
-							public class Database { /* this can be anything you want */ }
-
-							public static class ServerDatabaseExtensionMethods
-							{
-								private static string DbKey = "Database";
-
-								public static void SetDatabase(this IRestServer server, Database db)
-								{
-									server.Properties[DbKey] = db;
-								}
-
-								public static Database GetDatabase(this IRestServer server)
-								{
-									if (server.ContainsProperty(DbKey))
-									{
-										return server.GetPropertyValueAs&lt;Database&gt;(DbKey);
-									}
-
-									// You could throw an error instead
-									return null;
-								}
-							}
-
-							// And now you can get and set the dynamic property
-							var server = new RestServer();
-							server.SetDatabase(new Database());
-							var database = server.GetDatabase();
+						using (var server = new RestServer())
+						{
+							server.Start();
+							Console.ReadLine();
+							server.Stop();
+						}
 						</code>
 					</pre>
-				</div>
-			</div>
 
-			<!-- HttpContext -->
-			<div class="row">
-				<h2 id="httpcontext">Understanding the Http Context</h2>
-				<hr/>
+					<p>When you run it, a console window appears with a blinking cursor, and stays there until you either hit Enter or close the program. If you open a web browser while the application is running to <a href="http://localhost:1234">http://localhost:1234</a>, you will see a very unhelpful page with the words <b>Not Found</b>.</p>
+				</div>
 			</div>
 			<div class="row">
-				<div class="col-md-4">
-					<h3>HttpContext</h3>
-					<p>Grapevine wraps the <code>HttpListenerContext</code> inside an internal <code>HttpContext</code> object. This object implements the <code>IHttpContext</code> interface. The provided implementation, <code>HttpContext</code>, has an internal constructor and therefore can only be instantiated by the <code>RestServer</code>. In addition to providing the same properites (or equvilant versions) as <code>HttpListenerContext</code>, the interface also provides a reference back to the server that is handling the request via the <code>Server</code> property and <code>WasRespondedTo</code>, a boolean property indicating whether or not the route has sent a response to the client.</p>
-					<div class="well well-sm">The method signature of all methods and generic delegates used by routes must accept an <code>IHttpContext</code> as the single parameter and return an <code>IHttpContext</code>.</div>
-				</div>
-				<div class="col-md-8">
-					<pre class="codeblock">
+				<div class="col-sm-12">
+					<h3>Logging To The Console</h3>
+					<p>We can make this example a little more helpful by having Grapevine log out to the console what it's doing. Where reasonable, methods on objects in Grapevine are chainable, making it easy to tell the <code>RestServer</code> to write diagnostic information out to the console.</p>
+
+					<pre>
 						<code class="language-csharp">
-							// Provides modified access to the request and response objects used by the
-							// HttpListener class
-							public interface IHttpContext : IDynamicProperties
-							{
-								// Gets the IHttpRequest that represents a client's request for a resource
-								IHttpRequest Request { get; }
-
-								// Gets the IHttpResponse object that will be sent to the client in response
-								// to the client's request
-								IHttpResponse Response { get; }
-
-								// Gets an object used to obtain identity, authentication information, and security
-								// roles for the client whose request is represented by the underlying
-								// HttpListenerContext object
-								IPrincipal User { get; }
-
-								// Gets the IRestServer object the client request was sent to
-								IRestServer Server { get; }
-
-								// Returns a value that indicate whether or not the client request has been responded to
-								bool WasRespondedTo { get; }
-							}
+						using (var server = new RestServer())
+						{
+							server.LogToConsole().Start();
+							Console.ReadLine();
+							server.Stop();
+						}
 						</code>
 					</pre>
+
+					<p>Run the application again, and the same console will appear, but this time with information on what's going on. Your console should display the following:</p>
+
+<pre><code class="language-none">1/1/2016 12:30:15 PM   Trace   Scanning resources for routes...
+1/1/2016 12:30:15 PM   Trace   Generating routes for assembly GrapevineConsole
+1/1/2016 12:30:17 PM   Trace   Listening: http://localhost:1234/</code></pre>
+
+					<p>This gives us a much better idea about what's going on. The <code>RestServer</code> is scanning for routes and not finding anything, so requests are returned having not found a route that responds to it.</p>
 				</div>
 			</div>
 			<div class="row">
-				<div class="col-md-4">
-					<h3 id="httprequests">HttpRequest</h3>
-					<p><code>HttpRequest</code> implements <code>IHttpRequest</code> which - with a few notable exceptions - exposes the same set of properties as <a href="https://msdn.microsoft.com/en-us/library/system.net.httplistenerrequest(v=vs.100).aspx" target="_blank"><code>HttpListenerRequest</code></a>.
-					<div class="well well-sm">The <code>Advanced</code> property on the request provides direct access to the input stream of the request via the <code>InputStream</code> property.</div>
-				</div>
-				<div class="col-md-8">
-					<pre class="codeblock">
-						<code class="language-csharp">
-							// Instead of a string, returns the corresponding Grapevine.Util.ContentType
-							request.ContentType;
+				<div class="col-sm-12">
+					<h3>Creating Routes</h3>
+					<p>So far, going to <a href="http://localhost:1234">http://localhost:1234</a> still shows the <b>Not Found</b> page. This is because we haven't defined any routes in our assembly. Routes are added by creating classes and methods in our project that meet specific criteria.</p>
 
-							// Instead of a string, returns the corresponding Grapevine.Util.HttpMethod
-							request.HttpMethod;
-
-							// Grapevine gives each request its own unique GUID for easy correleation of events
-							request.Id;
-
-							// Grapevine provides a name that is a concatonation of the HttpMethod and the
-							// PathInfo properties
-							request.Name;
-
-							// PathInfo is the part of the URL that preceedes the ? in the RawUrl property and is
-							// used to determine route matching
-							request.PathInfo;
-
-							// If a route is using a pattern with placeholders (not a  of regular expression) the
-							// values matched are stored in this read-only dictionary
-							// For example, if the route patterns is /api/user/[id] and the PathInfo property
-							// is /api/user/1234, then the line below will return '1234'
-							request.PathParameters["id"];
-
-							// Payload returns a string representation of the contents of the body
-							// To access the request stream directly, use the Advanced property
-							request.Payload;
-						</code>
-					</pre>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-md-4">
-					<h3>HttpResponse</h3>
-					<p><code>HttpResponse</code> implements <code>IHttpResponse</code> which - again, with a few notable exceptions - exposes the same set of properties as <a href="https://msdn.microsoft.com/en-us/library/system.net.httplistenerresponse(v=vs.100).aspx" target="_blank"><code>HttpListenerResponse</code></a>.
-					<p>Here, in addition to some convinience properties, there are the <code>SendResponse()</code> convinience methods, to simplify the process of responding to the client. Most of the parameters can be set independent of the <code>SendResponse()</code> methods.</p>
-					<div class="well well-sm">The <code>Advanced</code> property on the response provides direct access to the request output stream via <code>OutputStream</code> as well as access to the <code>Close()</code> methods you can find on <code>HttpListenerResponse</code>.</div>
-				</div>
-				<div class="col-md-8">
-					<pre class="codeblock">
-						<code class="language-csharp">
-							// Instead of a string, accepts/returns the corresponding Grapevine.Util.ContentType
-							response.ContentType;
-
-							// The ContentEncoding property defaults to Encoding.ASCII
-							response.ContentEncoding;
-
-							// Returns true if HttpListenerResponse.Close() gets called, which happens
-							// automatically when any of the SendResponse() methods are called.
-							response.ResponseSent;
-
-							// Instead of a number, accepts/returns the corresponding Grapevine.Util.HttpStatusCode
-							response.StatusCode = HttpStatusCode.Ok; // 200
-
-							// SendResponse() has multiple overloads, intended to simplify how you send a response
-							// to the client; in all cases, the response output stream and the response get closed
-							// and the ResponseSent property is set to true.
-
-							// If you pass a string of text, that text will be sent to the client
-							response.SendResponse("Hello, world!");
-
-							// If you pass a file path as a string and a true value, the file will be returned to
-							// the client
-							response.SendResponse(@"c:\data\somefile.xls", true);
-
-							// If you pass a string and an encoding type, the encoding type will be used to
-							// return the text to the client
-							response.SendResponse("Hello, world!", Encoding.UTF8);
-
-							// If you pass a FileStream and a ContentType, the file will be sent to the client
-							// and the Content-type header will be set to the ContentType provided
-							response.SendResponse(file_stream, ContentType.XLSX, "myfile.xlsx")
-
-							// If you do the same as above, but also pass a true value, the the file will be
-							// downloaded by the browser instead of loaded in the browser
-							response.SendResponse(file_stream, ContentType.XLSX, "myfile.xlsx", true);
-
-							// If you pass a status code and an exception, the exception will be returned to the
-							// client using the status code provided
-							response.SendResponse(HttpStatusCode.InternalServerError, new Exception("Bad stuff"));
-
-							// If you pass a status code and some text, the text will be returned to the client
-							// using the status code provided
-							response.SendResponse(HttpStatusCode.ImATeapot, "Kind of a real status code.");
-
-							// If you pass just the status code, the text of the status code will be sent to the
-							// client
-							response.SendResponse(HttpStatusCode.EnhanceYourCalm);
-							// the body will contain the text "Enhance Your Calm"
-						</code>
-					</pre>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-md-4">
-					<h3>NameValueCollection Extensions</h3>
-					<p>The <code>Headers</code> and <code>QueryString</code> properties of <code>HttpRequest</code> are of type <code>NameValueCollection</code>, and Grapevine provides two extension methods for convinience in working with them.</p>
-				</div>
-				<div class="col-md-8">
-					<pre class="codeblock">
-						<code class="language-csharp">
-							// Automatically casts the value of the specified header to generic type parameter
-							request.Headers.GetValue&lt;int&gt;("key");
-
-							// Automatically casts the value of the specified header to generic type parameter
-							// or returns the specified default value if the header is not found
-							request.Headers.GetValue&lt;int&gt;("key", 32);
-						</code>
-					</pre>
-				</div>
-			</div>
-
-			<!-- RestServer -->
-			<div class="row">
-				<h2>Configuring and Starting the REST Server</h2>
-				<hr/>
-			</div>
-			<div class="row">
-				<div class="col-md-4">
-					<h3>IServerSettings</h3>
-					<p>Both <code>ServerSettings</code> and <code>IRestServer</code> implement <code>IServerSettings</code>. This allows for property definitions to easily enforced between the two. Here we'll explore those properties and how they interact.</p>
-					<p>All of the properties show in this segment except <code>EnableThrowingExceptions</code> will throw a <code>ServerStateException</code> if you attempt to change their value after the <code>Start()</code> method is executed.</p>
-					<div class="well well-sm">These properties can be set on either a <code>RestServer</code> instance or a <code>ServerSettings</code> instance.</div>
-				</div>
-				<div class="col-md-8">
-					<pre class="codeblock">
-						<code class="language-csharp">
-						// Host defaults to localhost, but you can use any supported prefix for HttpListener
-						settings.Host = "localhost";
-
-						// Port defaults to 1234
-						settings.Port = "4321";
-
-						// Connections defines the number of worker threads per processor that will will be
-						// monitoring the incoming queue
-						settings.Connections = 200; // default is 50
-
-						// Since HttpListener only supports http and https for protocols, Grapevine defaults to
-						// http. If you want to use https, just set this property to true
-						server.UseHttps = true;
-
-						// If this property is true, exceptions during starting and stopping the server will be
-						// re-thrown instead of swallowed; defaults to false
-						server.EnableThrowingExceptions = true;
-						</code>
-					</pre>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-md-4">
-					<h4>Generic Delegates</h4>
-					<p>There are several optional generic delegates that can be set to execute custom code before and/or after the server starts and/or stops. These delegates accept no arguments and return no result. This is useful if you need to setup and/or tear down any additionl resources - e.g. databases - or otherwise ensure that the environment is setup in a manner consistent with the expectations of your routes.</p>
+					<p>For a given <code>Type</code> in an assembly to be automatically scanned for routes, the criteria it must meet are:</p>
 					<ul>
-						<li>If <code>OnBeforeStart</code> throws an exception, the server will not start, but if <code>OnAfterStart</code> fails, the server state will not change.</li>
-						<li>If <code>OnBeforeStop</code> throws an exception, the server will not stop, but if <code>OnAfterStop</code> fails, the server state will not change.</li>
-						<li><code>OnStart</code> is a synonym for <code>OnAfterStart</code> and <code>OnStop</code> is a synonym for <code>OnAfterStop</code></li>
+						<li>It must be a public, reference-type class; <i>not an abstract class, struct, interface or value-type</i>.</li>
+						<li>It must have the <code>[RestResource]</code> attribute on it.</li>
+						<li>It must have a parameterless constructor.</li>
 					</ul>
-					<div class="well well-sm">If you want the delegate to call some methods on the server, the delegates need to be added directly to the server, not the server settings.</div>
-				</div>
-				<div class="col-md-8">
-					<pre class="codeblock">
+
+					<p>For methods in a class to be automatically registered as routes, the criteria the must meet are:</p>
+					<ul>
+						<li>It must have the <code>[RestRoute]</code> attribute on it.</li>
+						<li>It must take a single argument of type <code>IHttpContext</code>.</li>
+						<li>It must have a return value of type <code>IHttpContext</code>.</li>
+					</ul>
+
+					<div class="panel panel-info">
+						<div class="panel-heading">
+							<h3 class="panel-title">FYI</h3>
+						</div>
+						<div class="panel-body">
+							While these are the same rules that previous versions of Grapevine tried to adhere to, the methods used to enforce those rules were a little bit different. Notice, for example, that you are no longer required to inherit from a specific base class, nor is the attributed class required to be sealed.
+						</div>
+					</div>
+
+					<p>The <code>Router</code> on Grapevine's <code>RestServer</code> maintains an internal list of routes. While you can add routes to it manually, if the list is empty when the server is started, the <code>Router</code> will scan assemblies in your current <code>AppDomain</code> for routes. Assemblies are scanned in alphabetical order (skipping Grapevine and assemblies in the Global Assembly Cache), and each type in an assembly is likewise scanned in alphabetical order. In contrast, methods inside each type are discovered in the order the appear in the class itself.</p>
+
+					<p>This is what is meant by <i><b>optional</b> route registration</i>. As long as your routes follow these conventions, they will be automatically registered with the router and incoming request will be routed to them, and you don't have to register them manually.</p>
+
+					<p>Armed with this information, let's create our first routes.</p>
+
+					<pre>
 						<code class="language-csharp">
-						var settings = new ServerSettings();
-						settings.OnBeforeStop = () =>
+						[RestResource]
+						public class TestResource
 						{
-							Console.WriteLine("Server shutdown initiated...");
-						};
+							[RestRoute]
+							public IHttpContext HelloWorld(IHttpContext context)
+							{
+								context.Response.SendResponse("Hello, world.");
+								return context;
+							}
+						}
+						</code>
+					</pre>
 
-						settings.OnAfterStop = () =>
+					<p>When we start our server this time, and then go to <a href="http://localhost:1234">http://localhost:1234</a>, our message "Hello, world." shows up in the browser. Notice that we also see some different output in the console:</p>
+
+<pre><code class="language-none">1/1/2016 12:30:15 PM   Trace   Scanning resources for routes...
+1/1/2016 12:30:15 PM   Trace   Generating routes for assembly GrapevineConsole
+1/1/2016 12:30:15 PM   Trace   Generating routes from type TestResource
+1/1/2016 12:30:15 PM   Trace   Generated route ALL  > GrapevineConsole.TestResource.HelloWorld
+1/1/2016 12:30:17 PM   Trace   Listening: http://localhost:1234/
+1/1/2016 12:31:00 PM   Info    Routing Request  : 27ebe73f0fe5 - GET / has 1 routes
+1/1/2016 12:31:00 PM   Trace   Route Invoked    : 27ebe73f0fe5 - 1/1 GrapevineConsole.TestResource.HelloWorld
+1/1/2016 12:31:00 PM   Trace   Routing Complete : 27ebe73f0fe5 - 1 of 1 routes invoked</code></pre>
+
+					<p>And now we can see that a route was registered, and a request sent to the server was routed to the route, which then responded to it.</p>
+
+					<p>Let's define another route now, specifying the <code>HttpMethod</code> and <code>PathInfo</code> on the route, and see how they interact together.</p>
+
+					<pre>
+						<code class="language-csharp">
+						[RestResource]
+						public class TestResource
 						{
-							Console.WriteLine("Server stopped");
-						};
+							[RestRoute(HttpMethod = HttpMethod.GET, PathInfo = "/repeat")]
+							public IHttpContext RepeatMe(IHttpContext context)
+							{
+								var word = context.Request.QueryString["word"] ?? "what?";
+								context.Response.SendResponse(word);
+								return context;
+							}
 
-						var server = new RestServer(ServerSettings);
-						server.OnBeforeStart = () =>
+							[RestRoute]
+							public IHttpContext HelloWorld(IHttpContext context)
+							{
+								context.Response.SendResponse("Hello, world.");
+								return context;
+							}
+						}
+						</code>
+					</pre>
+
+					<p>Okay, lets run this and take a look at our console output. The first thing you should notice is that both routes were registered, but the new route was registered first. That's because it shows up first in the class itself. You should also get a better idea of what the pattern looks like when a route gets registered; namely <code>[HttpMethod] [PathInfo] > [MethodToExecute]</code>.</p>
+
+					<p>The word <code>ALL</code> in the registration for our <code>HelloWorld</code> method means that, since we didn't specify which http method this route should handle, it will respond to routes with all http methods. The extra space where the <code>PathInfo</code> should be indicates that it will respond to requests from any path info. Compare that to the registration of the <code>RepeatMe</code> method, which will only respond to <code>GET</code> requests sent to <code>/repeat</code>.</p>
+
+
+<pre><code class="language-none">1/1/2016 12:30:15 PM   Trace   Scanning resources for routes...
+1/1/2016 12:30:15 PM   Trace   Generating routes for assembly GrapevineConsole
+1/1/2016 12:30:15 PM   Trace   Generating routes from type TestResource
+1/1/2016 12:30:15 PM   Trace   Generated route GET /repeat > GrapevineConsole.TestResource.RepeatMe
+1/1/2016 12:30:15 PM   Trace   Generated route ALL  > GrapevineConsole.TestResource.HelloWorld
+1/1/2016 12:30:17 PM   Trace   Listening: http://localhost:1234/</code></pre>
+
+					<p>Open your browser again, and first go to <a href="http://localhost:1234/repeat?word=parrot">http://localhost:1234/repeat?word=parrot</a> and see the word "parrot" show up in the browser. Next go to <a href="http://localhost:1234">http://localhost:1234</a> and see "Hello, world." again. Then go back to the console window and see what has shown up there as a result of those requests.</p>
+
+<pre><code class="language-none">1/1/2016 12:30:20 PM   Info    Routing Request  : 0b310261437c - GET /repeat has 2 routes
+1/1/2016 12:30:20 PM   Trace   Route Invoked    : 0b310261437c - 1/2 GrapevineConsole.TestResource.RepeatMe
+1/1/2016 12:30:20 PM   Trace   Routing Complete : 0b310261437c - 1 of 2 routes invoked
+1/1/2016 12:30:25 PM   Info    Routing Request  : 095038b0deed - GET / has 1 routes
+1/1/2016 12:30:25 PM   Trace   Route Invoked    : 095038b0deed - 1/1 GrapevineConsole.TestResource.HelloWorld
+1/1/2016 12:30:25 PM   Trace   Routing Complete : 095038b0deed - 1 of 1 routes invoked</code></pre>
+
+					<p>So, for each request we have a set of outputs. The <i>Routing Request</i> message is generated when the request is received by the router. In addition to the http method and path info, it tells us how many matching routes were found. The <i>Route Invoked</i> message is generated when a specific route has been invoked, and the <i>Routing Complete</i> message indicates that the router has finished invoking routes for a given request.</p>
+
+					<p>Let me first draw your attention to the string of numbers and letters between the <code>:</code> and the <code>-</code> on each message. Because requests are handled in parallel on different threads, this unique identifier is used to keep track of which messages belong to the same request.</p>
+
+					<p>Next, did you notice how it tells us that two routes were discovered for <code>GET /repeat</code>, but only one was executed? What's up with that?</p>
+
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-sm-12">
+					<h3>Responding To Requests</h3>
+					<p>Routes are invoked on an incoming request until one of the routes responds to the request. By default, routing stops and subsequent routes are not invoked. Let's take advantage of that behaviour in this next example to execute several methods in a specific order.</p>
+
+					<p>Let's replace the <code>RepeatMe</code> method with three new methods, <code>MeFirst</code>, <code>MeSecond</code> and <code>MeThird</code>, in that order, as shown below.</p>
+
+					<pre>
+						<code class="language-csharp">
+						[RestResource]
+						public class TestResource
 						{
-							Console.WriteLine($"Starting server on port {server.Port}");
-						};
+							[RestRoute(HttpMethod = HttpMethod.GET, PathInfo = "/inorder")]
+							public IHttpContext MeFirst(IHttpContext context)
+							{
+								return context;
+							}
 
-						server.OnAfterStart = () =>
-						{
-							Console.WriteLine($"Server started on port {server.Port}");
-						};
-						</code>
-					</pre>
-				</div>
-			</div>
+							[RestRoute(HttpMethod = HttpMethod.GET, PathInfo = "/inorder")]
+							public IHttpContext MeSecond(IHttpContext context)
+							{
+								return context;
+							}
 
+							[RestRoute(HttpMethod = HttpMethod.GET, PathInfo = "/inorder")]
+							public IHttpContext MeThird(IHttpContext context)
+							{
+								return context;
+							}
 
-			<div class="row">
-				<div class="col-md-4">
-					<h3>RestServer</h3>
-					<p></p>
-					<div class="well well-sm"></div>
-				</div>
-				<div class="col-md-8">
-					<pre class="codeblock">
-						<code class="language-csharp">
+							[RestRoute]
+							public IHttpContext HelloWorld(IHttpContext context)
+							{
+								context.Response.SendResponse("Hello, world.");
+								return context;
+							}
+						}
 						</code>
 					</pre>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-md-4">
-					<h3>PublicFolder</h3>
-					<p></p>
-					<div class="well well-sm"></div>
-				</div>
-				<div class="col-md-8">
-					<pre class="codeblock">
-						<code class="language-csharp">
-						</code>
-					</pre>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-md-4">
-					<h3>RestCluster</h3>
-					<p></p>
-					<div class="well well-sm"></div>
-				</div>
-				<div class="col-md-8">
-					<pre class="codeblock">
-						<code class="language-csharp">
-						</code>
-					</pre>
-				</div>
-			</div>
 
-			<!-- Router -->
-			<div class="row">
-				<h2>Configuring the Router</h2>
-				<hr/>
-			</div>
-			<div class="row">
-				<div class="col-md-4">
-					<h3 id="router">Router</h3>
-					<p>Inspired by <a href="https://expressjs.com/" target="_blank">Express</a>, Grapevine's <code>Router</code> logic is pretty simple. When a request comes in, the HTTP verb and the path info are used to determine which routes in the routing table should be executed and in what order. These routes are then iterated over, passing the <code>IHttpContext</code> from one route to the next - the output from one route becoming the input to the next - until the request is responded to, at which point the remaining routes are not executed (unless you change the default behavior).</p>
-					<p>I initially faced some criticism for storing the routing table in an array instead of a tree (even a <a href="https://en.wikipedia.org/wiki/Trie" target="_blank">trie algorithm</a> was suggested). However, the complexity tradeoff between iterating over an array (which tends to be short given most application routing requirements) and walking a tree makes arrays a much better choice. Matching routes to requests can be tricky, because we like to use everything for defining routes. This includes simple strings, regular expressions, wildcards, and path parameters. These can't be stored in a hash because regular expression matches can't be looked up based on a string. You have to iterate somewhere. A hash will only work if you limit routes to static string values. And if that’s the case, why use a router at all?</p>
-					<p>Granted, this design allows for adding conflicting routes. This is not a flaw but the intended result of the extremely flexible route matching support allowing regular expressions and wildcards - it's a simple tradeoff. I do, however, make every reasonable attempt to prevent the registration of <i>duplicate</i> routes.</p>
-					<div class="well well-sm"></div>
-				</div>
-				<div class="col-md-8">
-					<pre class="codeblock">
-						<code class="language-csharp">
-						</code>
-					</pre>
-				</div>
-			</div>
+					<p>After starting our server and going to <a href="http://localhost:1234/inorder">http://localhost:1234/inorder</a>, we can  take a look at the messages generated in the console.</p>
 
-			<!-- Route -->
-			<div class="row">
-				<h2>Creating Routes</h2>
-				<hr/>
-			</div>
-			<div class="row">
-				<div class="col-md-4">
-					<h3>Route</h3>
-					<p></p>
-					<div class="well well-sm"></div>
-				</div>
-				<div class="col-md-8">
-					<pre class="codeblock">
-						<code class="language-csharp">
-						</code>
-					</pre>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-md-4">
-					<h3>The Fluent Interface</h3>
-					<p></p>
-					<div class="well well-sm"></div>
-				</div>
-				<div class="col-md-8">
-					<pre class="codeblock">
-						<code class="language-csharp">
-						</code>
-					</pre>
-				</div>
-			</div>
+<pre><code class="language-none">1/1/2016 12:30:15 PM   Info    Routing Request  : b194febe36f5 - GET /inorder has 4 routes
+1/1/2016 12:30:15 PM   Trace   Route Invoked    : b194febe36f5 - 1/4 GrapevineConsole.TestResource.MeFirst
+1/1/2016 12:30:15 PM   Trace   Route Invoked    : b194febe36f5 - 2/4 GrapevineConsole.TestResource.MeSecond
+1/1/2016 12:30:15 PM   Trace   Route Invoked    : b194febe36f5 - 3/4 GrapevineConsole.TestResource.MeThird
+1/1/2016 12:30:15 PM   Trace   Route Invoked    : b194febe36f5 - 4/4 GrapevineConsole.TestResource.HelloWorld
+1/1/2016 12:30:15 PM   Trace   Routing Complete : b194febe36f5 - 4 of 4 routes invoked</code></pre>
 
-			<!-- Router -->
-			<div class="row">
-				<h2>Keeping It Simple: Automatic Route Registration Using Attributes</h2>
-				<hr/>
-			</div>
-			<div class="row">
-				<div class="col-md-4">
-					<h3>RestResource</h3>
-					<p></p>
-					<div class="well well-sm"></div>
-				</div>
-				<div class="col-md-8">
-					<pre class="codeblock">
-						<code class="language-csharp">
-						</code>
-					</pre>
+					<p>Notice that <i>all four routes were invoked</i> until one of them - <code>HelloWorld</code> - responded to the request.</p>
+
+					<div class="panel panel-danger">
+						<div class="panel-heading">
+							<h3 class="panel-title">Breaking Change!</h3>
+						</div>
+						<div class="panel-body">
+							<p>Previous versions of Grapevine would only invoke the first matching route found. Now, routes will continue to be invoked until one of them responds or until all routes have been invoked. If none of the invoked routes responds, then a <b>Not Found</b> error is returned to the client.</p>
+							<p>In addition, the methods for responding to a request are now methods on <code>context.Request</code>, not methods on the resource class that were inherited by an abstract base class.</p>
+						</div>
+					</div>
+
+					<p>There are numerous overloads of the <code>SendResponse()</code> method that can be used to send different types of response.</p>
 				</div>
 			</div>
-			<div class="row">
-				<div class="col-md-4">
-					<h3>RestRoute</h3>
-					<p></p>
-					<div class="well well-sm"></div>
-				</div>
-				<div class="col-md-8">
-					<pre class="codeblock">
-						<code class="language-csharp">
-						</code>
-					</pre>
-				</div>
-			</div>
+			<hr/>
+			<div style="margin-bottom: 10px;" class="text-small text-muted">Copyright 2016 Scott Offen</div>
 		</div>
 
 		<!--[if lt IE 9]>

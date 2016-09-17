@@ -1,0 +1,418 @@
+		<div class="container">
+			<div class="row">
+				<h1>Grapevine</h1>
+				<p>Grapevine is both a REST server <b>and</b> a REST client. At this point, the majority interest in Grapevine tends to revolve around the server capabilities. Hence, this initial draft of the documentation will focus on the implementation and usage of <code>RestServer</code>.</p>
+				<p>Grapevine is intentionally unopinionated and simple. We don't want to get in your way or force you to do things the way we think they should be done. If we're failing at that and you have any suggestions on how we could improve this, we encourage you to submit an issue on Github.</p>
+				<p>The <code>RestServer</code> contains methods to configure and start an <a href="https://msdn.microsoft.com/en-us/library/system.net.httplistener%28v=vs.110%29.aspx?f=255&MSPPError=-2147217396" target="_blank"><code>HttpListener</code></a> instance. It listens on the specified protocol/host/port combination and drops all incoming http requests into a queue. The server then has number of worker threads that constantly monitor the queue, pull out the <code>HttpListenerContext</code> instance, wraps it in an <code>HttpContext</code> instance and and routes it to the matching <code>Route</code> instances in the servers internal <code>Router</code>.</p>
+			</div>
+
+			<!-- Dynamic Properties -->
+			<div class="row">
+				<h2 id="dynamics">Working With Dynamic Properties</h2>
+				<hr/>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<h3>Using IDynamicProperties</h3>
+					<p>One of the first things to be aware of is the ability to extend an object via dynamic properties. Currently, both <code>IRestServer</code> and <code>IHttpContext</code> require you to implement the <code>IDynamicProperties</code> interface. It is recommended that everything that requires this interface implement it via the <code>DynamicProperties</code> abstract class.</p>
+					<p>Creating a dynamic property is then only a matter of creating some extension methods around the larger interface. The convinience methods <code>ContainsProperty(string key)</code> and <code>GetPropertyValueAs&lt;T&gt;(string key)</code> are already provided via extensions on the <code>IDynamicProperty</code> interface. The example code here shows adding a property called <code>Database</code> to the <code>IRestServer</code> interface.<p>
+					<p>Dynamic properties are useful for sharing custom application context with the code inside your routes without needing to extend any classes.</p>
+					<div class="well well-sm">Note that you will always want to add the properties to the interface, not the concrete class, as everything internally is referenced by interface.</div>
+				</div>
+				<div class="col-md-8">
+					<pre class="codeblock">
+						<code class="language-csharp">
+							public class Database { /* this can be anything you want */ }
+
+							public static class ServerDatabaseExtensionMethods
+							{
+								private static string DbKey = "Database";
+
+								public static void SetDatabase(this IRestServer server, Database db)
+								{
+									server.Properties[DbKey] = db;
+								}
+
+								public static Database GetDatabase(this IRestServer server)
+								{
+									if (server.ContainsProperty(DbKey))
+									{
+										return server.GetPropertyValueAs&lt;Database&gt;(DbKey);
+									}
+
+									// You could throw an error instead
+									return null;
+								}
+							}
+
+							// And now you can get and set the dynamic property
+							var server = new RestServer();
+							server.SetDatabase(new Database());
+							var database = server.GetDatabase();
+						</code>
+					</pre>
+				</div>
+			</div>
+
+			<!-- HttpContext -->
+			<div class="row">
+				<h2 id="httpcontext">Understanding the Http Context</h2>
+				<hr/>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<h3>HttpContext</h3>
+					<p>Grapevine wraps the <code>HttpListenerContext</code> inside an internal <code>HttpContext</code> object. This object implements the <code>IHttpContext</code> interface. The provided implementation, <code>HttpContext</code>, has an internal constructor and therefore can only be instantiated by the <code>RestServer</code>. In addition to providing the same properites (or equvilant versions) as <code>HttpListenerContext</code>, the interface also provides a reference back to the server that is handling the request via the <code>Server</code> property and <code>WasRespondedTo</code>, a boolean property indicating whether or not the route has sent a response to the client.</p>
+					<div class="well well-sm">The method signature of all methods and generic delegates used by routes must accept an <code>IHttpContext</code> as the single parameter and return an <code>IHttpContext</code>.</div>
+				</div>
+				<div class="col-md-8">
+					<pre class="codeblock">
+						<code class="language-csharp">
+							// Provides modified access to the request and response objects used by the
+							// HttpListener class
+							public interface IHttpContext : IDynamicProperties
+							{
+								// Gets the IHttpRequest that represents a client's request for a resource
+								IHttpRequest Request { get; }
+
+								// Gets the IHttpResponse object that will be sent to the client in response
+								// to the client's request
+								IHttpResponse Response { get; }
+
+								// Gets an object used to obtain identity, authentication information, and security
+								// roles for the client whose request is represented by the underlying
+								// HttpListenerContext object
+								IPrincipal User { get; }
+
+								// Gets the IRestServer object the client request was sent to
+								IRestServer Server { get; }
+
+								// Returns a value that indicate whether or not the client request has been responded to
+								bool WasRespondedTo { get; }
+							}
+						</code>
+					</pre>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<h3 id="httprequests">HttpRequest</h3>
+					<p><code>HttpRequest</code> implements <code>IHttpRequest</code> which - with a few notable exceptions - exposes the same set of properties as <a href="https://msdn.microsoft.com/en-us/library/system.net.httplistenerrequest(v=vs.100).aspx" target="_blank"><code>HttpListenerRequest</code></a>.
+					<div class="well well-sm">The <code>Advanced</code> property on the request provides direct access to the input stream of the request via the <code>InputStream</code> property.</div>
+				</div>
+				<div class="col-md-8">
+					<pre class="codeblock">
+						<code class="language-csharp">
+							// Instead of a string, returns the corresponding Grapevine.Util.ContentType
+							request.ContentType;
+
+							// Instead of a string, returns the corresponding Grapevine.Util.HttpMethod
+							request.HttpMethod;
+
+							// Grapevine gives each request its own unique GUID for easy correleation of events
+							request.Id;
+
+							// Grapevine provides a name that is a concatonation of the HttpMethod and the
+							// PathInfo properties
+							request.Name;
+
+							// PathInfo is the part of the URL that preceedes the ? in the RawUrl property and is
+							// used to determine route matching
+							request.PathInfo;
+
+							// If a route is using a pattern with placeholders (not a  of regular expression) the
+							// values matched are stored in this read-only dictionary
+							// For example, if the route patterns is /api/user/[id] and the PathInfo property
+							// is /api/user/1234, then the line below will return '1234'
+							request.PathParameters["id"];
+
+							// Payload returns a string representation of the contents of the body
+							// To access the request stream directly, use the Advanced property
+							request.Payload;
+						</code>
+					</pre>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<h3>HttpResponse</h3>
+					<p><code>HttpResponse</code> implements <code>IHttpResponse</code> which - again, with a few notable exceptions - exposes the same set of properties as <a href="https://msdn.microsoft.com/en-us/library/system.net.httplistenerresponse(v=vs.100).aspx" target="_blank"><code>HttpListenerResponse</code></a>.
+					<p>Here, in addition to some convinience properties, there are the <code>SendResponse()</code> convinience methods, to simplify the process of responding to the client. Most of the parameters can be set independent of the <code>SendResponse()</code> methods.</p>
+					<div class="well well-sm">The <code>Advanced</code> property on the response provides direct access to the request output stream via <code>OutputStream</code> as well as access to the <code>Close()</code> methods you can find on <code>HttpListenerResponse</code>.</div>
+				</div>
+				<div class="col-md-8">
+					<pre class="codeblock">
+						<code class="language-csharp">
+							// Instead of a string, accepts/returns the corresponding Grapevine.Util.ContentType
+							response.ContentType;
+
+							// The ContentEncoding property defaults to Encoding.ASCII
+							response.ContentEncoding;
+
+							// Returns true if HttpListenerResponse.Close() gets called, which happens
+							// automatically when any of the SendResponse() methods are called.
+							response.ResponseSent;
+
+							// Instead of a number, accepts/returns the corresponding Grapevine.Util.HttpStatusCode
+							response.StatusCode = HttpStatusCode.Ok; // 200
+
+							// SendResponse() has multiple overloads, intended to simplify how you send a response
+							// to the client; in all cases, the response output stream and the response get closed
+							// and the ResponseSent property is set to true.
+
+							// If you pass a string of text, that text will be sent to the client
+							response.SendResponse("Hello, world!");
+
+							// If you pass a file path as a string and a true value, the file will be returned to
+							// the client
+							response.SendResponse(@"c:\data\somefile.xls", true);
+
+							// If you pass a string and an encoding type, the encoding type will be used to
+							// return the text to the client
+							response.SendResponse("Hello, world!", Encoding.UTF8);
+
+							// If you pass a FileStream and a ContentType, the file will be sent to the client
+							// and the Content-type header will be set to the ContentType provided
+							response.SendResponse(file_stream, ContentType.XLSX, "myfile.xlsx")
+
+							// If you do the same as above, but also pass a true value, the the file will be
+							// downloaded by the browser instead of loaded in the browser
+							response.SendResponse(file_stream, ContentType.XLSX, "myfile.xlsx", true);
+
+							// If you pass a status code and an exception, the exception will be returned to the
+							// client using the status code provided
+							response.SendResponse(HttpStatusCode.InternalServerError, new Exception("Bad stuff"));
+
+							// If you pass a status code and some text, the text will be returned to the client
+							// using the status code provided
+							response.SendResponse(HttpStatusCode.ImATeapot, "Kind of a real status code.");
+
+							// If you pass just the status code, the text of the status code will be sent to the
+							// client
+							response.SendResponse(HttpStatusCode.EnhanceYourCalm);
+							// the body will contain the text "Enhance Your Calm"
+						</code>
+					</pre>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<h3>NameValueCollection Extensions</h3>
+					<p>The <code>Headers</code> and <code>QueryString</code> properties of <code>HttpRequest</code> are of type <code>NameValueCollection</code>, and Grapevine provides two extension methods for convinience in working with them.</p>
+				</div>
+				<div class="col-md-8">
+					<pre class="codeblock">
+						<code class="language-csharp">
+							// Automatically casts the value of the specified header to generic type parameter
+							request.Headers.GetValue&lt;int&gt;("key");
+
+							// Automatically casts the value of the specified header to generic type parameter
+							// or returns the specified default value if the header is not found
+							request.Headers.GetValue&lt;int&gt;("key", 32);
+						</code>
+					</pre>
+				</div>
+			</div>
+
+			<!-- RestServer -->
+			<div class="row">
+				<h2>Configuring and Starting the REST Server</h2>
+				<hr/>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<h3>IServerSettings</h3>
+					<p>Both <code>ServerSettings</code> and <code>IRestServer</code> implement <code>IServerSettings</code>. This allows for property definitions to easily enforced between the two. Here we'll explore those properties and how they interact.</p>
+					<p>All of the properties show in this segment except <code>EnableThrowingExceptions</code> will throw a <code>ServerStateException</code> if you attempt to change their value after the <code>Start()</code> method is executed.</p>
+					<div class="well well-sm">These properties can be set on either a <code>RestServer</code> instance or a <code>ServerSettings</code> instance.</div>
+				</div>
+				<div class="col-md-8">
+					<pre class="codeblock">
+						<code class="language-csharp">
+						// Host defaults to localhost, but you can use any supported prefix for HttpListener
+						settings.Host = "localhost";
+
+						// Port defaults to 1234
+						settings.Port = "4321";
+
+						// Connections defines the number of worker threads per processor that will will be
+						// monitoring the incoming queue
+						settings.Connections = 200; // default is 50
+
+						// Since HttpListener only supports http and https for protocols, Grapevine defaults to
+						// http. If you want to use https, just set this property to true
+						server.UseHttps = true;
+
+						// If this property is true, exceptions during starting and stopping the server will be
+						// re-thrown instead of swallowed; defaults to false
+						server.EnableThrowingExceptions = true;
+						</code>
+					</pre>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<h4>Generic Delegates</h4>
+					<p>There are several optional generic delegates that can be set to execute custom code before and/or after the server starts and/or stops. These delegates accept no arguments and return no result. This is useful if you need to setup and/or tear down any additionl resources - e.g. databases - or otherwise ensure that the environment is setup in a manner consistent with the expectations of your routes.</p>
+					<ul>
+						<li>If <code>OnBeforeStart</code> throws an exception, the server will not start, but if <code>OnAfterStart</code> fails, the server state will not change.</li>
+						<li>If <code>OnBeforeStop</code> throws an exception, the server will not stop, but if <code>OnAfterStop</code> fails, the server state will not change.</li>
+						<li><code>OnStart</code> is a synonym for <code>OnAfterStart</code> and <code>OnStop</code> is a synonym for <code>OnAfterStop</code></li>
+					</ul>
+					<div class="well well-sm">If you want the delegate to call some methods on the server, the delegates need to be added directly to the server, not the server settings.</div>
+				</div>
+				<div class="col-md-8">
+					<pre class="codeblock">
+						<code class="language-csharp">
+						var settings = new ServerSettings();
+						settings.OnBeforeStop = () =>
+						{
+							Console.WriteLine("Server shutdown initiated...");
+						};
+
+						settings.OnAfterStop = () =>
+						{
+							Console.WriteLine("Server stopped");
+						};
+
+						var server = new RestServer(ServerSettings);
+						server.OnBeforeStart = () =>
+						{
+							Console.WriteLine($"Starting server on port {server.Port}");
+						};
+
+						server.OnAfterStart = () =>
+						{
+							Console.WriteLine($"Server started on port {server.Port}");
+						};
+						</code>
+					</pre>
+				</div>
+			</div>
+
+
+			<div class="row">
+				<div class="col-md-4">
+					<h3>RestServer</h3>
+					<p></p>
+					<div class="well well-sm"></div>
+				</div>
+				<div class="col-md-8">
+					<pre class="codeblock">
+						<code class="language-csharp">
+						</code>
+					</pre>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<h3>PublicFolder</h3>
+					<p></p>
+					<div class="well well-sm"></div>
+				</div>
+				<div class="col-md-8">
+					<pre class="codeblock">
+						<code class="language-csharp">
+						</code>
+					</pre>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<h3>RestCluster</h3>
+					<p></p>
+					<div class="well well-sm"></div>
+				</div>
+				<div class="col-md-8">
+					<pre class="codeblock">
+						<code class="language-csharp">
+						</code>
+					</pre>
+				</div>
+			</div>
+
+			<!-- Router -->
+			<div class="row">
+				<h2>Configuring the Router</h2>
+				<hr/>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<h3 id="router">Router</h3>
+					<p>Inspired by <a href="https://expressjs.com/" target="_blank">Express</a>, Grapevine's <code>Router</code> logic is pretty simple. When a request comes in, the HTTP verb and the path info are used to determine which routes in the routing table should be executed and in what order. These routes are then iterated over, passing the <code>IHttpContext</code> from one route to the next - the output from one route becoming the input to the next - until the request is responded to, at which point the remaining routes are not executed (unless you change the default behavior).</p>
+					<p>I initially faced some criticism for storing the routing table in an array instead of a tree (even a <a href="https://en.wikipedia.org/wiki/Trie" target="_blank">trie algorithm</a> was suggested). However, the complexity tradeoff between iterating over an array (which tends to be short given most application routing requirements) and walking a tree makes arrays a much better choice. Matching routes to requests can be tricky, because we like to use everything for defining routes. This includes simple strings, regular expressions, wildcards, and path parameters. These can't be stored in a hash because regular expression matches can't be looked up based on a string. You have to iterate somewhere. A hash will only work if you limit routes to static string values. And if that’s the case, why use a router at all?</p>
+					<p>Granted, this design allows for adding conflicting routes. This is not a flaw but the intended result of the extremely flexible route matching support allowing regular expressions and wildcards - it's a simple tradeoff. I do, however, make every reasonable attempt to prevent the registration of <i>duplicate</i> routes.</p>
+					<div class="well well-sm"></div>
+				</div>
+				<div class="col-md-8">
+					<pre class="codeblock">
+						<code class="language-csharp">
+						</code>
+					</pre>
+				</div>
+			</div>
+
+			<!-- Route -->
+			<div class="row">
+				<h2>Creating Routes</h2>
+				<hr/>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<h3>Route</h3>
+					<p></p>
+					<div class="well well-sm"></div>
+				</div>
+				<div class="col-md-8">
+					<pre class="codeblock">
+						<code class="language-csharp">
+						</code>
+					</pre>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<h3>The Fluent Interface</h3>
+					<p></p>
+					<div class="well well-sm"></div>
+				</div>
+				<div class="col-md-8">
+					<pre class="codeblock">
+						<code class="language-csharp">
+						</code>
+					</pre>
+				</div>
+			</div>
+
+			<!-- Router -->
+			<div class="row">
+				<h2>Keeping It Simple: Automatic Route Registration Using Attributes</h2>
+				<hr/>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<h3>RestResource</h3>
+					<p></p>
+					<div class="well well-sm"></div>
+				</div>
+				<div class="col-md-8">
+					<pre class="codeblock">
+						<code class="language-csharp">
+						</code>
+					</pre>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-4">
+					<h3>RestRoute</h3>
+					<p></p>
+					<div class="well well-sm"></div>
+				</div>
+				<div class="col-md-8">
+					<pre class="codeblock">
+						<code class="language-csharp">
+						</code>
+					</pre>
+				</div>
+			</div>
+		</div>
