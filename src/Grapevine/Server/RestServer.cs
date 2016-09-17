@@ -169,8 +169,7 @@ namespace Grapevine.Server
             try
             {
                 OnBeforeStart?.Invoke();
-
-                if (Router.RoutingTable.Count == 0) Router.Scanner.Scan();
+                if (Router.RoutingTable.Count == 0) Router.ScanAssemblies();
 
                 Listener.Prefixes.Add(ListenerPrefix);
                 Listener.Start();
@@ -183,6 +182,7 @@ namespace Grapevine.Server
                     Workers[i].Start();
                 }
 
+                Logger.Trace($"Listening: {ListenerPrefix}");
                 if (IsListening) OnAfterStart?.Invoke();
             }
             catch (Exception e)
@@ -277,7 +277,7 @@ namespace Grapevine.Server
             WaitHandle[] wait = { ReadyEvent, StopEvent };
             while (0 == WaitHandle.WaitAny(wait))
             {
-                HttpContext context;
+                IHttpContext context;
 
                 lock (Queue)
                 {
@@ -293,14 +293,21 @@ namespace Grapevine.Server
 
                 try
                 {
-                    if (!string.IsNullOrWhiteSpace(PublicFolder.Prefix) && context.Request.PathInfo.StartsWith(PublicFolder.Prefix))
+                    if (!string.IsNullOrWhiteSpace(PublicFolder.Prefix) && context.Request.PathInfo.StartsWith($"/{PublicFolder.Prefix}"))
                     {
-                        PublicFolder.SendPublicFile(context);
-                        if (!context.WasRespondedTo) context.Response.SendResponse(HttpStatusCode.NotFound);
+                        context = PublicFolder.SendPublicFile(context);
+                        if (context.WasRespondedTo)
+                        {
+                            Logger.Trace($"Returned file {context.Request.PathInfo}");
+                        }
+                        else
+                        {
+                            context.Response.SendResponse(HttpStatusCode.NotFound);
+                        }
                         return;
                     }
 
-                    context = (HttpContext) PublicFolder.SendPublicFile(context);
+                    context = PublicFolder.SendPublicFile(context);
 
                     if (!context.WasRespondedTo)
                     {

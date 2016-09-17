@@ -1,6 +1,7 @@
 ﻿using System;
 using Grapevine.Server;
 using Grapevine.Server.Attributes;
+using Grapevine.Util;
 
 namespace Grapevine.Local
 {
@@ -10,7 +11,21 @@ namespace Grapevine.Local
         {
             using (var server = new RestServer())
             {
-                server.LogToConsole().Start();
+                server.LogToConsole();
+                server.PublicFolder.Prefix = "Grapevine";
+                server.PublicFolder.FolderPath = @"C:\source\github\gv-gh-pages";
+
+                server.OnBeforeStart = () => Console.WriteLine("---------------> Starting Server");
+                server.OnAfterStart = () => Console.WriteLine($"<--------------- Server Started");
+
+                server.OnBeforeStop = () => Console.WriteLine("---------------> Stopping Server");
+                server.OnAfterStop = () =>
+                {
+                    Console.WriteLine("<--------------- Server Stopped");
+                    Console.ReadLine();
+                };
+
+                server.Start();
                 Console.ReadLine();
                 server.Stop();
             }
@@ -18,19 +33,30 @@ namespace Grapevine.Local
     }
 
     [RestResource]
-    public class TestDocument
+    public class TestResource
     {
-        [RestRoute]
-        public IHttpContext Start(IHttpContext context)
+        [RestRoute(HttpMethod = HttpMethod.GET, PathInfo = "/inorder")]
+        public IHttpContext MeFirst(IHttpContext context)
         {
-            context.Properties.User = "Some User";
+            return context;
+        }
+
+        [RestRoute(HttpMethod = HttpMethod.GET, PathInfo = "/inorder")]
+        public IHttpContext MeSecond(IHttpContext context)
+        {
+            return context;
+        }
+
+        [RestRoute(HttpMethod = HttpMethod.GET, PathInfo = "/inorder")]
+        public IHttpContext MeThird(IHttpContext context)
+        {
             return context;
         }
 
         [RestRoute]
-        public IHttpContext Stop(IHttpContext context)
+        public IHttpContext HelloWorld(IHttpContext context)
         {
-            context.Response.SendResponse($"User: {context.Properties.User}");
+            context.Response.SendResponse("Hello,world.");
             return context;
         }
     }

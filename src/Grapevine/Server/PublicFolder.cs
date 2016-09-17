@@ -64,6 +64,8 @@ namespace Grapevine.Server
             if (context.Request.HttpMethod != HttpMethod.GET && context.Request.HttpMethod != HttpMethod.HEAD)
                 return context;
 
+            if (!string.IsNullOrWhiteSpace(Prefix) && !context.Request.PathInfo.StartsWith($"/{Prefix}")) return context;
+
             var filepath = GetFilePath(context.Request.PathInfo);
             if (filepath != null) context.Response.SendResponse(filepath, IsFilePath);
 

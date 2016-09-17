@@ -155,6 +155,12 @@ namespace Grapevine.Server
         IRouter Register(Assembly assembly);
 
         /// <summary>
+        /// Adds all RestRoutes returned from RouteScanner.Scan() to the routing table
+        /// </summary>
+        /// <returns>IRouter</returns>
+        IRouter ScanAssemblies();
+
+        /// <summary>
         /// Routes the IHttpContext through all enabled registered routes that match the IHttpConext provided; returns true if at least one route is invoked
         /// </summary>
         /// <param name="context"></param>
@@ -291,6 +297,12 @@ namespace Grapevine.Server
         public IRouter Register(Assembly assembly)
         {
             AddToRoutingTable(Scanner.ScanAssembly(assembly));
+            return this;
+        }
+
+        public IRouter ScanAssemblies()
+        {
+            AddToRoutingTable(Scanner.Scan());
             return this;
         }
 

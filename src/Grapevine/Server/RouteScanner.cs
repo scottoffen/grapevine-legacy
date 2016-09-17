@@ -247,7 +247,7 @@ namespace Grapevine.Server
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.GlobalAssemblyCache && a.GetName().Name != "Grapevine").OrderBy(a => a.FullName))
             {
-                if (assembly.GetName().Name == "vhost32" || IsExcluded(assembly) || !IsIncluded(assembly)) continue;
+                if (assembly.GetName().Name == "vshost32" || IsExcluded(assembly) || !IsIncluded(assembly)) continue;
                 routes.AddRange(ScanAssembly(assembly));
             }
 
@@ -265,7 +265,7 @@ namespace Grapevine.Server
 
             Logger.Trace($"Generating routes for assembly {assembly.GetName().Name}");
 
-            foreach (var type in assembly.GetTypes().Where(t => t.IsRestResource()))
+            foreach (var type in assembly.GetTypes().Where(t => t.IsRestResource()).OrderBy(m => m.Name))
             {
                 if (IsExcluded(type) || !IsIncluded(type)) continue;
                 routes.AddRange(ScanType(type, basePath));
