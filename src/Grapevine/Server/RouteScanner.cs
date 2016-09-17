@@ -213,7 +213,7 @@ namespace Grapevine.Server
 
         private bool IsIncluded(Type type)
         {
-            if (!_includedTypes.Any() || _includedTypes.Contains(type) || IsIncluded(type.Namespace)) return true;
+            if (!_includedTypes.Any() || _includedTypes.Contains(type)) return true;
             Logger.Trace($"Excluding type {type.Name} due to inclusion rules");
             return false;
         }
