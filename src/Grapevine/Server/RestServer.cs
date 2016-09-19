@@ -293,7 +293,7 @@ namespace Grapevine.Server
 
                 try
                 {
-                    if (!string.IsNullOrWhiteSpace(PublicFolder.Prefix) && context.Request.PathInfo.StartsWith($"/{PublicFolder.Prefix}"))
+                    if (!string.IsNullOrWhiteSpace(PublicFolder.Prefix) && context.Request.PathInfo.StartsWith(PublicFolder.Prefix))
                     {
                         context = PublicFolder.SendPublicFile(context);
                         if (context.WasRespondedTo)

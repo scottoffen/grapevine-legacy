@@ -35,12 +35,17 @@ namespace Grapevine.Server
         protected const string DefaultFolder = "public";
         protected const bool IsFilePath = true;
         private string _folderPath;
+        private string _prefix = string.Empty;
 
         /// <inheritdoc/>
         public string DefaultFileName { get; set; } = "index.html";
 
         /// <inheritdoc/>
-        public string Prefix { get; set; } = string.Empty;
+        public string Prefix
+        {
+            get { return _prefix; }
+            set { _prefix = value == null ? string.Empty : $"/{value.Trim().TrimStart('/').TrimEnd('/')}"; }
+        }
 
         /// <inheritdoc/>
         public string FolderPath
@@ -64,7 +69,7 @@ namespace Grapevine.Server
             if (context.Request.HttpMethod != HttpMethod.GET && context.Request.HttpMethod != HttpMethod.HEAD)
                 return context;
 
-            if (!string.IsNullOrWhiteSpace(Prefix) && !context.Request.PathInfo.StartsWith($"/{Prefix}")) return context;
+            if (!string.IsNullOrWhiteSpace(Prefix) && !context.Request.PathInfo.StartsWith(Prefix)) return context;
 
             var filepath = GetFilePath(context.Request.PathInfo);
             if (filepath != null) context.Response.SendResponse(filepath, IsFilePath);

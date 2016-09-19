@@ -39,12 +39,50 @@ namespace Grapevine.Tests.Server
         }
 
         [Fact]
+        public void public_folder_prefix_setter_trims_whitespace_and_slashes_and_prepends_slash()
+        {
+            var folder = new PublicFolder();
+
+            folder.Prefix = null;
+            folder.Prefix.Equals(string.Empty).ShouldBeTrue();
+
+            folder.Prefix = "hello";
+            folder.Prefix.Equals("hello").ShouldBeFalse();
+            folder.Prefix.Equals("/hello").ShouldBeTrue();
+
+            folder.Prefix = "/hello";
+            folder.Prefix.Equals("/hello").ShouldBeTrue();
+
+            folder.Prefix = "hello/";
+            folder.Prefix.Equals("/hello").ShouldBeTrue();
+
+            folder.Prefix = "/hello/";
+            folder.Prefix.Equals("/hello").ShouldBeTrue();
+
+            folder.Prefix = "  /hello/  ";
+            folder.Prefix.Equals("/hello").ShouldBeTrue();
+        }
+
+        [Fact]
         public void public_folder_send_public_file_does_not_send_when_http_verb_is_not_get_or_head()
         {
             var response = MockContext.GetMockResponse();
             var request = MockContext.GetMockRequest(new MockProperties { HttpMethod = HttpMethod.POST });
             var context = MockContext.GetMockContext(request, response);
             var root = new PublicFolder();
+
+            root.SendPublicFile(context);
+
+            response.AssertWasNotCalled(r => r.SendResponse(Arg<string>.Is.NotNull, Arg.Is(true)));
+        }
+
+        [Fact]
+        public void public_folder_send_public_file_does_not_send_when_pathinfo_does_not_match_prefix()
+        {
+            var response = MockContext.GetMockResponse();
+            var request = MockContext.GetMockRequest(new MockProperties { PathInfo = "/some/file.txt"});
+            var context = MockContext.GetMockContext(request, response);
+            var root = new PublicFolder {Prefix = "test"};
 
             root.SendPublicFile(context);
 
