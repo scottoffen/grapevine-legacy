@@ -247,7 +247,7 @@ namespace Grapevine.Server
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.GlobalAssemblyCache && a.GetName().Name != "Grapevine").OrderBy(a => a.FullName))
             {
-                if (assembly.GetName().Name == "vshost32" || IsExcluded(assembly) || !IsIncluded(assembly)) continue;
+                if (assembly.GetName().Name.StartsWith("vshost") || IsExcluded(assembly) || !IsIncluded(assembly)) continue;
                 routes.AddRange(ScanAssembly(assembly));
             }
 

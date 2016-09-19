@@ -35,7 +35,7 @@ namespace Grapevine.Tests.Server
         [Fact]
         public void router_ctor_initializes_default_properties_wiht_scope()
         {
-            var scope = "MyScope";
+            const string scope = "MyScope";
             var router = new Router(scope);
 
             router.RoutingTable.ShouldNotBeNull();
@@ -68,6 +68,35 @@ namespace Grapevine.Tests.Server
         }
 
         [Fact]
+        public void router_set_logger_to_null_creates_null_logger()
+        {
+            var router = new Router {Logger = new InMemoryLogger()};
+            router.Logger.ShouldBeOfType<InMemoryLogger>();
+
+            router.Logger = null;
+
+            router.Logger.ShouldBeOfType<NullLogger>();
+        }
+
+        [Fact]
+        public void router_set_logger_sets_logger_on_scanner()
+        {
+            var scanner = new RouteScanner();
+            scanner.Logger.ShouldBeOfType<NullLogger>();
+
+            var router = new Router {Scanner = scanner};
+            router.Logger.ShouldBeOfType<NullLogger>();
+
+            router.Logger = new InMemoryLogger();
+
+            router.Logger.ShouldBeOfType<InMemoryLogger>();
+            scanner.Logger.ShouldBeOfType<InMemoryLogger>();
+
+            router.Scanner = null;
+            Should.NotThrow(() => router.Logger = NullLogger.GetInstance());
+        }
+
+        [Fact]
         public void router_registers_route()
         {
             var route = new Route(context => context);
@@ -96,7 +125,7 @@ namespace Grapevine.Tests.Server
         public void router_registers_function_and_httpmethod_as_route()
         {
             Func<IHttpContext, IHttpContext> func = context => context;
-            var verb = HttpMethod.GET;
+            const HttpMethod verb = HttpMethod.GET;
 
             var route = new Route(func, verb);
             var router = new Router();
@@ -111,7 +140,7 @@ namespace Grapevine.Tests.Server
         public void router_registers_function_and_pathinfo_as_route()
         {
             Func<IHttpContext, IHttpContext> func = context => context;
-            var pathinfo = "/path";
+            const string pathinfo = "/path";
 
             var route = new Route(func, pathinfo);
             var router = new Router();
@@ -126,8 +155,8 @@ namespace Grapevine.Tests.Server
         public void router_registers_function_httpmethod_and_pathinfo_as_route()
         {
             Func<IHttpContext, IHttpContext> func = context => context;
-            var verb = HttpMethod.GET;
-            var pathinfo = "/path";
+            const HttpMethod verb = HttpMethod.GET;
+            const string pathinfo = "/path";
 
             var route = new Route(func, verb, pathinfo);
             var router = new Router();
@@ -155,7 +184,7 @@ namespace Grapevine.Tests.Server
         public void router_registers_method_and_httpmethod_as_route()
         {
             var method = typeof(MethodsToRegister).GetMethod("Method");
-            var verb = HttpMethod.GET;
+            const HttpMethod verb = HttpMethod.GET;
 
             var route = new Route(method, verb);
             var router = new Router();
@@ -170,7 +199,7 @@ namespace Grapevine.Tests.Server
         public void router_registers_method_and_pathinfo_as_route()
         {
             var method = typeof(MethodsToRegister).GetMethod("Method");
-            var pathinfo = "/path";
+            const string pathinfo = "/path";
 
             var route = new Route(method, pathinfo);
             var router = new Router();
@@ -185,8 +214,8 @@ namespace Grapevine.Tests.Server
         public void router_registers_method_httpmethod_and_pathinfo_as_route()
         {
             var method = typeof(MethodsToRegister).GetMethod("Method");
-            var verb = HttpMethod.GET;
-            var pathinfo = "/path";
+            const HttpMethod verb = HttpMethod.GET;
+            const string pathinfo = "/path";
 
             var route = new Route(method, verb, pathinfo);
             var router = new Router();
@@ -228,6 +257,19 @@ namespace Grapevine.Tests.Server
             router.Register(typeof(DefaultRouter).Assembly);
 
             router.RoutingTable.Count.ShouldBe(8);
+        }
+
+        [Fact]
+        public void router_scan_assemblies_adds_routes_to_router()
+        {
+            var scanner = MockRepository.Mock<IRouteScanner>();
+            scanner.Stub(s => s.Scan()).Return(new List<IRoute>());
+
+            var router = new Router {Scanner = scanner};
+
+            router.ScanAssemblies();
+
+            scanner.AssertWasCalled(s => s.Scan());
         }
 
         [Fact]

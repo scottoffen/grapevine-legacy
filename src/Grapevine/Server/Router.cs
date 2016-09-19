@@ -186,6 +186,7 @@ namespace Grapevine.Server
     public class Router : IRouter
     {
         private readonly IList<IRoute> _routingTable;
+        private IGrapevineLogger _logger;
 
         public Func<IHttpContext, IHttpContext> After { get; set; }
         public Func<IHttpContext, IHttpContext> Before { get; set; }
@@ -193,8 +194,7 @@ namespace Grapevine.Server
         public bool ContinueRoutingAfterResponseSent { get; set; }
         public string Scope { get; protected set; }
 
-        public IRouteScanner Scanner { get; protected set; }
-        public IGrapevineLogger Logger { get; set; }
+        public IRouteScanner Scanner { get; protected internal set; }
 
         /// <summary>
         /// Returns a new Router object
@@ -227,6 +227,16 @@ namespace Grapevine.Server
             var router = new Router(scope);
             config(router);
             return router;
+        }
+
+        public IGrapevineLogger Logger
+        {
+            get { return _logger; }
+            set
+            {
+                _logger = value ?? NullLogger.GetInstance();
+                if (Scanner != null) Scanner.Logger = _logger;
+            }
         }
 
         public IRouter Register(IRoute route)

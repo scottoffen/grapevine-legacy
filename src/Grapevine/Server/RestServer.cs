@@ -43,6 +43,7 @@ namespace Grapevine.Server
         private string _port;
         private string _protocol = "http";
         private int _connections;
+        private IGrapevineLogger _logger;
         protected bool IsStopping;
         protected bool IsStarting;
         protected readonly HttpListener Listener;
@@ -52,7 +53,6 @@ namespace Grapevine.Server
         protected Thread[] Workers;
 
         public bool EnableThrowingExceptions { get; set; }
-        public IGrapevineLogger Logger { get; set; }
         public Action OnBeforeStart { get; set; }
         public Action OnAfterStart { get; set; }
         public Action OnBeforeStop { get; set; }
@@ -123,6 +123,16 @@ namespace Grapevine.Server
         }
 
         public bool IsListening => Listener?.IsListening ?? false;
+
+        public IGrapevineLogger Logger
+        {
+            get { return _logger; }
+            set
+            {
+                _logger = value ?? NullLogger.GetInstance();
+                if (Router != null) Router.Logger = _logger;
+            }
+        }
 
         public Action OnStart
         {
