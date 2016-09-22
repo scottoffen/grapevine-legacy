@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Net;
-using System.Security.Policy;
 using Xunit;
 using Shouldly;
 using Grapevine.Server;
 using Grapevine.Server.Exceptions;
 using Grapevine.Server.Interfaces;
 using Grapevine.Tests.Server.Helpers;
-using Grapevine.Util;
 using Grapevine.Util.Loggers;
 using Rhino.Mocks;
 
@@ -274,26 +271,23 @@ namespace Grapevine.Tests.Server
         public void server_start_executes_on_after_start()
         {
             var invoked = false;
-            var server = new RestServer
+            var listener = MockRepository.Mock<IHttpListener>();
+            listener.Stub(l => l.Start()).WhenCalled(() => listener.Stub(l => l.IsListening).Return(true));
+
+            var server = new RestServer(listener)
             {
-                OnBeforeStart = () =>
+                Connections = 1,
+                OnAfterStart = () =>
                 {
                     invoked = true;
-                    throw new Exception();
                 }
             };
 
-            Should.Throw<UnableToStartHostException>(() => server.Start());
+            server.Start();
+
             invoked.ShouldBeTrue();
             server.GetIsStarting().ShouldBeFalse();
         }
-
-
-
-
-
-
-
 
         [Fact]
         public void server_dispose_calls_listener_close()

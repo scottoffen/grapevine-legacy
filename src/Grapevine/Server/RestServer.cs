@@ -188,7 +188,7 @@ namespace Grapevine.Server
                 OnBeforeStart?.Invoke();
                 if (Router.RoutingTable.Count == 0) Router.ScanAssemblies();
 
-                Listener.Prefixes.Add(ListenerPrefix);
+                Listener.Prefixes?.Add(ListenerPrefix);
                 Listener.Start();
                 Listening.Start();
 
