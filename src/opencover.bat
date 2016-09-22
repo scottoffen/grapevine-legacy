@@ -23,7 +23,7 @@ exit /b %errorlevel%
 "%OpenCoverExe%" ^
  -target:"%TestRunnerExe%" ^
  -targetargs:"\"%DllContainingTests%\"" ^
- -filter:"+[*]* -[*.Tests*]* -[*]*.*Config -[xunit*]*" ^
+ -filter:"+[*]* -[*.Tests*]* -[*]*.*Config -[xunit*]* -[*]Grapevine.Server.Interfaces.*" ^
  -mergebyhash ^
  -skipautoprops ^
  -register:user ^
