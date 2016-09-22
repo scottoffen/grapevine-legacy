@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Cache;
-using Grapevine.Util;
+using Grapevine.Shared;
 
 namespace Grapevine.Client
 {

@@ -6,7 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
-using Grapevine.Util;
+using Grapevine.Shared;
 
 namespace Grapevine.Client
 {
@@ -244,6 +244,7 @@ namespace Grapevine.Client
         /// Gets the current request as an HttpWebRequest
         /// </summary>
         /// <param name="builder"></param>
+        /// <param name="cookies"></param>
         /// <returns>HttpWebRequest</returns>
         HttpWebRequest ToHttpWebRequest(UriBuilder builder, CookieContainer cookies);
     }
@@ -280,7 +281,7 @@ namespace Grapevine.Client
         public string MediaType { get; set; }
         public HttpMethod HttpMethod { get; set; }
         public string Payload { get; set; }
-        public string PathInfo => PathParams.ParseResource(_resource);
+        public string PathInfo => PathParams.Stringify(_resource);
         public PathParams PathParams { get; }
         public bool Pipelined { get; set; }
         public bool PreAuthenticate { get; set; }
@@ -382,11 +383,12 @@ namespace Grapevine.Client
         /// Gets the current request as an HttpWebRequest
         /// </summary>
         /// <param name="builder"></param>
+        /// <param name="cookies"></param>
         /// <returns>HttpWebRequest</returns>
         public HttpWebRequest ToHttpWebRequest(UriBuilder builder, CookieContainer cookies)
         {
             builder.Path = _request.PathInfo;
-            builder.Query = _request.QueryString.ToString();
+            builder.Query = _request.QueryString.Stringify();
 
             var request = (HttpWebRequest) WebRequest.Create(builder.Uri);
 

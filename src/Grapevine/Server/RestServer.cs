@@ -3,11 +3,14 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Security.Authentication.ExtendedProtection;
 using System.Threading;
-using Grapevine.Server.Exceptions;
-using Grapevine.Util;
-using Grapevine.Util.Loggers;
-using HttpStatusCode = Grapevine.Util.HttpStatusCode;
+using Grapevine.Exceptions.Server;
+using Grapevine.Interfaces.Server;
+using Grapevine.Interfaces.Shared;
+using Grapevine.Shared;
+using Grapevine.Shared.Loggers;
+using HttpStatusCode = Grapevine.Shared.HttpStatusCode;
 using ExtendedProtectionSelector = System.Net.HttpListener.ExtendedProtectionSelector;
+using HttpListener = Grapevine.Interfaces.Server.HttpListener;
 
 namespace Grapevine.Server
 {
@@ -46,11 +49,13 @@ namespace Grapevine.Server
         private IGrapevineLogger _logger;
         protected bool IsStopping;
         protected bool IsStarting;
-        protected readonly HttpListener Listener;
+        protected readonly IHttpListener Listener;
         protected readonly Thread Listening;
         protected readonly ConcurrentQueue<HttpListenerContext> Queue;
         protected readonly ManualResetEvent ReadyEvent, StopEvent;
         protected Thread[] Workers;
+
+        protected internal bool TestingMode = false;
 
         public bool EnableThrowingExceptions { get; set; }
         public Action OnBeforeStart { get; set; }
@@ -61,9 +66,15 @@ namespace Grapevine.Server
 
         public RestServer() : this(new ServerSettings()) { }
 
+        protected internal RestServer(IHttpListener listener) : this(new ServerSettings())
+        {
+            TestingMode = true;
+            Listener = listener;
+        }
+
         public RestServer(IServerSettings options)
         {
-            Listener = new HttpListener();
+            Listener = new HttpListener(new System.Net.HttpListener());
             Listening = new Thread(HandleRequests);
             Queue = new ConcurrentQueue<HttpListenerContext>();
             ReadyEvent = new ManualResetEvent(false);
@@ -181,15 +192,18 @@ namespace Grapevine.Server
                 OnBeforeStart?.Invoke();
                 if (Router.RoutingTable.Count == 0) Router.ScanAssemblies();
 
-                Listener.Prefixes.Add(ListenerPrefix);
+                Listener.Prefixes?.Add(ListenerPrefix);
                 Listener.Start();
-                Listening.Start();
-
-                Workers = new Thread[_connections*Environment.ProcessorCount];
-                for (var i = 0; i < Workers.Length; i++)
+                if (!TestingMode)
                 {
-                    Workers[i] = new Thread(Worker);
-                    Workers[i].Start();
+                    Listening.Start();
+
+                    Workers = new Thread[_connections*Environment.ProcessorCount];
+                    for (var i = 0; i < Workers.Length; i++)
+                    {
+                        Workers[i] = new Thread(Worker);
+                        Workers[i].Start();
+                    }
                 }
 
                 Logger.Trace($"Listening: {ListenerPrefix}");
@@ -216,8 +230,11 @@ namespace Grapevine.Server
                 OnBeforeStop?.Invoke();
 
                 StopEvent.Set();
-                Listening.Join();
-                foreach (var worker in Workers) worker.Join();
+                if (!TestingMode)
+                {
+                    Listening.Join();
+                    foreach (var worker in Workers) worker.Join();
+                }
                 Listener.Stop();
 
                 if (!IsListening) OnAfterStop?.Invoke();
@@ -235,14 +252,12 @@ namespace Grapevine.Server
         public void Dispose()
         {
             Stop();
-            Listener.Close();
+            Listener?.Close();
         }
 
         public IRestServer LogToConsole()
         {
             Logger = new ConsoleLogger();
-            Router.Logger = Logger;
-            Router.Scanner.Logger = Logger;
             return this;
         }
 
@@ -301,46 +316,60 @@ namespace Grapevine.Server
                     else { ReadyEvent.Reset(); continue; }
                 }
 
-                try
+                SafeRouteContext(context);
+            }
+        }
+
+        private static void SafeRouteContext(IHttpContext context)
+        {
+            var server = context.Server;
+
+            try
+            {
+                UnsafeRouteContext(context);
+            }
+            catch (RouteNotFoundException)
+            {
+                if (server.EnableThrowingExceptions) throw;
+                context.Response.SendResponse(HttpStatusCode.NotFound);
+            }
+            catch (NotImplementedException)
+            {
+                if (server.EnableThrowingExceptions) throw;
+                context.Response.SendResponse(HttpStatusCode.NotImplemented);
+            }
+            catch (Exception e)
+            {
+                server.Logger.Error(e);
+                if (server.EnableThrowingExceptions) throw;
+                context.Response.SendResponse(HttpStatusCode.InternalServerError, e);
+            }
+        }
+
+        private static void UnsafeRouteContext(IHttpContext context)
+        {
+            var server = context.Server;
+
+            var shouldRespondWithFile = !string.IsNullOrWhiteSpace(server.PublicFolder.Prefix) &&
+                                        context.Request.PathInfo.StartsWith(server.PublicFolder.Prefix);
+
+            context = server.PublicFolder.SendPublicFile(context);
+
+            if (shouldRespondWithFile)
+            {
+                if (context.WasRespondedTo)
                 {
-                    if (!string.IsNullOrWhiteSpace(PublicFolder.Prefix) && context.Request.PathInfo.StartsWith(PublicFolder.Prefix))
-                    {
-                        context = PublicFolder.SendPublicFile(context);
-                        if (context.WasRespondedTo)
-                        {
-                            Logger.Trace($"Returned file {context.Request.PathInfo}");
-                        }
-                        else
-                        {
-                            context.Response.SendResponse(HttpStatusCode.NotFound);
-                        }
-                        return;
-                    }
-
-                    context = PublicFolder.SendPublicFile(context);
-
-                    if (!context.WasRespondedTo)
-                    {
-                        if (!Router.Route(context)) throw new RouteNotFoundException(context);
-                    }
+                    server.Logger.Trace($"Returned file {context.Request.PathInfo}");
                 }
-                catch (RouteNotFoundException)
+                else
                 {
-                    if (EnableThrowingExceptions) throw;
                     context.Response.SendResponse(HttpStatusCode.NotFound);
                 }
-                catch (NotImplementedException)
-                {
-                    if (EnableThrowingExceptions) throw;
-                    context.Response.SendResponse(HttpStatusCode.NotImplemented);
-                }
-                catch (Exception e)
-                {
-                    if (EnableThrowingExceptions) throw;
-                    Logger.Error(e);
-                    context.Response.SendResponse(HttpStatusCode.InternalServerError, e);
-                }
+                return;
             }
+
+            if (context.WasRespondedTo) return;
+            if (!server.Router.Route(context)) throw new RouteNotFoundException(context);
         }
     }
 
@@ -349,9 +378,9 @@ namespace Grapevine.Server
     /// </summary>
     public sealed class AdvancedRestServer
     {
-        private readonly HttpListener _listener;
+        private readonly IHttpListener _listener;
 
-        internal AdvancedRestServer(HttpListener listener)
+        internal AdvancedRestServer(IHttpListener listener)
         {
             _listener = listener;
         }
@@ -413,7 +442,7 @@ namespace Grapevine.Server
         /// <summary>
         /// Gets a value that indicates whether HttpListener can be used with the current operating system
         /// </summary>
-        public bool IsSupported => HttpListener.IsSupported;
+        public bool IsSupported => System.Net.HttpListener.IsSupported;
 
         /// <summary>
         /// Gets or sets a Boolean value that controls whether, when NTLM is used, additional requests using the same Transmission Control Protocol (TCP) connection are required to authenticate
