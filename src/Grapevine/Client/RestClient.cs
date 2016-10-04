@@ -53,6 +53,11 @@ namespace Grapevine.Client
         string UserName { get; set; }
 
         /// <summary>
+        /// Action to call if request in <see cref="Execute"/> times out
+        /// </summary>
+        Action RequestTimeoutAction { get; set; }
+
+        /// <summary>
         /// Gets an IRestResponse returned from sending an IRestRequest to the server represented by the IRestClient
         /// </summary>
         IRestResponse Execute(IRestRequest restRequest);
