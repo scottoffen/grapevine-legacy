@@ -53,6 +53,11 @@ namespace Grapevine.Client
         string UserName { get; set; }
 
         /// <summary>
+        /// Action to call if request in <see cref="Execute"/> times out
+        /// </summary>
+        Action RequestTimeoutAction { get; set; }
+
+        /// <summary>
         /// Gets an IRestResponse returned from sending an IRestRequest to the server represented by the IRestClient
         /// </summary>
         IRestResponse Execute(IRestRequest restRequest);
@@ -65,6 +70,8 @@ namespace Grapevine.Client
         public Uri BaseUrl => Builder.Uri;
         public CookieContainer Cookies { get; }
         public ICredentials Credentials { get; set; }
+        public Action RequestTimeoutAction { get; set; }
+        
 
         public RestClient()
         {
@@ -121,7 +128,14 @@ namespace Grapevine.Client
             }
             catch (WebException e)
             {
-                if (e.Status == WebExceptionStatus.Timeout) throw;
+                if (e.Status == WebExceptionStatus.Timeout)
+                {
+                    if (RequestTimeoutAction == null) throw;
+
+                    RequestTimeoutAction();
+                    return null;
+                }
+
                 var elapsed = stopwatch.ElapsedMilliseconds;
                 var httpresponse = (HttpWebResponse) e.Response;
                 response = new RestResponse(httpresponse)
