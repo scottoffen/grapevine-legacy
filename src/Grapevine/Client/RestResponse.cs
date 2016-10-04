@@ -3,8 +3,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
-using Grapevine.Util;
-using HttpStatusCode = Grapevine.Util.HttpStatusCode;
+using Grapevine.Shared;
+using HttpStatusCode = Grapevine.Shared.HttpStatusCode;
 
 namespace Grapevine.Client
 {

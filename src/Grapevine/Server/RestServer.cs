@@ -3,13 +3,14 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Security.Authentication.ExtendedProtection;
 using System.Threading;
-using Grapevine.Server.Exceptions;
-using Grapevine.Server.Interfaces;
-using Grapevine.Util;
-using Grapevine.Util.Loggers;
-using HttpStatusCode = Grapevine.Util.HttpStatusCode;
+using Grapevine.Exceptions.Server;
+using Grapevine.Interfaces.Server;
+using Grapevine.Interfaces.Shared;
+using Grapevine.Shared;
+using Grapevine.Shared.Loggers;
+using HttpStatusCode = Grapevine.Shared.HttpStatusCode;
 using ExtendedProtectionSelector = System.Net.HttpListener.ExtendedProtectionSelector;
-using HttpListener = Grapevine.Server.Interfaces.HttpListener;
+using HttpListener = Grapevine.Interfaces.Server.HttpListener;
 
 namespace Grapevine.Server
 {
@@ -54,6 +55,8 @@ namespace Grapevine.Server
         protected readonly ManualResetEvent ReadyEvent, StopEvent;
         protected Thread[] Workers;
 
+        protected internal bool TestingMode = false;
+
         public bool EnableThrowingExceptions { get; set; }
         public Action OnBeforeStart { get; set; }
         public Action OnAfterStart { get; set; }
@@ -65,6 +68,7 @@ namespace Grapevine.Server
 
         protected internal RestServer(IHttpListener listener) : this(new ServerSettings())
         {
+            TestingMode = true;
             Listener = listener;
         }
 
@@ -190,13 +194,16 @@ namespace Grapevine.Server
 
                 Listener.Prefixes?.Add(ListenerPrefix);
                 Listener.Start();
-                Listening.Start();
-
-                Workers = new Thread[_connections*Environment.ProcessorCount];
-                for (var i = 0; i < Workers.Length; i++)
+                if (!TestingMode)
                 {
-                    Workers[i] = new Thread(Worker);
-                    Workers[i].Start();
+                    Listening.Start();
+
+                    Workers = new Thread[_connections*Environment.ProcessorCount];
+                    for (var i = 0; i < Workers.Length; i++)
+                    {
+                        Workers[i] = new Thread(Worker);
+                        Workers[i].Start();
+                    }
                 }
 
                 Logger.Trace($"Listening: {ListenerPrefix}");
@@ -223,8 +230,11 @@ namespace Grapevine.Server
                 OnBeforeStop?.Invoke();
 
                 StopEvent.Set();
-                Listening.Join();
-                foreach (var worker in Workers) worker.Join();
+                if (!TestingMode)
+                {
+                    Listening.Join();
+                    foreach (var worker in Workers) worker.Join();
+                }
                 Listener.Stop();
 
                 if (!IsListening) OnAfterStop?.Invoke();
@@ -242,7 +252,7 @@ namespace Grapevine.Server
         public void Dispose()
         {
             Stop();
-            Listener.Close();
+            Listener?.Close();
         }
 
         public IRestServer LogToConsole()
