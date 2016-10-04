@@ -24,16 +24,16 @@ namespace Grapevine.Tests.Client
         [Fact]
         public void client_runs_timeout_delegate_on_request_timeout_if_set()
         {
-            var delegateCalled = false;
-            Action updateDelegateCalledValue = () => delegateCalled = true;
+            var actionCalled = false;
+            Action updateActionCalled = () => actionCalled = true;
 
-            var client = new RestClient(updateDelegateCalledValue) { Host = "localhost", Port = 1234, Scheme = UriScheme.Http };
+            var client = new RestClient { RequestTimeoutAction = updateActionCalled, Host = "localhost", Port = 1234, Scheme = UriScheme.Http };
 
             var req = new RestRequest { Timeout = 1, ContentType = ContentType.MIME };
 
             client.Execute(req);
 
-            delegateCalled.ShouldBeTrue();
+            actionCalled.ShouldBeTrue();
         }
 
         [Fact]

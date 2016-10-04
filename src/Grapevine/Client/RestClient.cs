@@ -65,12 +65,11 @@ namespace Grapevine.Client
         public Uri BaseUrl => Builder.Uri;
         public CookieContainer Cookies { get; }
         public ICredentials Credentials { get; set; }
+        public Action RequestTimeoutAction { get; set; }
+        
 
-        private readonly Action _timeoutDelegate;
-
-        public RestClient(Action timeoutDelegate = null)
+        public RestClient()
         {
-            _timeoutDelegate = timeoutDelegate;
             Builder = new UriBuilder();
             Scheme = UriScheme.Http;
             Cookies = new CookieContainer();
@@ -126,9 +125,9 @@ namespace Grapevine.Client
             {
                 if (e.Status == WebExceptionStatus.Timeout)
                 {
-                    if (_timeoutDelegate == null) throw;
+                    if (RequestTimeoutAction == null) throw;
 
-                    _timeoutDelegate();
+                    RequestTimeoutAction();
                     return null;
                 }
 
