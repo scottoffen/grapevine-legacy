@@ -181,7 +181,9 @@ namespace Grapevine.Tests.Server
             [Fact]
             public void SynonymForOnAfterStart()
             {
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
                 Action action = () => { var x = 2; };
+#pragma warning restore CS0219 // Variable is assigned but its value is never used
 
                 using (var server = new RestServer())
                 {
@@ -199,7 +201,9 @@ namespace Grapevine.Tests.Server
             [Fact]
             public void SynonymForOnAfterStop()
             {
+#pragma warning disable CS0219 // Variable is assigned but its value is never used
                 Action action = () => { var x = 2; };
+#pragma warning restore CS0219 // Variable is assigned but its value is never used
 
                 using (var server = new RestServer())
                 {
