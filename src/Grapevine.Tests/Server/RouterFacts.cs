@@ -76,7 +76,7 @@ namespace Grapevine.Tests.Server
         public class AddRouteToTableMethod
         {
             [Fact]
-            public void router_protected_add_route_to_table_throws_exception_if_route_function_is_null()
+            public void ThrowsExceptionIfRouteFunctionIsNull()
             {
                 var router = new Router();
                 var route = Substitute.For<IRoute>();
@@ -88,7 +88,7 @@ namespace Grapevine.Tests.Server
         public class AfterProperty
         {
             [Fact]
-            public void router_route_executes_after_delegate_after_routing()
+            public void ExecutesAfterRouting()
             {
                 var executionOrder = new List<string>();
 
@@ -108,7 +108,7 @@ namespace Grapevine.Tests.Server
         public class BeforeProperty
         {
             [Fact]
-            public void router_route_executes_before_delegate_prior_to_routing()
+            public void ExecutesBeforeRouting()
             {
                 var executionOrder = new List<string>();
 
@@ -128,7 +128,7 @@ namespace Grapevine.Tests.Server
         public class ContinueRoutingAfterResponseSentProperty
         {
             [Fact]
-            public void router_route_continues_execution_after_response_sent_if_continue_flag_is_true()
+            public void ContinuesExecutionAfterResponseSentWhenTrue()
             {
                 var executed = false;
                 var context = Mocks.HttpContext();
@@ -148,7 +148,7 @@ namespace Grapevine.Tests.Server
             }
 
             [Fact]
-            public void router_route_stops_execution_after_response_sent_if_continue_flag_is_false()
+            public void StopsExecutionAfterResponseSentWhenFalse()
             {
                 var executed = false;
                 var context = Mocks.HttpContext();
@@ -171,28 +171,28 @@ namespace Grapevine.Tests.Server
         public class ImportMethod
         {
             [Fact]
-            public void router_import_throws_error_if_type_is_not_a_class()
+            public void ThrowsExceptionWhenTypeIsNotAClass()
             {
                 var router = new Router();
                 Should.Throw<ArgumentException>(() => router.Import(typeof(IRouter)));
             }
 
             [Fact]
-            public void router_import_throws_error_if_type_does_not_implement_irouter()
+            public void ThrowsExceptionWhenTypeDoesNotImplementIRouter()
             {
                 var router = new Router();
                 Should.Throw<ArgumentException>(() => router.Import(typeof(NotARouter)));
             }
 
             [Fact]
-            public void router_import_throws_error_if_type_is_abstract()
+            public void ThrowsExceptionWhenTypeIsAbstract()
             {
                 var router = new Router();
                 Should.Throw<ArgumentException>(() => router.Import(typeof(AbstractRouter)));
             }
 
             [Fact]
-            public void router_imports_routes_from_another_router_instance()
+            public void ImportsRoutesFromAnotherRouterInstance()
             {
                 var router = new Router();
                 router.RoutingTable.ShouldBeEmpty();
@@ -203,7 +203,7 @@ namespace Grapevine.Tests.Server
             }
 
             [Fact]
-            public void router_imports_routes_from_type_of_router()
+            public void ImportsRoutesFromSpecifiedRouterType()
             {
                 var router = new Router();
                 router.RoutingTable.ShouldBeEmpty();
@@ -214,7 +214,7 @@ namespace Grapevine.Tests.Server
             }
 
             [Fact]
-            public void router_imports_routes_from_generic_type_of_router()
+            public void ImportsRoutesFromGenericRouterType()
             {
                 var router = new Router();
                 router.RoutingTable.ShouldBeEmpty();
@@ -260,7 +260,7 @@ namespace Grapevine.Tests.Server
         public class RegisterMethod
         {
             [Fact]
-            public void router_registers_route()
+            public void RegistersRoute()
             {
                 var route = new Route(context => context);
                 var router = new Router();
@@ -272,7 +272,7 @@ namespace Grapevine.Tests.Server
             }
 
             [Fact]
-            public void router_registers_function_as_route()
+            public void RegistersFunctionAsRoute()
             {
                 Func<IHttpContext, IHttpContext> func = context => context;
                 var route = new Route(func);
@@ -285,7 +285,7 @@ namespace Grapevine.Tests.Server
             }
 
             [Fact]
-            public void router_registers_function_and_httpmethod_as_route()
+            public void RegistersFunctionAndHttpMethodAsRoute()
             {
                 Func<IHttpContext, IHttpContext> func = context => context;
                 const HttpMethod verb = HttpMethod.GET;
@@ -300,7 +300,7 @@ namespace Grapevine.Tests.Server
             }
 
             [Fact]
-            public void router_registers_function_and_pathinfo_as_route()
+            public void RegistersFunctionAndPathInfoAsRoute()
             {
                 Func<IHttpContext, IHttpContext> func = context => context;
                 const string pathinfo = "/path";
@@ -315,7 +315,7 @@ namespace Grapevine.Tests.Server
             }
 
             [Fact]
-            public void router_registers_function_httpmethod_and_pathinfo_as_route()
+            public void RegistersFunctionHttpMethodAndPathInfoAsRoute()
             {
                 Func<IHttpContext, IHttpContext> func = context => context;
                 const HttpMethod verb = HttpMethod.GET;
@@ -331,7 +331,7 @@ namespace Grapevine.Tests.Server
             }
 
             [Fact]
-            public void router_registers_method_as_route()
+            public void RegistersMethod_as_route()
             {
                 var method = typeof(MethodsToRegister).GetMethod("Method");
                 var route = new Route(method);
@@ -344,7 +344,7 @@ namespace Grapevine.Tests.Server
             }
 
             [Fact]
-            public void router_registers_method_and_httpmethod_as_route()
+            public void RegistersMethodAndHttpMethodAsRoute()
             {
                 var method = typeof(MethodsToRegister).GetMethod("Method");
                 const HttpMethod verb = HttpMethod.GET;
@@ -359,7 +359,7 @@ namespace Grapevine.Tests.Server
             }
 
             [Fact]
-            public void router_registers_method_and_pathinfo_as_route()
+            public void RegistersMethodAndPathInfoAsRoute()
             {
                 var method = typeof(MethodsToRegister).GetMethod("Method");
                 const string pathinfo = "/path";
@@ -374,7 +374,7 @@ namespace Grapevine.Tests.Server
             }
 
             [Fact]
-            public void router_registers_method_httpmethod_and_pathinfo_as_route()
+            public void RegistersMethodHttpMethodAndPathInfoAsRoute()
             {
                 var method = typeof(MethodsToRegister).GetMethod("Method");
                 const HttpMethod verb = HttpMethod.GET;
@@ -390,7 +390,7 @@ namespace Grapevine.Tests.Server
             }
 
             [Fact]
-            public void router_registers_type()
+            public void RegistersType()
             {
                 var router = new Router();
                 router.RoutingTable.ShouldBeEmpty();
@@ -401,7 +401,7 @@ namespace Grapevine.Tests.Server
             }
 
             [Fact]
-            public void router_registers_generic_type()
+            public void RegistersGenericType()
             {
                 var router = new Router();
                 router.RoutingTable.ShouldBeEmpty();
@@ -412,7 +412,7 @@ namespace Grapevine.Tests.Server
             }
 
             [Fact]
-            public void router_registers_assembly()
+            public void RegistersAssembly()
             {
                 var router = new Router();
                 router.RoutingTable.ShouldBeEmpty();
@@ -423,7 +423,7 @@ namespace Grapevine.Tests.Server
             }
 
             [Fact]
-            public void router_prevents_duplicate_route_registrations()
+            public void PreventsDuplicateRouteRegistrations()
             {
                 var method = typeof(MethodsToRegister).GetMethod("Method");
                 var route1 = new Route(method);
@@ -442,7 +442,7 @@ namespace Grapevine.Tests.Server
         public class RouteMethod
         {
             [Fact]
-            public void router_route_throws_exception_if_routing_is_null()
+            public void ThrowsExceptionWhenRoutingIsNull()
             {
                 var router = new Router();
                 IList<IRoute> routing = null;
@@ -450,7 +450,7 @@ namespace Grapevine.Tests.Server
             }
 
             [Fact]
-            public void router_route_throws_exception_if_routing_is_empty()
+            public void ThrowsExceptionWhenRoutingIsEmpty()
             {
                 var router = new Router();
                 IList<IRoute> routing = new List<IRoute>();
@@ -458,7 +458,7 @@ namespace Grapevine.Tests.Server
             }
 
             [Fact]
-            public void router_route_returns_true_if_context_has_been_responded_to()
+            public void ReturnsTrueWhenContextHasBeenRespondedTo()
             {
                 var executed = false;
                 var route = new Route(ctx => { executed = true; return ctx; });
@@ -479,7 +479,7 @@ namespace Grapevine.Tests.Server
         public class RouteForMethod
         {
             [Fact]
-            public void router_returns_routes_for_get()
+            public void ReturnsRoutesForGet()
             {
                 var router = new Router().Import<RouterToImport>();
                 var context = Mocks.HttpContext(new Dictionary<string, object> {{"HttpMethod", HttpMethod.GET}, {"PathInfo", "/user/list"}});
@@ -491,7 +491,7 @@ namespace Grapevine.Tests.Server
             }
 
             [Fact]
-            public void router_returns_routes_for_post()
+            public void ReturnsRoutesForPost()
             {
                 var router = new Router().Import<RouterToImport>();
                 var context = Mocks.HttpContext(new Dictionary<string, object> { { "HttpMethod", HttpMethod.POST }, { "PathInfo", "/user" } });
@@ -506,7 +506,7 @@ namespace Grapevine.Tests.Server
         public class ScanAssembliesMethod
         {
             [Fact]
-            public void router_scan_assemblies_adds_routes_to_router()
+            public void AddsRoutesToRouter()
             {
                 var scanner = Substitute.For<IRouteScanner>();
                 scanner.Scan().Returns(new List<IRoute>());
