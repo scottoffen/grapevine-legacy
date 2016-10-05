@@ -251,7 +251,7 @@ namespace Grapevine.Server
 
         public void Dispose()
         {
-            Stop();
+            if (IsListening) Stop();
             Listener?.Close();
         }
 
