@@ -29,11 +29,10 @@ namespace Grapevine.Tests.Server
             [Fact]
             public void CreatesFolderIfNotExists()
             {
-                const string newdir = "createme";
-                if (Directory.Exists(newdir)) Directory.Delete(newdir);
-
-                var root = new PublicFolder { FolderPath = newdir };
-                root.FolderPath.Equals(Path.Combine(Directory.GetCurrentDirectory(), newdir)).ShouldBe(true);
+                var folder = Guid.NewGuid().Truncate();
+                var root = new PublicFolder { FolderPath = folder };
+                root.FolderPath.Equals(Path.Combine(Directory.GetCurrentDirectory(), folder)).ShouldBe(true);
+                Directory.Delete(root.FolderPath);
             }
 
             [Fact]
@@ -84,7 +83,7 @@ namespace Grapevine.Tests.Server
             [Fact]
             public void ReturnsNullWhenDefaultFileDoesNotExist()
             {
-                const string folder = "nodefault";
+                var folder = Guid.NewGuid().Truncate();
                 var root = new PublicFolder();
 
                 var folderpath = Directory.CreateDirectory(Path.Combine(root.FolderPath, folder)).FullName;
@@ -99,7 +98,7 @@ namespace Grapevine.Tests.Server
             public void ReturnsExistingFilePath()
             {
                 var root = new PublicFolder();
-                const string file = "myfile";
+                var file = Guid.NewGuid().Truncate();
 
                 var filepath = Path.Combine(root.FolderPath, file);
                 using (var sw = File.CreateText(filepath)) { sw.WriteLine("Hello"); }
@@ -114,7 +113,7 @@ namespace Grapevine.Tests.Server
             public void ReturnsExistingDefaultFilePath()
             {
                 var root = new PublicFolder();
-                const string folder = "folder";
+                var folder = Guid.NewGuid().Truncate();
 
                 var folderpath = Directory.CreateDirectory(Path.Combine(root.FolderPath, folder)).FullName;
                 if (!Directory.Exists(folderpath)) throw new Exception("Folder to test did not get created");
@@ -229,7 +228,7 @@ namespace Grapevine.Tests.Server
                 root.SendPublicFile(context);
                 context.Response.Received().SendResponse(filepath, true);
 
-                //// Clean up
+                // Clean up
                 File.Delete(filepath);
                 Directory.Delete(folderpath);
                 Directory.Delete(root.FolderPath);
