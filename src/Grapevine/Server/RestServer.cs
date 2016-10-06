@@ -222,7 +222,7 @@ namespace Grapevine.Server
         public void Stop()
         {
             if (!IsListening || IsStopping) return;
-            if (IsStarting) throw new UnableToStartHostException("Cannot stop server until server has finished starting");
+            if (IsStarting) throw new UnableToStopHostException("Cannot stop server until server has finished starting");
             IsStopping = true;
 
             try
@@ -316,11 +316,11 @@ namespace Grapevine.Server
                     else { ReadyEvent.Reset(); continue; }
                 }
 
-                SafeRouteContext(context);
+                RouteContext(context);
             }
         }
 
-        private static void SafeRouteContext(IHttpContext context)
+        private static void RouteContext(IHttpContext context)
         {
             var server = context.Server;
 
