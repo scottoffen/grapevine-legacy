@@ -12,6 +12,26 @@ namespace Grapevine.Tests.Server
 {
     public class PublicFolderFacts
     {
+        private static readonly Random Random = new Random();
+        private static string GenerateUniqueString()
+        {
+            return Guid.NewGuid().Truncate() + "-" + Random.Next(10,99);
+        }
+
+        private static void CleanUp(string folderpath)
+        {
+            try
+            {
+                foreach (var file in Directory.GetFiles(folderpath))
+                {
+                    File.Delete(file);
+                }
+
+                Directory.Delete(folderpath);
+            }
+            catch { /* ignored */ }
+        }
+
         public class Constructors
         {
             [Fact]
@@ -29,10 +49,10 @@ namespace Grapevine.Tests.Server
             [Fact]
             public void CreatesFolderIfNotExists()
             {
-                var folder = Guid.NewGuid().Truncate();
+                var folder = GenerateUniqueString();
                 var root = new PublicFolder { FolderPath = folder };
                 root.FolderPath.Equals(Path.Combine(Directory.GetCurrentDirectory(), folder)).ShouldBe(true);
-                Directory.Delete(root.FolderPath);
+                CleanUp(root.FolderPath);
             }
 
             [Fact]
@@ -83,7 +103,7 @@ namespace Grapevine.Tests.Server
             [Fact]
             public void ReturnsNullWhenDefaultFileDoesNotExist()
             {
-                var folder = Guid.NewGuid().Truncate();
+                var folder = GenerateUniqueString();
                 var root = new PublicFolder();
 
                 var folderpath = Directory.CreateDirectory(Path.Combine(root.FolderPath, folder)).FullName;
@@ -91,14 +111,14 @@ namespace Grapevine.Tests.Server
 
                 root.FilePathGetter($"/{folder}").ShouldBeNull();
 
-                Directory.Delete(folderpath);
+                CleanUp(folderpath);
             }
 
             [Fact]
             public void ReturnsExistingFilePath()
             {
                 var root = new PublicFolder();
-                var file = Guid.NewGuid().Truncate();
+                var file = GenerateUniqueString();
 
                 var filepath = Path.Combine(root.FolderPath, file);
                 using (var sw = File.CreateText(filepath)) { sw.WriteLine("Hello"); }
@@ -113,7 +133,7 @@ namespace Grapevine.Tests.Server
             public void ReturnsExistingDefaultFilePath()
             {
                 var root = new PublicFolder();
-                var folder = Guid.NewGuid().Truncate();
+                var folder = GenerateUniqueString();
 
                 var folderpath = Directory.CreateDirectory(Path.Combine(root.FolderPath, folder)).FullName;
                 if (!Directory.Exists(folderpath)) throw new Exception("Folder to test did not get created");
@@ -124,8 +144,7 @@ namespace Grapevine.Tests.Server
                 root.FilePathGetter(folder).ShouldBe(filepath);
                 root.FilePathGetter($"/{folder}").ShouldBe(filepath);
 
-                File.Delete(filepath);
-                Directory.Delete(folderpath);
+                CleanUp(folderpath);
             }
         }
 
@@ -212,8 +231,8 @@ namespace Grapevine.Tests.Server
             [Fact]
             public void SendsWhenFileExists()
             {
-                const string folder = "sendresponse";
-                var root = new PublicFolder { FolderPath = Path.Combine(Directory.GetCurrentDirectory(), Guid.NewGuid().Truncate()) };
+                const string folder = "sendresponse-a";
+                var root = new PublicFolder { FolderPath = Path.Combine(Directory.GetCurrentDirectory(), GenerateUniqueString()) };
                 var folderpath = Path.Combine(root.FolderPath, folder);
                 var properties = new Dictionary<string, object> { { "PathInfo", $"/{folder}" } };
                 var context = Mocks.HttpContext(properties);
@@ -228,18 +247,15 @@ namespace Grapevine.Tests.Server
                 root.SendPublicFile(context);
                 context.Response.Received().SendResponse(filepath, true);
 
-                // Clean up
-                File.Delete(filepath);
-                Directory.Delete(folderpath);
-                Directory.Delete(root.FolderPath);
+                CleanUp(root.FolderPath);
             }
 
             [Fact]
             public void SendsWhenFileExistsWithPrefix()
             {
                 const string prefix = "prefix";
-                const string folder = "sendresponse";
-                var root = new PublicFolder { Prefix = prefix, FolderPath = Path.Combine(Directory.GetCurrentDirectory(), Guid.NewGuid().Truncate()) };
+                const string folder = "sendresponse-b";
+                var root = new PublicFolder { Prefix = prefix, FolderPath = Path.Combine(Directory.GetCurrentDirectory(), GenerateUniqueString()) };
                 var folderpath = Path.Combine(root.FolderPath, folder);
                 var properties = new Dictionary<string, object> { { "PathInfo", $"/{prefix}/{folder}" } };
                 var context = Mocks.HttpContext(properties);
@@ -254,10 +270,7 @@ namespace Grapevine.Tests.Server
                 root.SendPublicFile(context);
                 context.Response.Received().SendResponse(filepath, true);
 
-                // Clean up
-                File.Delete(filepath);
-                Directory.Delete(folderpath);
-                Directory.Delete(root.FolderPath);
+                CleanUp(root.FolderPath);
             }
         }
     }
