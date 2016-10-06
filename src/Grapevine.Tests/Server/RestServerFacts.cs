@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using Grapevine.Exceptions.Server;
 using Grapevine.Interfaces.Server;
 using Grapevine.Server;
 using Grapevine.Shared.Loggers;
 using NSubstitute;
+using NSubstitute.ReturnsExtensions;
 using Shouldly;
 using Xunit;
 
@@ -294,13 +297,13 @@ namespace Grapevine.Tests.Server
             [Fact]
             public void CallsStopWhenListening()
             {
-                //var listener = Substitute.For<IHttpListener>();
-                //listener.IsListening.Returns(true);
-                //var server = Substitute.For<RestServer>(listener);
+                var listener = Substitute.For<IHttpListener>();
+                listener.IsListening.Returns(true);
+                var server = Substitute.For<RestServer>(listener);
 
-                //server.Dispose();
+                server.Dispose();
 
-                //server.Received().Stop();
+                server.Received().Stop();
             }
 
             [Fact]
@@ -318,96 +321,276 @@ namespace Grapevine.Tests.Server
 
         public class StartMethod
         {
-            //[Fact]
-            //public void server_start_does_not_start_when_islistening_is_true()
-            //{
-            //    var listener = Substitute.For<IHttpListener>();
-            //    listener.IsListening.Returns(true);
+            [Fact]
+            public void AbortsWhenAlreadyStarted()
+            {
+                var listener = Substitute.For<IHttpListener>();
+                listener.IsListening.Returns(true);
 
-            //    using (var server = new RestServer(listener))
-            //    {
-            //        server.Start();
-            //        listener.DidNotReceive().Start();
-            //    }
-            //}
+                using (var server = new RestServer(listener))
+                {
+                    server.Start();
+                    listener.DidNotReceive().Start();
+                    listener.IsListening.Returns(false);
+                }
+            }
 
-            //[Fact]
-            //public void server_start_does_not_start_when_isstarting_is_true()
-            //{
-            //    var listener = Substitute.For<IHttpListener>();
+            [Fact]
+            public void AbortsWhenAlreadyStarting()
+            {
+                var listener = Substitute.For<IHttpListener>();
 
-            //    using (var server = new RestServer(listener))
-            //    {
-            //        server.SetIsStarting(true);
-            //        server.Start();
-            //        listener.DidNotReceive().Start();
-            //    }
-            //}
+                using (var server = new RestServer(listener))
+                {
+                    server.SetIsStarting(true);
+                    server.Start();
+                    listener.DidNotReceive().Start();
+                    listener.IsListening.Returns(false);
+                }
+            }
 
-            //[Fact]
-            //public void server_start_throws_exception_when_server_is_stopping()
-            //{
-            //    using (var server = new RestServer())
-            //    {
-            //        server.SetIsStopping(true);
-            //        Should.Throw<UnableToStartHostException>(() => server.Start());
-            //    }
-            //}
+            [Fact]
+            public void ThrowsExceptionWhenStopping()
+            {
+                using (var server = new RestServer())
+                {
+                    server.SetIsStopping(true);
+                    Should.Throw<UnableToStartHostException>(() => server.Start());
+                }
+            }
 
-            //[Fact]
-            //public void server_start_throws_exception_when_exception_occurs_while_starting()
-            //{
-            //    var listener = Substitute.For<IHttpListener>();
-            //    listener.When(_ => _.Start()).Do(_ => { throw new Exception(); });
+            [Fact]
+            public void ThrowsExceptionWhenExceptionOccursWhileStarting()
+            {
+                var listener = Substitute.For<IHttpListener>();
+                listener.When(_ => _.Start()).Do(_ => { throw new Exception(); });
 
-            //    using (var server = new RestServer(listener))
-            //    {
-            //        Should.Throw<UnableToStartHostException>(() => server.Start());
-            //        server.GetIsStarting().ShouldBeFalse();
-            //    }
-            //}
+                using (var server = new RestServer(listener))
+                {
+                    Should.Throw<UnableToStartHostException>(() => server.Start());
+                    server.GetIsStarting().ShouldBeFalse();
+                }
+            }
 
-            //[Fact]
-            //public void server_start_executes_on_before_start()
-            //{
-            //    //var invoked = false;
+            [Fact]
+            public void OnBeforeStartExecuted()
+            {
+                var invoked = false;
+                var listener = Substitute.For<IHttpListener>();
+                listener.When(l => l.Start()).Do(info => listener.IsListening.Returns(invoked));
 
-            //    //var listener = MockRepository.Mock<IHttpListener>();
+                using (var server = new RestServer(listener) { OnBeforeStart = () => { invoked = true; } })
+                {
+                    server.Start();
+                    invoked.ShouldBeTrue();
+                    listener.IsListening.Returns(false);
+                }
+            }
 
-            //    //listener.Stub(l => l.IsListening).Returns(() => invoked);
-            //    //listener.Stub(l => l.Prefixes).Return(prefixes);
+            [Fact]
+            public void ScansAssemblyCalledWhenRoutingTableEmpty()
+            {
+                var invoked = false;
 
-            //    //var server = new RestServer(listener)
-            //    //{
-            //    //    Connections = 1,
-            //    //    Port = PortFinder.FindNextLocalOpenPort(),
-            //    //    OnBeforeStart = () => { invoked = true; }
-            //    //};
+                var listener = Substitute.For<IHttpListener>();
+                listener.When(l => l.Start()).Do(info => listener.IsListening.Returns(invoked));
 
-            //    //server.Start();
+                var router = Substitute.For<IRouter>();
+                router.RoutingTable.Returns(new List<IRoute>());
 
-            //    //invoked.ShouldBeTrue();
-            //}
+                using (var server = new RestServer(listener) { OnBeforeStart = () => { invoked = true; }, Router = router })
+                {
+                    server.Start();
+                    router.Received().ScanAssemblies();
+                    listener.IsListening.Returns(false);
+                }
+            }
 
-            //[Fact]
-            //public void server_start_executes_on_after_start()
-            //{
-            //    var invoked = false;
-            //    var listener = Substitute.For<IHttpListener>();
-            //    listener.When(_ => _.Start()).Do(_ => { listener.IsListening.Returns(true); });
+            [Fact]
+            public void ScansAssemblyNotCalledWhenRoutingTableEmpty()
+            {
+                var invoked = false;
 
-            //    using (var server = new RestServer(listener))
-            //    {
-            //        server.Connections = 1;
-            //        server.OnAfterStart = () => invoked = true;
-            //        server.Start();
-            //        server.GetIsStarting().ShouldBeFalse();
-            //        invoked.ShouldBeTrue();
-            //    }
-            //}
+                var listener = Substitute.For<IHttpListener>();
+                listener.When(l => l.Start()).Do(info => listener.IsListening.Returns(invoked));
+
+                var router = Substitute.For<IRouter>();
+                router.RoutingTable.Returns(new List<IRoute> { new Route(context => context) });
+
+                using (var server = new RestServer(listener) { OnBeforeStart = () => { invoked = true; }, Router = router })
+                {
+                    server.Start();
+                    router.DidNotReceive().ScanAssemblies();
+                    listener.IsListening.Returns(false);
+                }
+            }
+
+            [Fact]
+            public void OnAfterStartExecutesWhenListening()
+            {
+                var invoked = false;
+                var listener = Substitute.For<IHttpListener>();
+                listener.IsListening.Returns(false);
+                listener.When(l => l.Start()).Do(info => listener.IsListening.Returns(true));
+
+                using (var server = new RestServer(listener) { OnAfterStart = () => { invoked = true; } })
+                {
+                    server.Start();
+                    invoked.ShouldBeTrue();
+                    listener.IsListening.Returns(false);
+                }
+            }
+
+            [Fact]
+            public void OnAfterStartNotExecutedWhenNotListening()
+            {
+                var invoked = false;
+                var listener = Substitute.For<IHttpListener>();
+
+                using (var server = new RestServer(listener) { OnAfterStart = () => { invoked = true; } })
+                {
+                    server.Start();
+                    invoked.ShouldBeFalse();
+                }
+            }
         }
 
         public class StopMethod
+        {
+            [Fact]
+            public void AbortsWhenAlreadyStopped()
+            {
+                var listener = Substitute.For<IHttpListener>();
+
+                using (var server = new RestServer(listener))
+                {
+                    server.Stop();
+                    listener.DidNotReceive().Stop();
+                }
+            }
+
+            [Fact]
+            public void AbortsWhenAlreadyStopping()
+            {
+                var listener = Substitute.For<IHttpListener>();
+                listener.IsListening.Returns(true);
+
+                using (var server = new RestServer(listener))
+                {
+                    server.SetIsStopping(true);
+                    server.Stop();
+                    listener.DidNotReceive().Stop();
+                    listener.IsListening.Returns(false);
+                }
+            }
+
+            [Fact]
+            public void ThrowsExceptionWhenStarting()
+            {
+                var listener = Substitute.For<IHttpListener>();
+                listener.IsListening.Returns(true);
+
+                using (var server = new RestServer(listener))
+                {
+                    server.SetIsStarting(true);
+                    Should.Throw<UnableToStopHostException>(() => server.Stop());
+                    listener.IsListening.Returns(false);
+                    server.SetIsStarting(false);
+                }
+            }
+
+            [Fact]
+            public void ThrowsExceptionWhenExceptionOccursWhileStopping()
+            {
+                var listener = Substitute.For<IHttpListener>();
+                listener.When(_ => _.Stop()).Do(_ => { throw new Exception(); });
+                listener.IsListening.Returns(true);
+
+                using (var server = new RestServer(listener))
+                {
+                    Should.Throw<UnableToStopHostException>(() => server.Stop());
+                    server.GetIsStopping().ShouldBeFalse();
+                    listener.IsListening.Returns(false);
+                }
+            }
+
+            [Fact]
+            public void OnBeforeStopExecuted()
+            {
+                var invoked = false;
+                var listener = Substitute.For<IHttpListener>();
+                listener.IsListening.Returns(true);
+                listener.When(l => l.Stop()).Do(info => listener.IsListening.Returns(false));
+
+                using (var server = new RestServer(listener) { OnBeforeStop = () => { invoked = true; } })
+                {
+                    server.Stop();
+                    invoked.ShouldBeTrue();
+                }
+            }
+
+            [Fact]
+            public void OnAfterStopExecutesWhenNotListening()
+            {
+                var invoked = false;
+                var listener = Substitute.For<IHttpListener>();
+                listener.IsListening.Returns(true);
+                listener.When(l => l.Stop()).Do(info => listener.IsListening.Returns(false));
+
+                using (var server = new RestServer(listener) { OnAfterStop = () => { invoked = true; } })
+                {
+                    server.Stop();
+                    invoked.ShouldBeTrue();
+                }
+            }
+
+            [Fact]
+            public void OnAfterStopNotExecutedWhenListening()
+            {
+                var invoked = false;
+                var listener = Substitute.For<IHttpListener>();
+                listener.IsListening.Returns(true);
+
+                using (var server = new RestServer(listener) { OnAfterStop = () => { invoked = true; } })
+                {
+                    server.Stop();
+                    invoked.ShouldBeFalse();
+                    listener.IsListening.Returns(false);
+                }
+            }
+        }
+
+        public class ThreadSafeStopMethod
+        {
+            [Fact]
+            public void StopsServer()
+            {
+                const int maxTicksToStop = 300;
+                var ticksToStop = 0;
+
+                using (var server = new RestServer {Connections = 1})
+                {
+
+                    server.Start();
+                    server.IsListening.ShouldBeTrue();
+                    server.ListenerPrefix.ShouldBe("http://localhost:1234/");
+                    server.ThreadSafeStop();
+                    while (server.IsListening && ticksToStop <= maxTicksToStop)
+                    {
+                        ticksToStop += 1;
+                        Thread.Sleep(10);
+                    }
+
+                    server.IsListening.ShouldBeFalse();
+                }
+            }
+        }
+
+        public class RouteContextMethod
+        {
+        }
+
+        public class UnsafeRouteContextMethod
         {
         }
     }
@@ -440,6 +623,32 @@ namespace Grapevine.Tests.Server
             var memberInfo = server.GetType();
             var field = memberInfo?.GetField("IsStarting", BindingFlags.Instance | BindingFlags.NonPublic);
             return (bool)field?.GetValue(server);
+        }
+
+        internal static void TestRouteContext(this RestServer server, IHttpContext context)
+        {
+            try
+            {
+                var method = typeof(RestServer).GetMethod("RouteContext", BindingFlags.Static | BindingFlags.NonPublic);
+                method.Invoke(server, new[] { context });
+            }
+            catch (TargetInvocationException e)
+            {
+                throw e.InnerException;
+            }
+        }
+
+        internal static void TestUnsafeRouteContext(this RestServer server, IHttpContext context)
+        {
+            try
+            {
+                var method = typeof(RestServer).GetMethod("UnsafeRouteContext", BindingFlags.Static | BindingFlags.NonPublic);
+                method.Invoke(server, new[] { context });
+            }
+            catch (TargetInvocationException e)
+            {
+                throw e.InnerException;
+            }
         }
     }
 
