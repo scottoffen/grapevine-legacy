@@ -13,6 +13,11 @@ namespace Grapevine.Server
         protected bool Started;
 
         /// <summary>
+        /// Gets the number of servers in the cluster
+        /// </summary>
+        public int Count => Servers.Count;
+
+        /// <summary>
         /// Gets or sets the Action that will be executed immediately before attempting to start the collection of servers
         /// </summary>
         public Action OnBeforeStartAll { get; set; }
@@ -79,8 +84,13 @@ namespace Grapevine.Server
         /// </summary>
         public void Add(string label, IRestServer server)
         {
-            if (Started) server.Start();
             Servers.Add(label, server);
+            if (Started)
+            {
+                OnBeforeStartEach?.Invoke();
+                server.Start();
+                OnAfterStartEach?.Invoke();
+            }
         }
 
         /// <summary>
@@ -98,9 +108,12 @@ namespace Grapevine.Server
         {
             if (!Servers.ContainsKey(label)) return true;
 
-            OnBeforeStopEach?.Invoke();
-            Servers[label].Stop();
-            OnAfterStopEach?.Invoke();
+            if (Started)
+            {
+                OnBeforeStopEach?.Invoke();
+                Servers[label].Stop();
+                OnAfterStopEach?.Invoke();
+            }
 
             return Servers.Remove(label);
         }
