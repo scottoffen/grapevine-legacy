@@ -84,6 +84,7 @@
     <Compile Include="Client\RestRequestFacts.cs" />
     <Compile Include="Mocks.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Server\AdvancedRestServerFacts.cs" />
     <Compile Include="Server\Attributes\RestResourceFacts.cs" />
     <Compile Include="Server\Attributes\RestRouteFacts.cs" />
     <Compile Include="Server\FluentRouteCreatorFacts.cs" />
