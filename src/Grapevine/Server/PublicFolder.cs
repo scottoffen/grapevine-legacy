@@ -24,7 +24,14 @@ namespace Grapevine.Server
         /// <summary>
         /// If it exists, responds to the request with the requested file
         /// </summary>
-        IHttpContext SendPublicFile(IHttpContext context);
+        IHttpContext RespondWithFile(IHttpContext context);
+
+        /// <summary>
+        /// Returns a value that indicates whether or not the request should return a static asset
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        bool ShouldRespondWithFile(IHttpContext context);
     }
 
     /// <summary>
@@ -64,7 +71,7 @@ namespace Grapevine.Server
         }
 
         /// <inheritdoc/>
-        public IHttpContext SendPublicFile(IHttpContext context)
+        public IHttpContext RespondWithFile(IHttpContext context)
         {
             if (context.Request.HttpMethod != HttpMethod.GET && context.Request.HttpMethod != HttpMethod.HEAD)
                 return context;
@@ -75,6 +82,12 @@ namespace Grapevine.Server
             if (filepath != null) context.Response.SendResponse(filepath, IsFilePath);
 
             return context;
+        }
+
+        /// <inheritdoc/>
+        public bool ShouldRespondWithFile(IHttpContext context)
+        {
+            return !string.IsNullOrWhiteSpace(Prefix) && context.Request.PathInfo.StartsWith(Prefix);
         }
 
         /// <summary>

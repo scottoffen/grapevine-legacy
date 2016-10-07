@@ -190,7 +190,7 @@ namespace Grapevine.Tests.Server
             }
         }
 
-        public class SendPublicFileMethod
+        public class RespondWithFileMethod
         {
             [Fact]
             public void DoesNotSendWhenHttpVerbIsNotGetOrHead()
@@ -199,7 +199,7 @@ namespace Grapevine.Tests.Server
                 var context = Mocks.HttpContext(properties);
                 var root = new PublicFolder();
 
-                root.SendPublicFile(context);
+                root.RespondWithFile(context);
 
                 context.Response.DidNotReceiveWithAnyArgs().SendResponse(HttpStatusCode.Ok);
             }
@@ -211,7 +211,7 @@ namespace Grapevine.Tests.Server
                 var context = Mocks.HttpContext(properties);
                 var root = new PublicFolder { Prefix = "test" };
 
-                root.SendPublicFile(context);
+                root.RespondWithFile(context);
 
                 context.Response.DidNotReceiveWithAnyArgs().SendResponse(HttpStatusCode.Ok);
             }
@@ -223,7 +223,7 @@ namespace Grapevine.Tests.Server
                 var context = Mocks.HttpContext(properties);
                 var root = new PublicFolder();
 
-                root.SendPublicFile(context);
+                root.RespondWithFile(context);
 
                 context.Response.DidNotReceiveWithAnyArgs().SendResponse(HttpStatusCode.Ok);
             }
@@ -244,7 +244,7 @@ namespace Grapevine.Tests.Server
                 var filepath = Path.Combine(folderpath, root.DefaultFileName);
                 using (var sw = File.CreateText(filepath)) { sw.WriteLine("Hello"); }
 
-                root.SendPublicFile(context);
+                root.RespondWithFile(context);
                 context.Response.Received().SendResponse(filepath, true);
 
                 CleanUp(root.FolderPath);
@@ -267,10 +267,36 @@ namespace Grapevine.Tests.Server
                 var filepath = Path.Combine(folderpath, root.DefaultFileName);
                 using (var sw = File.CreateText(filepath)) { sw.WriteLine("Hello"); }
 
-                root.SendPublicFile(context);
+                root.RespondWithFile(context);
                 context.Response.Received().SendResponse(filepath, true);
 
                 CleanUp(root.FolderPath);
+            }
+        }
+
+        public class ShouldRespondWithFileMethod
+        {
+            [Fact]
+            public void ReturnsFalseWhenPrefixIsEmpty()
+            {
+                var root = new PublicFolder();
+                root.ShouldRespondWithFile(Mocks.HttpContext()).ShouldBeFalse();
+            }
+
+            [Fact]
+            public void ReturnsFalseWhenPathInfoDoesNotStartWithPrefix()
+            {
+                var root = new PublicFolder {Prefix = "prefix"};
+                root.ShouldRespondWithFile(Mocks.HttpContext()).ShouldBeFalse();
+            }
+
+            [Fact]
+            public void ReturnsTrueWhenPathInfoStartsWithPrefix()
+            {
+                var root = new PublicFolder { Prefix = "prefix" };
+                root.ShouldRespondWithFile(
+                    Mocks.HttpContext(new Dictionary<string, object> {{"PathInfo", "/prefix/index.html"}}))
+                    .ShouldBeTrue();
             }
         }
     }

@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Grapevine.Exceptions.Server;
 using Grapevine.Interfaces.Server;
+using Grapevine.Interfaces.Shared;
 using Grapevine.Server;
+using Grapevine.Shared;
 using Grapevine.Shared.Loggers;
 using NSubstitute;
 using NSubstitute.ReturnsExtensions;
@@ -566,14 +569,15 @@ namespace Grapevine.Tests.Server
             public void StopsServer()
             {
                 const int maxTicksToStop = 300;
+                var port = PortFinder.FindNextLocalOpenPort();
                 var ticksToStop = 0;
 
-                using (var server = new RestServer {Connections = 1})
+                using (var server = new RestServer {Connections = 1, Port = port})
                 {
 
                     server.Start();
                     server.IsListening.ShouldBeTrue();
-                    server.ListenerPrefix.ShouldBe("http://localhost:1234/");
+                    server.ListenerPrefix.ShouldBe($"http://localhost:{port}/");
                     server.ThreadSafeStop();
                     while (server.IsListening && ticksToStop <= maxTicksToStop)
                     {
@@ -588,10 +592,261 @@ namespace Grapevine.Tests.Server
 
         public class RouteContextMethod
         {
+            [Fact]
+            public void ThrowsExceptionWhenRouteNotFound()
+            {
+                var logger = new InMemoryLogger();
+                logger.Logs.Count.ShouldBe(0);
+
+                using (var server = new RestServer(Substitute.For<IHttpListener>()) {Logger = logger})
+                {
+                    server.EnableThrowingExceptions = true;
+
+                    var context = Mocks.HttpContext();
+                    context.Server.Returns(server);
+                    
+                    Should.Throw<RouteNotFoundException>(() => server.TestRouteContext(context));
+                }
+
+                logger.Logs.Count.ShouldBe(1);
+                logger.Logs[0].Exception.GetType().ShouldBe(typeof(RouteNotFoundException));
+            }
+
+            [Fact]
+            public void Sends404WhenRouteNotFound()
+            {
+                var logger = new InMemoryLogger();
+                logger.Logs.Count.ShouldBe(0);
+
+                using (var server = new RestServer(Substitute.For<IHttpListener>()) { Logger = logger })
+                {
+                    var context = Mocks.HttpContext();
+                    context.Server.Returns(server);
+
+                    server.TestRouteContext(context);
+
+                    context.Response.Received().SendResponse(HttpStatusCode.NotFound);
+                }
+
+                logger.Logs.Count.ShouldBe(1);
+                logger.Logs[0].Exception.GetType().ShouldBe(typeof(RouteNotFoundException));
+            }
+
+            [Fact]
+            public void ThrowsExceptionWhenRouteNotImplemented()
+            {
+                var logger = new InMemoryLogger();
+                logger.Logs.Count.ShouldBe(0);
+
+                using (var server = new RestServer(Substitute.For<IHttpListener>()) { Logger = logger })
+                {
+                    Func<IHttpContext, IHttpContext> func = ctx =>
+                    {
+                        throw new NotImplementedException();
+                    };
+
+                    server.Router.Register(func);
+                    server.EnableThrowingExceptions = true;
+
+                    var context = Mocks.HttpContext();
+                    context.Server.Returns(server);
+
+                    Should.Throw<NotImplementedException>(() => server.TestRouteContext(context));
+                }
+
+                var logs = logger.Logs.FirstOrDefault(l => l.Level == LogLevel.Error);
+                logs.ShouldNotBeNull();
+                logs.Exception.GetType().ShouldBe(typeof(NotImplementedException));
+            }
+
+            [Fact]
+            public void Sends501WhenRouteNotImplemented()
+            {
+                var logger = new InMemoryLogger();
+                logger.Logs.Count.ShouldBe(0);
+
+                using (var server = new RestServer(Substitute.For<IHttpListener>()) { Logger = logger })
+                {
+                    Func<IHttpContext, IHttpContext> func = ctx =>
+                    {
+                        throw new NotImplementedException();
+                    };
+
+                    server.Router.Register(func);
+
+                    var context = Mocks.HttpContext();
+                    context.Server.Returns(server);
+
+                    server.TestRouteContext(context);
+
+                    context.Response.Received().SendResponse(HttpStatusCode.NotImplemented);
+                }
+
+                var logs = logger.Logs.FirstOrDefault(l => l.Level == LogLevel.Error);
+                logs.ShouldNotBeNull();
+                logs.Exception.GetType().ShouldBe(typeof(NotImplementedException));
+            }
+
+            [Fact]
+            public void ThrowsExceptionWhenRouteThrowsException()
+            {
+                var logger = new InMemoryLogger();
+                logger.Logs.Count.ShouldBe(0);
+
+                var exception = new Exception("Generic excpetion occured");
+
+                using (var server = new RestServer(Substitute.For<IHttpListener>()) { Logger = logger })
+                {
+                    Func<IHttpContext, IHttpContext> func = ctx =>
+                    {
+                        throw exception;
+                    };
+
+                    server.Router.Register(func);
+                    server.EnableThrowingExceptions = true;
+
+                    var context = Mocks.HttpContext();
+                    context.Server.Returns(server);
+
+                    Should.Throw<Exception>(() => server.TestRouteContext(context));
+                }
+
+                var logs = logger.Logs.FirstOrDefault(l => l.Level == LogLevel.Error);
+                logs.ShouldNotBeNull();
+                logs.Exception.ShouldBe(exception);
+            }
+
+            [Fact]
+            public void Sends500WhenRouteThrowsException()
+            {
+                var logger = new InMemoryLogger();
+                logger.Logs.Count.ShouldBe(0);
+
+                var exception = new Exception("Generic excpetion occured");
+
+                using (var server = new RestServer(Substitute.For<IHttpListener>()) { Logger = logger })
+                {
+                    Func<IHttpContext, IHttpContext> func = ctx =>
+                    {
+                        throw exception;
+                    };
+
+                    server.Router.Register(func);
+
+                    var context = Mocks.HttpContext();
+                    context.Server.Returns(server);
+
+                    server.TestRouteContext(context);
+
+                    context.Response.Received().SendResponse(HttpStatusCode.InternalServerError, exception);
+                }
+
+                var logs = logger.Logs.FirstOrDefault(l => l.Level == LogLevel.Error);
+                logs.ShouldNotBeNull();
+                logs.Exception.ShouldBe(exception);
+            }
+
+            [Fact]
+            public void RoutesWithoutException()
+            {
+                const string pathinfo = "/route/success";
+                var invoked = false;
+
+                using (var server = new RestServer(Substitute.For<IHttpListener>()))
+                {
+                    var context = Mocks.HttpContext(new Dictionary<string, object> { { "PathInfo", pathinfo } });
+                    Func<IHttpContext, IHttpContext> func = ctx =>
+                    {
+                        invoked = true;
+                        context.WasRespondedTo.Returns(true);
+                        return ctx;
+                    };
+
+                    context.Server.Returns(server);
+                    server.Router.Register(func, pathinfo);
+                    server.TestRouteContext(context);
+                }
+
+                invoked.ShouldBeTrue();
+            }
         }
 
         public class UnsafeRouteContextMethod
         {
+            [Fact]
+            public void ThrowsExceptionWhenRouteNotFound()
+            {
+                var listener = Substitute.For<IHttpListener>();
+                listener.When(l => l.Start()).Do(i => listener.IsListening.Returns(true));
+                listener.When(l => l.Stop()).Do(i => listener.IsListening.Returns(false));
+
+                using (var server = new RestServer(listener))
+                {
+                    Should.Throw<RouteNotFoundException>(() => server.TestUnsafeRouteContext(Mocks.HttpContext()));
+                }
+            }
+
+            [Fact]
+            public void Sends404WhenFileNotFound()
+            {
+                const string prefix = "prefix";
+
+                using (var server = new RestServer(Substitute.For<IHttpListener>()))
+                {
+                    var context = Mocks.HttpContext(new Dictionary<string, object> { { "PathInfo", $"/{prefix}/some/folder/file.txt" } });
+                    context.Server.Returns(server);
+
+                    server.PublicFolder.Prefix = prefix;
+                    server.TestUnsafeRouteContext(context);
+
+                    context.Response.Received().SendResponse(HttpStatusCode.NotFound);
+                }
+            }
+
+            [Fact]
+            public void LogsMessageWhenFileReturned()
+            {
+                const string filepath = "/some/file/path";
+
+                var context = Mocks.HttpContext();
+                context.WasRespondedTo.Returns(true);
+                context.Request.PathInfo.Returns(filepath);
+
+                var logger = new InMemoryLogger();
+                using(var server = new RestServer(Substitute.For<IHttpListener>()){Logger = logger })
+                {
+                    context.Server.Returns(server);
+                    server.TestUnsafeRouteContext(context);
+                }
+
+                logger.Logs.Count.ShouldBe(1);
+                logger.Logs[0].Level.ShouldBe(LogLevel.Trace);
+                logger.Logs[0].Message.ShouldBe($"Returned file {filepath}");
+            }
+
+            [Fact]
+            public void RoutesWithoutException()
+            {
+                const string pathinfo = "/route/success";
+                var invoked = false;
+
+                using (var server = new RestServer(Substitute.For<IHttpListener>()))
+                {
+                    var context = Mocks.HttpContext(new Dictionary<string, object> { {"PathInfo", pathinfo} });
+                    Func<IHttpContext, IHttpContext> func = ctx =>
+                    {
+                        invoked = true;
+                        context.WasRespondedTo.Returns(true);
+                        return ctx;
+                    };
+
+                    context.Server.Returns(server);
+                    server.Router.Register(func, pathinfo);
+                    server.TestUnsafeRouteContext(context);
+                }
+
+                invoked.ShouldBeTrue();
+            }
         }
     }
 

@@ -328,19 +328,21 @@ namespace Grapevine.Server
             {
                 UnsafeRouteContext(context);
             }
-            catch (RouteNotFoundException)
+            catch (RouteNotFoundException rnf)
             {
+                server.Logger.Log(new LogEvent {Exception = rnf, Level = LogLevel.Error, Message = rnf.Message});
                 if (server.EnableThrowingExceptions) throw;
                 context.Response.SendResponse(HttpStatusCode.NotFound);
             }
-            catch (NotImplementedException)
+            catch (NotImplementedException ni)
             {
+                server.Logger.Log(new LogEvent { Exception = ni, Level = LogLevel.Error, Message = ni.Message });
                 if (server.EnableThrowingExceptions) throw;
                 context.Response.SendResponse(HttpStatusCode.NotImplemented);
             }
             catch (Exception e)
             {
-                server.Logger.Error(e);
+                server.Logger.Log(new LogEvent { Exception = e, Level = LogLevel.Error, Message = e.Message });
                 if (server.EnableThrowingExceptions) throw;
                 context.Response.SendResponse(HttpStatusCode.InternalServerError, e);
             }
@@ -350,12 +352,9 @@ namespace Grapevine.Server
         {
             var server = context.Server;
 
-            var shouldRespondWithFile = !string.IsNullOrWhiteSpace(server.PublicFolder.Prefix) &&
-                                        context.Request.PathInfo.StartsWith(server.PublicFolder.Prefix);
+            context = server.PublicFolder.RespondWithFile(context);
 
-            context = server.PublicFolder.SendPublicFile(context);
-
-            if (shouldRespondWithFile)
+            if (server.PublicFolder.ShouldRespondWithFile(context) || context.WasRespondedTo)
             {
                 if (context.WasRespondedTo)
                 {
@@ -368,7 +367,6 @@ namespace Grapevine.Server
                 return;
             }
 
-            if (context.WasRespondedTo) return;
             if (!server.Router.Route(context)) throw new RouteNotFoundException(context);
         }
     }
