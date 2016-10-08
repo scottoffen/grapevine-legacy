@@ -40,22 +40,22 @@ namespace Grapevine.Server
         /// <summary>
         /// Gets or sets the Action that will be executed immediately before attempting to start each server
         /// </summary>
-        public Action OnBeforeStartEach { get; set; }
+        public Action<IRestServer> OnBeforeStartEach { get; set; }
 
         /// <summary>
         /// Gets or sets the Action that will be executed immediately after attempting to start each server
         /// </summary>
-        public Action OnAfterStartEach { get; set; }
+        public Action<IRestServer> OnAfterStartEach { get; set; }
 
         /// <summary>
         /// Gets or sets the Action that will be executed immediately before attempting to stop each server
         /// </summary>
-        public Action OnBeforeStopEach { get; set; }
+        public Action<IRestServer> OnBeforeStopEach { get; set; }
 
         /// <summary>
         /// Gets or sets the Action that will be executed immediately after attempting to stop each server
         /// </summary>
-        public Action OnAfterStopEach { get; set; }
+        public Action<IRestServer> OnAfterStopEach { get; set; }
 
         /// <summary>
         /// Convenience indexer; synonym for Add and Get methods
@@ -87,9 +87,9 @@ namespace Grapevine.Server
             Servers.Add(label, server);
             if (Started)
             {
-                OnBeforeStartEach?.Invoke();
+                OnBeforeStartEach?.Invoke(server);
                 server.Start();
-                OnAfterStartEach?.Invoke();
+                OnAfterStartEach?.Invoke(server);
             }
         }
 
@@ -107,12 +107,13 @@ namespace Grapevine.Server
         public bool Remove(string label)
         {
             if (!Servers.ContainsKey(label)) return true;
+            var server = Get(label);
 
             if (Started)
             {
-                OnBeforeStopEach?.Invoke();
-                Servers[label].Stop();
-                OnAfterStopEach?.Invoke();
+                OnBeforeStopEach?.Invoke(server);
+                server.Stop();
+                OnAfterStopEach?.Invoke(server);
             }
 
             return Servers.Remove(label);
@@ -123,13 +124,15 @@ namespace Grapevine.Server
         /// </summary>
         public void StartAll()
         {
+            if (Started) return;
+
             OnBeforeStartAll?.Invoke();
 
             foreach (var server in Servers.Values.Where(server => !server.IsListening))
             {
-                OnBeforeStartEach?.Invoke();
+                OnBeforeStartEach?.Invoke(server);
                 server.Start();
-                OnAfterStartEach?.Invoke();
+                OnAfterStartEach?.Invoke(server);
             }
 
             OnAfterStartAll?.Invoke();
@@ -141,13 +144,15 @@ namespace Grapevine.Server
         /// </summary>
         public void StopAll()
         {
+            if (!Started) return;
+
             OnBeforeStopAll?.Invoke();
 
             foreach (var server in Servers.Values.Where(server => server.IsListening))
             {
-                OnBeforeStopEach?.Invoke();
+                OnBeforeStopEach?.Invoke(server);
                 server.Stop();
-                OnAfterStopEach?.Invoke();
+                OnAfterStopEach?.Invoke(server);
             }
 
             OnAfterStopAll?.Invoke();
