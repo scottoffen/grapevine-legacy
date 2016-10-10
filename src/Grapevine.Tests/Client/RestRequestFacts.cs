@@ -5,6 +5,7 @@ using System.Net.Security;
 using System.Security.Principal;
 using Grapevine.Client;
 using Grapevine.Shared;
+using NSubstitute;
 using Shouldly;
 using Xunit;
 
@@ -102,6 +103,21 @@ namespace Grapevine.Tests.Client
                 httpRequest.UnsafeAuthenticatedConnectionSharing.ShouldBeFalse();
                 httpRequest.UseDefaultCredentials.ShouldBeFalse();
                 httpRequest.UserAgent.ShouldBeNull();
+            }
+        }
+
+        public class ResourceProperty
+        {
+            [Fact]
+            public void DoesNotClearPathParamsWhenResourceDoesNotChange()
+            {
+                const string resource = "/request/path";
+                var pathparams = Substitute.For<PathParams>();
+                var request = new RestRequest(resource) {PathParams = pathparams};
+
+                request.Resource = resource;
+
+                pathparams.DidNotReceive().Clear();
             }
         }
     }

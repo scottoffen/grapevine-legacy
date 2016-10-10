@@ -282,7 +282,7 @@ namespace Grapevine.Client
         public HttpMethod HttpMethod { get; set; }
         public string Payload { get; set; }
         public string PathInfo => PathParams.Stringify(_resource);
-        public PathParams PathParams { get; }
+        public PathParams PathParams { get; protected internal set; }
         public bool Pipelined { get; set; }
         public bool PreAuthenticate { get; set; }
         public Version ProtocolVersion { get; set; }
@@ -308,6 +308,7 @@ namespace Grapevine.Client
 
         public RestRequest(string resource)
         {
+            PathParams = new PathParams();
             Resource = resource;
 
             Headers = new WebHeaderCollection
@@ -331,7 +332,6 @@ namespace Grapevine.Client
             KeepAlive = true;
             MaximumAutomaticRedirections = 50;
             MaximumResponseHeadersLength = 64;
-            PathParams = new PathParams();
             Pipelined = true;
             ProtocolVersion = new Version(1, 1);
             ReadWriteTimeout = 300000;
@@ -350,7 +350,7 @@ namespace Grapevine.Client
                 var r = Regex.Replace(value, "^/", "");
                 if (r.Equals(_resource)) return;
                 _resource = r;
-                PathParams?.Clear();
+                PathParams.Clear();
             }
         }
 
