@@ -65,6 +65,7 @@ namespace Grapevine.Client
         public Uri BaseUrl => Builder.Uri;
         public CookieContainer Cookies { get; }
         public ICredentials Credentials { get; set; }
+        public Action RequestTimeoutAction { get; set; }
 
         public RestClient()
         {
@@ -121,7 +122,15 @@ namespace Grapevine.Client
             }
             catch (WebException e)
             {
-                if (e.Status == WebExceptionStatus.Timeout) throw;
+                if (e.Status == WebExceptionStatus.Timeout)
+                {
+                    if (RequestTimeoutAction == null)
+                        throw;
+
+                    RequestTimeoutAction();
+                    return null;
+                }
+
                 var elapsed = stopwatch.ElapsedMilliseconds;
                 var httpresponse = (HttpWebResponse) e.Response;
                 response = new RestResponse(httpresponse)
