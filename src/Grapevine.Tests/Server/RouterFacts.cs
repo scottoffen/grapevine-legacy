@@ -225,6 +225,79 @@ namespace Grapevine.Tests.Server
             }
         }
 
+        public class InsertMethod
+        {
+            [Fact]
+            public void InsertBeforeByDefault()
+            {
+            }
+
+            [Fact]
+            public void InsertsBeforeIndex()
+            {
+            }
+
+            [Fact]
+            public void InsertsToTop()
+            {
+            }
+
+            [Fact]
+            public void InsertsToBottom()
+            {
+            }
+
+            [Fact]
+            public void InsertsAfterIndex()
+            {
+            }
+
+            [Fact]
+            public void DoesNotInsertDuplicate()
+            {
+            }
+
+            [Fact]
+            public void DoesNotInsertWhenIndexIsLessThanZero()
+            {
+            }
+
+            [Fact]
+            public void InsertsBeforeMarker()
+            {
+            }
+
+            [Fact]
+            public void InsertsAfterMarker()
+            {
+            }
+
+            [Fact]
+            public void DoesNotInsertWhenMarkerIsNotFound()
+            {
+            }
+
+            [Fact]
+            public void InsertsListBeforeIndex()
+            {
+            }
+
+            [Fact]
+            public void InsertsListAfterIndex()
+            {
+            }
+
+            [Fact]
+            public void InsertsListBeforeMarker()
+            {
+            }
+
+            [Fact]
+            public void InsertsListAfterMarker()
+            {
+            }
+        }
+
         public class LoggerProperty
         {
             [Fact]
