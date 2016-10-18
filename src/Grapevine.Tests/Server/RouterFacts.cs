@@ -228,38 +228,85 @@ namespace Grapevine.Tests.Server
         public class InsertMethod
         {
             [Fact]
-            public void InsertBeforeByDefault()
-            {
-            }
-
-            [Fact]
             public void InsertsBeforeIndex()
             {
+                var routeA = new Route(context => context);
+                var routeB = new Route(context => context);
+                var routeC = new Route(context => context);
+
+                var router = new Router();
+                router.Register(routeA);
+                router.Register(routeB);
+                router.RoutingTable[1].ShouldBe(routeB);
+
+                router.Insert(1, routeC);
+                router.RoutingTable[1].ShouldBe(routeC);
+                router.RoutingTable[2].ShouldBe(routeB);
             }
 
             [Fact]
             public void InsertsToTop()
             {
+                var routeA = new Route(context => context);
+                var routeB = new Route(context => context);
+                var routeC = new Route(context => context);
+
+                var router = new Router();
+                router.Register(routeA);
+                router.Register(routeB);
+                router.RoutingTable[0].ShouldBe(routeA);
+
+                router.Insert(0, routeC);
+                router.RoutingTable[0].ShouldBe(routeC);
+                router.RoutingTable[1].ShouldBe(routeA);
             }
 
             [Fact]
             public void InsertsToBottom()
             {
-            }
+                var routeA = new Route(context => context);
+                var routeB = new Route(context => context);
+                var routeC = new Route(context => context);
 
-            [Fact]
-            public void InsertsAfterIndex()
-            {
+                var router = new Router();
+                router.Register(routeA);
+                router.Register(routeB);
+                router.Insert(2, routeC);
+
+                router.RoutingTable[2].ShouldBe(routeC);
             }
 
             [Fact]
             public void DoesNotInsertDuplicate()
             {
+                var routeA = new Route(context => context);
+                var routeB = new Route(context => context);
+
+                var router = new Router();
+                router.Register(routeA);
+                router.Register(routeB);
+                router.RoutingTable.Count.ShouldBe(2);
+
+                router.Insert(0, routeB);
+                router.RoutingTable[0].ShouldBe(routeA);
+                router.RoutingTable[1].ShouldBe(routeB);
+                router.RoutingTable.Count.ShouldBe(2);
             }
 
             [Fact]
             public void DoesNotInsertWhenIndexIsLessThanZero()
             {
+                var routeA = new Route(context => context);
+                var routeB = new Route(context => context);
+                var routeC = new Route(context => context);
+
+                var router = new Router();
+                router.Register(routeA);
+                router.Register(routeB);
+                router.RoutingTable.Count.ShouldBe(2);
+
+                router.Insert(-1, routeC);
+                router.RoutingTable.Count.ShouldBe(2);
             }
 
             [Fact]
@@ -279,11 +326,6 @@ namespace Grapevine.Tests.Server
 
             [Fact]
             public void InsertsListBeforeIndex()
-            {
-            }
-
-            [Fact]
-            public void InsertsListAfterIndex()
             {
             }
 
