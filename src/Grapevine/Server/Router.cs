@@ -61,6 +61,54 @@ namespace Grapevine.Server
         IRouter Import<T>() where T : IRouter;
 
         /// <summary>
+        /// Inserts the route into the routing table immediately following the specified route (marker)
+        /// </summary>
+        /// <param name="route"></param>
+        /// <param name="marker"></param>
+        /// <returns></returns>
+        IRouter InsertAfter(IRoute route, IRoute marker);
+
+        /// <summary>
+        /// Inserts the routes into the routing table immediately following the specifed route (marker)
+        /// </summary>
+        /// <param name="routes"></param>
+        /// <param name="marker"></param>
+        /// <returns></returns>
+        IRouter InsertAfter(IList<IRoute> routes, IRoute marker);
+
+        /// <summary>
+        /// Inserts the route into the routing table at the specified index
+        /// </summary>
+        /// <param name="route"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        IRouter InsertRouteAt(IRoute route, int index);
+
+        /// <summary>
+        /// Inserts the routes into the routing table at the specified index
+        /// </summary>
+        /// <param name="routes"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        IRouter InsertRoutesAt(IList<IRoute> routes, int index);
+
+        /// <summary>
+        /// Inserts the route into the routing table immediately before the specified route (marker)
+        /// </summary>
+        /// <param name="route"></param>
+        /// <param name="marker"></param>
+        /// <returns></returns>
+        IRouter InsertRouteBefore(IRoute route, IRoute marker);
+
+        /// <summary>
+        /// Inserts the routes into the routing table immediately before the specified route (marker)
+        /// </summary>
+        /// <param name="routes"></param>
+        /// <param name="marker"></param>
+        /// <returns></returns>
+        IRouter InsertRoutesBefore(IList<IRoute> routes, IRoute marker);
+
+        /// <summary>
         /// Gets or sets the internal logger
         /// </summary>
         IGrapevineLogger Logger { get; set; }
