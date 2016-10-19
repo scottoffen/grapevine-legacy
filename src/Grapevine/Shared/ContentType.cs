@@ -49,9 +49,15 @@ namespace Grapevine.Shared
 
         public static ContentType FromString(this ContentType ct, string contentType)
         {
-            return string.IsNullOrWhiteSpace(contentType)
-                ? ContentType.DEFAULT
-                : Enum.GetValues(typeof(ContentType)).Cast<ContentType>().FirstOrDefault(t => t.ToValue().Equals(contentType));
+            if (string.IsNullOrWhiteSpace(contentType)) return ContentType.DEFAULT;
+
+            var contenttype = contentType.Contains(";")
+                ? contentType.Substring(0, contentType.IndexOf(";", StringComparison.Ordinal))
+                : contentType.Contains(",")
+                    ? contentType.Substring(0, contentType.IndexOf(",", StringComparison.Ordinal))
+                    : contentType;
+
+            return Enum.GetValues(typeof(ContentType)).Cast<ContentType>().FirstOrDefault(t => t.ToValue().Equals(contenttype));
         }
     }
 
@@ -1015,10 +1021,10 @@ namespace Grapevine.Shared
         HTKE,
 
         [ContentTypeMetadata(Value = "text/html", IsText = true)]
-        HTM,
+        HTML,
 
         [ContentTypeMetadata(Value = "text/html", IsText = true)]
-        HTML,
+        HTM,
 
         [ContentTypeMetadata(Value = "application/vnd.yamaha.hv-dic", IsBinary = true)]
         HVD,

@@ -69,6 +69,18 @@ namespace Grapevine.Tests.Shared
                 {
                     ContentType.DEFAULT.FromString("application/json").Equals(ContentType.JSON).ShouldBeTrue();
                 }
+
+                [Fact]
+                public void ReturnsContentTypeFromStringWithParameters()
+                {
+                    ContentType.DEFAULT.FromString("text/html; charset=UTF-8").Equals(ContentType.HTML).ShouldBeTrue();
+                }
+
+                [Fact]
+                public void ReturnsContentTypeFromStringWithMultipleValues()
+                {
+                    ContentType.DEFAULT.FromString("text/html; charset=UTF-8,text/html; charset=windows-1251").Equals(ContentType.HTML).ShouldBeTrue();
+                }
             }
         }
 
