@@ -15,8 +15,14 @@ namespace Grapevine.Server
     /// </summary>
     public interface IRouter
     {
+        /// <summary>
+        /// Gets or sets a function to be executed prior to any routes being executed
+        /// </summary>
         Func<IHttpContext, IHttpContext> After { get; set; }
 
+        /// <summary>
+        /// Gets or sets a function to be executed after route execution has completed
+        /// </summary>
         Func<IHttpContext, IHttpContext> Before { get; set; }
 
         /// <summary>
@@ -61,38 +67,82 @@ namespace Grapevine.Server
         IRouter Import<T>() where T : IRouter;
 
         /// <summary>
-        /// Inserts the route into the routing table either before or after the specified (marker) route
+        /// Inserts the route into the routing table after the specified index
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="route"></param>
+        /// <returns></returns>
+        IRouter InsertAfter(int index, IRoute route);
+
+        /// <summary>
+        /// Inserts the route into the routing table after the specified route
+        /// </summary>
+        /// <param name="afterThisRoute"></param>
+        /// <param name="insertThisRoute"></param>
+        /// <returns></returns>
+        IRouter InsertAfter(IRoute afterThisRoute, IRoute insertThisRoute);
+
+        /// <summary>
+        /// Inserts the routes into the routing table after the specified index
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="routes"></param>
+        /// <returns></returns>
+        IRouter InsertAfter(int index, IList<IRoute> routes);
+
+        /// <summary>
+        /// Inserts the routes into the routing table after the specified route
+        /// </summary>
+        /// <param name="afterThisRoute"></param>
+        /// <param name="insertTheseRoutes"></param>
+        /// <returns></returns>
+        IRouter InsertAfter(IRoute afterThisRoute, IList<IRoute> insertTheseRoutes);
+
+        /// <summary>
+        /// Inserts the route into the routing table before the specified index
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="route"></param>
+        /// <returns></returns>
+        IRouter InsertBefore(int index, IRoute route);
+
+        /// <summary>
+        /// Inserts the route into the routing table before the specified route
+        /// </summary>
+        /// <param name="beforeThisRoute"></param>
+        /// <param name="insertThisRoute"></param>
+        /// <returns></returns>
+        IRouter InsertBefore(IRoute beforeThisRoute, IRoute insertThisRoute);
+
+        /// <summary>
+        /// Inserts the routes into the routing table before the specified index
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="routes"></param>
+        /// <returns></returns>
+        IRouter InsertBefore(int index, IList<IRoute> routes);
+
+        /// <summary>
+        /// Inserts the route into the routing table before the specified route
+        /// </summary>
+        /// <param name="beforeThisRoute"></param>
+        /// <param name="insertTheseRoutes"></param>
+        /// <returns></returns>
+        IRouter InsertBefore(IRoute beforeThisRoute, IList<IRoute> insertTheseRoutes);
+
+        /// <summary>
+        /// Inserts the route on the top of the routing table
         /// </summary>
         /// <param name="route"></param>
-        /// <param name="ordinal"></param>
-        /// <param name="marker"></param>
         /// <returns></returns>
-        IRouter Insert(Ordinal ordinal, IRoute marker, IRoute route);
+        IRouter InsertFirst(IRoute route);
 
         /// <summary>
-        /// Inserts the routes into the routing table either before or after the specified (marker) route
+        /// Inserts the routes to the top of the routing
         /// </summary>
         /// <param name="routes"></param>
-        /// <param name="ordinal"></param>
-        /// <param name="marker"></param>
         /// <returns></returns>
-        IRouter Insert(Ordinal ordinal, IRoute marker, IList<IRoute> routes);
-
-        /// <summary>
-        /// Inserts the route into the routing table at the specified index
-        /// </summary>
-        /// <param name="route"></param>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        IRouter Insert(int index, IRoute route);
-
-        /// <summary>
-        /// Inserts the routes into the routing table at the specified index
-        /// </summary>
-        /// <param name="routes"></param>
-        /// <param name="index"></param>
-        /// <returns></returns>
-        IRouter Insert(int index, IList<IRoute> routes);
+        IRouter InsertFirst(IList<IRoute> routes);
 
         /// <summary>
         /// Gets or sets the internal logger
@@ -371,35 +421,92 @@ namespace Grapevine.Server
             return Import(typeof (T));
         }
 
-        public IRouter Insert(Ordinal ordinal, IRoute marker, IRoute route)
+        public IRouter InsertAfter(int index, IRoute route)
         {
-            InsertAt(_routingTable.IndexOf(marker), route, ordinal);
+            if (index < 0) return this;
+            InsertAt(index + 1, route);
             return this;
         }
 
-        public IRouter Insert(Ordinal ordinal, IRoute marker, IList<IRoute> routes)
+        public IRouter InsertAfter(IRoute afterThisRoute, IRoute insertThisRoute)
         {
-            var index = _routingTable.IndexOf(marker);
-            if (index > -1) routes.Aggregate(index + (ordinal == Ordinal.Before ? 0 : 1), (current, route) => InsertAt(current, route));
+            if (!_routingTable.Contains(afterThisRoute)) return this;
+            InsertAt(_routingTable.IndexOf(afterThisRoute) + 1, insertThisRoute);
             return this;
         }
 
-        public IRouter Insert(int index, IRoute route)
+        public IRouter InsertAfter(int index, IList<IRoute> insertTheseRoutes)
         {
+            var counter = index + 1;
+            if (counter == 0) return this;
+
+            insertTheseRoutes.Aggregate(counter, InsertAt);
+
+            return this;
+        }
+
+        public IRouter InsertAfter(IRoute afterThisRoute, IList<IRoute> insertTheseRoutes)
+        {
+            var counter = _routingTable.IndexOf(afterThisRoute) + 1;
+            if (counter == 0) return this;
+
+            insertTheseRoutes.Aggregate(counter, InsertAt);
+
+            return this;
+        }
+
+        public IRouter InsertBefore(int index, IRoute route)
+        {
+            if (index < 0) return this;
             InsertAt(index, route);
             return this;
         }
 
-        public IRouter Insert(int index, IList<IRoute> routes)
+        public IRouter InsertBefore(IRoute beforeThisRoute, IRoute insertThisRoute)
         {
-            routes.Aggregate(index, (current, route) => InsertAt(current, route));
+            InsertAt(_routingTable.IndexOf(beforeThisRoute), insertThisRoute);
             return this;
         }
 
-        private int InsertAt(int index, IRoute route, Ordinal ordinal = Ordinal.Before)
+        public IRouter InsertBefore(int index, IList<IRoute> insertTheseRoutes)
+        {
+            var counter = index;
+            if (counter < 0) return this;
+
+            insertTheseRoutes.Aggregate(counter, InsertAt);
+
+            return this;
+        }
+
+        public IRouter InsertBefore(IRoute beforeThisRoute, IList<IRoute> insertTheseRoutes)
+        {
+            var counter = _routingTable.IndexOf(beforeThisRoute);
+            if (counter < 0) return this;
+
+            insertTheseRoutes.Aggregate(counter, InsertAt);
+
+            return this;
+        }
+
+        public IRouter InsertFirst(IRoute route)
+        {
+            InsertAt(0, route);
+            return this;
+        }
+
+        public IRouter InsertFirst(IList<IRoute> routes)
+        {
+            const int counter = 0;
+
+            routes.Aggregate(counter, InsertAt);
+
+            return this;
+        }
+
+        private int InsertAt(int index, IRoute route)
         {
             if (index < 0 || _routingTable.Contains(route)) return index;
-            _routingTable.Insert(index + (ordinal == Ordinal.Before ? 0 : 1), route);
+            _routingTable.Insert(index, route);
             return index + 1;
         }
 
@@ -467,11 +574,5 @@ namespace Grapevine.Server
         {
             routes.ToList().ForEach(AddToRoutingTable);
         }
-    }
-
-    public enum Ordinal
-    {
-        After,
-        Before
     }
 }
