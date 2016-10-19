@@ -61,6 +61,40 @@ namespace Grapevine.Server
         IRouter Import<T>() where T : IRouter;
 
         /// <summary>
+        /// Inserts the route into the routing table either before or after the specified (marker) route
+        /// </summary>
+        /// <param name="route"></param>
+        /// <param name="ordinal"></param>
+        /// <param name="marker"></param>
+        /// <returns></returns>
+        IRouter Insert(Ordinal ordinal, IRoute marker, IRoute route);
+
+        /// <summary>
+        /// Inserts the routes into the routing table either before or after the specified (marker) route
+        /// </summary>
+        /// <param name="routes"></param>
+        /// <param name="ordinal"></param>
+        /// <param name="marker"></param>
+        /// <returns></returns>
+        IRouter Insert(Ordinal ordinal, IRoute marker, IList<IRoute> routes);
+
+        /// <summary>
+        /// Inserts the route into the routing table at the specified index
+        /// </summary>
+        /// <param name="route"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        IRouter Insert(int index, IRoute route);
+
+        /// <summary>
+        /// Inserts the routes into the routing table at the specified index
+        /// </summary>
+        /// <param name="routes"></param>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        IRouter Insert(int index, IList<IRoute> routes);
+
+        /// <summary>
         /// Gets or sets the internal logger
         /// </summary>
         IGrapevineLogger Logger { get; set; }
@@ -337,6 +371,38 @@ namespace Grapevine.Server
             return Import(typeof (T));
         }
 
+        public IRouter Insert(Ordinal ordinal, IRoute marker, IRoute route)
+        {
+            InsertAt(_routingTable.IndexOf(marker), route, ordinal);
+            return this;
+        }
+
+        public IRouter Insert(Ordinal ordinal, IRoute marker, IList<IRoute> routes)
+        {
+            var index = _routingTable.IndexOf(marker);
+            if (index > -1) routes.Aggregate(index + (ordinal == Ordinal.Before ? 0 : 1), (current, route) => InsertAt(current, route));
+            return this;
+        }
+
+        public IRouter Insert(int index, IRoute route)
+        {
+            InsertAt(index, route);
+            return this;
+        }
+
+        public IRouter Insert(int index, IList<IRoute> routes)
+        {
+            routes.Aggregate(index, (current, route) => InsertAt(current, route));
+            return this;
+        }
+
+        private int InsertAt(int index, IRoute route, Ordinal ordinal = Ordinal.Before)
+        {
+            if (index < 0 || _routingTable.Contains(route)) return index;
+            _routingTable.Insert(index + (ordinal == Ordinal.Before ? 0 : 1), route);
+            return index + 1;
+        }
+
         public IList<IRoute> RouteFor(IHttpContext context)
         {
             return _routingTable.Where(r => r.Matches(context) && r.Enabled).ToList();
@@ -401,5 +467,11 @@ namespace Grapevine.Server
         {
             routes.ToList().ForEach(AddToRoutingTable);
         }
+    }
+
+    public enum Ordinal
+    {
+        After,
+        Before
     }
 }

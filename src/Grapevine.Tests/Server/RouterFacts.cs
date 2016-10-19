@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Grapevine.Exceptions.Server;
 using Grapevine.Interfaces.Server;
@@ -222,6 +223,239 @@ namespace Grapevine.Tests.Server
                 router.Import<RouterToImport>();
 
                 router.RoutingTable.Count.ShouldBe(8);
+            }
+        }
+
+        public class InsertMethod
+        {
+            [Fact]
+            public void InsertsBeforeIndex()
+            {
+                var routeA = new Route(context => context);
+                var routeB = new Route(context => context);
+                var routeC = new Route(context => context);
+
+                var expected = new List<IRoute> { routeA, routeC, routeB };
+
+                var router = new Router();
+                router.Register(routeA);
+                router.Register(routeB);
+                router.RoutingTable[1].ShouldBe(routeB);
+
+                router.Insert(1, routeC);
+
+                router.RoutingTable.SequenceEqual(expected).ShouldBeTrue();
+            }
+
+            [Fact]
+            public void InsertsToTop()
+            {
+                var routeA = new Route(context => context);
+                var routeB = new Route(context => context);
+                var routeC = new Route(context => context);
+
+                var expected = new List<IRoute> { routeC, routeA, routeB };
+
+                var router = new Router();
+                router.Register(routeA);
+                router.Register(routeB);
+                router.RoutingTable[0].ShouldBe(routeA);
+
+                router.Insert(0, routeC);
+
+                router.RoutingTable.SequenceEqual(expected).ShouldBeTrue();
+            }
+
+            [Fact]
+            public void InsertsToBottom()
+            {
+                var routeA = new Route(context => context);
+                var routeB = new Route(context => context);
+                var routeC = new Route(context => context);
+
+                var expected = new List<IRoute> { routeA, routeB, routeC };
+
+                var router = new Router();
+                router.Register(routeA);
+                router.Register(routeB);
+                router.Insert(2, routeC);
+
+                router.RoutingTable.SequenceEqual(expected).ShouldBeTrue();
+            }
+
+            [Fact]
+            public void ThrowsExceptionWhenIndexIsOutOfRange()
+            {
+                var routeA = new Route(context => context);
+                var routeB = new Route(context => context);
+
+                var router = new Router();
+                router.Register(routeA);
+                Should.Throw<ArgumentOutOfRangeException>(() => router.Insert(5, routeB));
+            }
+
+            [Fact]
+            public void DoesNotInsertDuplicate()
+            {
+                var routeA = new Route(context => context);
+                var routeB = new Route(context => context);
+
+                var expected = new List<IRoute> { routeA, routeB };
+
+                var router = new Router();
+                router.Register(routeA);
+                router.Register(routeB);
+                router.Insert(0, routeB);
+
+                router.RoutingTable.SequenceEqual(expected).ShouldBeTrue();
+            }
+
+            [Fact]
+            public void DoesNotInsertWhenIndexIsLessThanZero()
+            {
+                var routeA = new Route(context => context);
+                var routeB = new Route(context => context);
+                var routeC = new Route(context => context);
+
+                var expected = new List<IRoute> { routeA, routeB };
+
+                var router = new Router();
+                router.Register(routeA);
+                router.Register(routeB);
+                router.Insert(-1, routeC);
+
+                router.RoutingTable.SequenceEqual(expected).ShouldBeTrue();
+            }
+
+            [Fact]
+            public void InsertsBeforeMarker()
+            {
+                var routeA = new Route(context => context);
+                var routeB = new Route(context => context);
+                var routeC = new Route(context => context);
+
+                var expected = new List<IRoute> { routeA, routeC, routeB };
+
+                var router = new Router();
+                router.Register(routeA);
+                router.Register(routeB);
+                router.Insert(Ordinal.Before, routeB, routeC);
+
+                router.RoutingTable.SequenceEqual(expected).ShouldBeTrue();
+            }
+
+            [Fact]
+            public void InsertsAfterMarker()
+            {
+                var routeA = new Route(context => context);
+                var routeB = new Route(context => context);
+                var routeC = new Route(context => context);
+
+                var expected = new List<IRoute> { routeA, routeC, routeB };
+
+                var router = new Router();
+                router.Register(routeA);
+                router.Register(routeB);
+                router.Insert(Ordinal.After, routeA, routeC);
+
+                router.RoutingTable.SequenceEqual(expected).ShouldBeTrue();
+            }
+
+            [Fact]
+            public void DoesNotInsertRouteWhenMarkerIsNotFound()
+            {
+                var routeA = new Route(context => context);
+                var routeB = new Route(context => context);
+                var routeC = new Route(context => context);
+
+                var expected = new List<IRoute> { routeA };
+
+                var router = new Router();
+                router.Register(routeA);
+                router.Insert(Ordinal.Before, routeB, routeC);
+
+                router.RoutingTable.SequenceEqual(expected).ShouldBeTrue();
+            }
+
+            [Fact]
+            public void DoesNotInsertRouteListWhenMarkerIsNotFound()
+            {
+                var routeA = new Route(context => context);
+                var routeB = new Route(context => context);
+                var routeC = new Route(context => context);
+                var route1 = new Route(context => context);
+                var route2 = new Route(context => context);
+                var route3 = new Route(context => context);
+
+                var routes = new List<IRoute> { route1, route2, route3 };
+                var expected = new List<IRoute> { routeA, routeB };
+
+                var router = new Router();
+                router.Register(routeA);
+                router.Register(routeB);
+                router.Insert(Ordinal.Before, routeC, routes);
+
+                router.RoutingTable.SequenceEqual(expected).ShouldBeTrue();
+            }
+
+            [Fact]
+            public void InsertsListBeforeIndex()
+            {
+                var routeA = new Route(context => context);
+                var routeB = new Route(context => context);
+                var route1 = new Route(context => context);
+                var route2 = new Route(context => context);
+                var route3 = new Route(context => context);
+
+                var routes = new List<IRoute> {route1, route2, route3};
+                var expected = new List<IRoute> { routeA, route1, route2, route3, routeB };
+
+                var router = new Router();
+                router.Register(routeA);
+                router.Register(routeB);
+                router.Insert(1, routes);
+
+                router.RoutingTable.SequenceEqual(expected).ShouldBeTrue();
+            }
+
+            [Fact]
+            public void InsertsListBeforeMarker()
+            {
+                var routeA = new Route(context => context);
+                var routeB = new Route(context => context);
+                var route1 = new Route(context => context);
+                var route2 = new Route(context => context);
+                var route3 = new Route(context => context);
+
+                var routes = new List<IRoute> { route1, route2, route3 };
+                var expected = new List<IRoute> { routeA, route1, route2, route3, routeB };
+
+                var router = new Router();
+                router.Register(routeA);
+                router.Register(routeB);
+                router.Insert(Ordinal.Before, routeB, routes);
+
+                router.RoutingTable.SequenceEqual(expected).ShouldBeTrue();
+            }
+
+            [Fact]
+            public void InsertsListAfterMarker()
+            {
+                var routeA = new Route(context => context);
+                var routeB = new Route(context => context);
+                var route1 = new Route(context => context);
+                var route2 = new Route(context => context);
+                var route3 = new Route(context => context);
+
+                var routes = new List<IRoute> { route1, route2, route3 };
+                var expected = new List<IRoute> { routeA, route1, route2, route3, routeB };
+
+                var router = new Router();
+                router.Register(routeA);
+                router.Register(routeB);
+                router.Insert(Ordinal.After, routeA, routes);
+
+                router.RoutingTable.SequenceEqual(expected).ShouldBeTrue();
             }
         }
 
