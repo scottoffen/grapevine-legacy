@@ -380,7 +380,7 @@ namespace Grapevine.Server
         public IRouter Insert(Ordinal ordinal, IRoute marker, IList<IRoute> routes)
         {
             var index = _routingTable.IndexOf(marker);
-            if (index > -1) routes.Aggregate(index, (current, route) => InsertAt(current, route));
+            if (index > -1) routes.Aggregate(index + (ordinal == Ordinal.Before ? 0 : 1), (current, route) => InsertAt(current, route));
             return this;
         }
 
