@@ -155,7 +155,7 @@ namespace Grapevine.Client
         {
             _response = response;
             Advanced = new AdvancedRestResponse(_response);
-            ContentType = ContentType.DEFAULT.FromString(_response.ContentType);
+            ContentType = ContentType.CUSTOM_TEXT.FromString(_response.ContentType);
             Error = string.Empty;
             ErrorStatus = WebExceptionStatus.Success;
             HttpMethod = (HttpMethod)Enum.Parse(typeof(HttpMethod), _response.Method);

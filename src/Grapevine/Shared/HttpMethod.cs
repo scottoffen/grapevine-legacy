@@ -36,7 +36,5 @@
         {
             return httpMethod == HttpMethod.ALL || other == HttpMethod.ALL || httpMethod == other;
         }
-
-
     }
 }

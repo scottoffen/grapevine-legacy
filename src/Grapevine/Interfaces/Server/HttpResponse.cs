@@ -366,7 +366,7 @@ namespace Grapevine.Interfaces.Server
             var ext = Path.GetExtension(filepath)?.ToUpper().TrimStart('.');
             return !string.IsNullOrWhiteSpace(ext) && Enum.IsDefined(typeof(ContentType), ext)
                 ? (ContentType)Enum.Parse(typeof(ContentType), ext)
-                : ContentType.DEFAULT;
+                : ContentType.CUSTOM_TEXT;
         }
 
         /// <summary>
@@ -433,6 +433,12 @@ namespace Grapevine.Interfaces.Server
         internal AdvancedHttpResponse(HttpResponse response)
         {
             _response = response;
+        }
+
+        public string ContentType
+        {
+            get { return _response.Response.ContentType; }
+            set { _response.Response.ContentType = value; }
         }
 
         /// <summary>
