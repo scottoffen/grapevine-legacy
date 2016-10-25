@@ -49,14 +49,9 @@ namespace Grapevine.Shared
 
         public static ContentType FromString(this ContentType ct, string contentType)
         {
-            if (string.IsNullOrWhiteSpace(contentType)) return ContentType.DEFAULT;
+            if (string.IsNullOrWhiteSpace(contentType)) return ContentType.CUSTOM_TEXT;
 
-            var contenttype = contentType.Contains(";")
-                ? contentType.Substring(0, contentType.IndexOf(";", StringComparison.Ordinal))
-                : contentType.Contains(",")
-                    ? contentType.Substring(0, contentType.IndexOf(",", StringComparison.Ordinal))
-                    : contentType;
-
+            var contenttype = contentType.Split(';', ',')[0];
             return Enum.GetValues(typeof(ContentType)).Cast<ContentType>().FirstOrDefault(t => t.ToValue().Equals(contenttype));
         }
     }
@@ -99,6 +94,12 @@ namespace Grapevine.Shared
     /// </summary>
     public enum ContentType
     {
+        [ContentTypeMetadata(Value = "text/plain", IsText = true)]
+        CUSTOM_TEXT,
+
+        [ContentTypeMetadata(Value = "application/octet-stream", IsBinary = true)]
+        CUSTOM_BINARY,
+
         [ContentTypeMetadata(Value = "application/octet-stream", IsBinary = true)]
         DEFAULT,
 

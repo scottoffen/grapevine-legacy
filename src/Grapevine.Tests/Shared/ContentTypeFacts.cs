@@ -54,32 +54,39 @@ namespace Grapevine.Tests.Shared
                 [Fact]
                 public void ReturnsDefaultWhenParameterIsNullOrEmpty()
                 {
-                    ContentType.DEFAULT.FromString(null).Equals(ContentType.DEFAULT).ShouldBeTrue();
-                    ContentType.DEFAULT.FromString(string.Empty).Equals(ContentType.DEFAULT).ShouldBeTrue();
+                    ContentType.CUSTOM_TEXT.FromString(null).Equals(ContentType.CUSTOM_TEXT).ShouldBeTrue();
+                    ContentType.CUSTOM_TEXT.FromString(string.Empty).Equals(ContentType.CUSTOM_TEXT).ShouldBeTrue();
                 }
 
                 [Fact]
                 public void ReturnsDefaultWhenParameterIsNotInEnum()
                 {
-                    ContentType.DEFAULT.FromString("test").Equals(ContentType.DEFAULT).ShouldBeTrue();
+                    ContentType.CUSTOM_TEXT.FromString("test").Equals(ContentType.CUSTOM_TEXT).ShouldBeTrue();
                 }
 
                 [Fact]
                 public void ReturnsContentTypeFromString()
                 {
-                    ContentType.DEFAULT.FromString("application/json").Equals(ContentType.JSON).ShouldBeTrue();
+                    ContentType.CUSTOM_TEXT.FromString("application/json").Equals(ContentType.JSON).ShouldBeTrue();
                 }
 
                 [Fact]
                 public void ReturnsContentTypeFromStringWithParameters()
                 {
-                    ContentType.DEFAULT.FromString("text/html; charset=UTF-8").Equals(ContentType.HTML).ShouldBeTrue();
+                    ContentType.CUSTOM_TEXT.FromString("text/html; charset=UTF-8").Equals(ContentType.HTML).ShouldBeTrue();
                 }
 
                 [Fact]
                 public void ReturnsContentTypeFromStringWithMultipleValues()
                 {
-                    ContentType.DEFAULT.FromString("text/html; charset=UTF-8,text/html; charset=windows-1251").Equals(ContentType.HTML).ShouldBeTrue();
+                    ContentType.CUSTOM_TEXT.FromString("text/html,text/plain").Equals(ContentType.HTML).ShouldBeTrue();
+                }
+
+                [Fact]
+                public void ReturnsContentTypeFromStringWithMultipleValuesWithParameters()
+                {
+                    ContentType.CUSTOM_TEXT.FromString("text/html,text/plain; charset=windows-1251").Equals(ContentType.HTML).ShouldBeTrue();
+                    ContentType.CUSTOM_TEXT.FromString("text/html; charset=UTF-8,text/plain").Equals(ContentType.HTML).ShouldBeTrue();
                 }
             }
         }
