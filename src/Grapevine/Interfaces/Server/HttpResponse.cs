@@ -158,6 +158,9 @@ namespace Grapevine.Interfaces.Server
 
     public class HttpResponse : IHttpResponse
     {
+        private ContentType _contentType;
+        private bool _parsedContentType;
+
         /// <summary>
         /// Used to set the umber of hours before sent content expires on the Expires response header
         /// </summary>
@@ -202,8 +205,19 @@ namespace Grapevine.Interfaces.Server
 
         public ContentType ContentType
         {
-            get { return Enum.GetValues(typeof (ContentType)).Cast<ContentType>().First(t => t.ToValue().Equals(Response.ContentType)); }
-            set { Response.ContentType = value.ToValue(); }
+            get
+            {
+                if (_parsedContentType) return _contentType;
+                _contentType = _contentType.FromString(Response.ContentType);
+                _parsedContentType = true;
+                return _contentType;
+            }
+            set
+            {
+                _contentType = value;
+                Response.ContentType = _contentType.ToValue();
+                _parsedContentType = true;
+            }
         }
 
         public CookieCollection Cookies

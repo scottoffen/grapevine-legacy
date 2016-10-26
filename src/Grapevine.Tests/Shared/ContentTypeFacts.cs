@@ -89,6 +89,44 @@ namespace Grapevine.Tests.Shared
                     ContentType.CUSTOM_TEXT.FromString("text/html,text/plain; charset=windows-1251").Equals(ContentType.HTML).ShouldBeTrue();
                     ContentType.CUSTOM_TEXT.FromString("text/html; charset=UTF-8,text/plain").Equals(ContentType.HTML).ShouldBeTrue();
                 }
+
+                [Fact]
+                public void MaintainsPerformance()
+                {
+                    const int cycles = 1000;
+                    const ContentType ct = ContentType.DEFAULT;
+                    const long maxThreshold = 50000;
+                    const long minThreshold = 1000;
+
+                    ct.FromString("application/json,text/json").ShouldBe(ContentType.JSON);
+                    ct.FromString("chemical/x-xyz").ShouldBe(ContentType.XYZ);
+                    ct.FromString("video/x-ms-wvx").ShouldBe(ContentType.WVX);
+                    ct.FromString("text/x-vcalendar").ShouldBe(ContentType.VCS);
+                    ct.FromString("application/jsonml+json").ShouldBe(ContentType.JSONML);
+                    ct.FromString("application/pdf").ShouldBe(ContentType.PDF);
+                    ct.FromString("image/x-pcx").ShouldBe(ContentType.PCX);
+                    ct.FromString("application/vnd.ms-powerpoint.template.macroenabled.12").ShouldBe(ContentType.POTM);
+                    ct.FromString("application/vnd.businessobjects").ShouldBe(ContentType.REP);
+                    ct.FromString("image/x-mrsid-image").ShouldBe(ContentType.SID);
+
+                    var sw = Stopwatch.StartNew();
+                    for (var i = 0; i < cycles; i++)
+                    {
+                        var a = ct.FromString("application/json,text/json");
+                        var b = ct.FromString("chemical/x-xyz");
+                        var c = ct.FromString("video/x-ms-wvx");
+                        var d = ct.FromString("text/x-vcalendar");
+                        var e = ct.FromString("application/jsonml+json");
+                        var f = ct.FromString("application/pdf");
+                        var g = ct.FromString("image/x-pcx");
+                        var h = ct.FromString("application/vnd.ms-powerpoint.template.macroenabled.12");
+                        var j = ct.FromString("application/vnd.businessobjects");
+                        var k = ct.FromString("image/x-mrsid-image");
+                    }
+                    sw.Stop();
+
+                    sw.ElapsedTicks.ShouldBeInRange(minThreshold, maxThreshold);
+                }
             }
         }
 

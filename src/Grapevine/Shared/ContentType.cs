@@ -1,21 +1,28 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Grapevine.Shared
 {
     public static class ContentTypeExtensions
     {
-        private static readonly IDictionary<string, int> contenttypes;
+        private static readonly ConcurrentDictionary<string, int> Lookup;
+        private static readonly ConcurrentDictionary<string, ContentType> Cache;
 
         static ContentTypeExtensions()
         {
-            contenttypes = new Dictionary<string, int>();
+            Lookup = new ConcurrentDictionary<string, int>();
+            Cache = new ConcurrentDictionary<string, ContentType>();
+
             foreach (var ctype in Enum.GetValues(typeof(ContentType)).Cast<ContentType>())
             {
                 var key = ctype.ToValue();
-                if (!contenttypes.ContainsKey(key)) contenttypes.Add(key, (int)ctype);
+                if (!Lookup.ContainsKey(key)) Lookup[key] = (int) ctype;
             }
+
+            Cache = new ConcurrentDictionary<string, ContentType>();
         }
 
         /// <summary>
@@ -68,10 +75,39 @@ namespace Grapevine.Shared
         /// <returns></returns>
         public static ContentType FromString(this ContentType ct, string contentType)
         {
+            /* Null, empty string or whitespace only */
             if (string.IsNullOrWhiteSpace(contentType)) return ContentType.CUSTOM_TEXT;
-            var contenttype = contentType.Split(';', ',')[0];
 
-            return contenttypes.ContainsKey(contenttype) ? (ContentType)contenttypes[contenttype] : ContentType.CUSTOM_TEXT;
+            var contenttype = contentType.Trim();
+
+            /* Check for a cached value */
+            if (Cache.ContainsKey(contenttype)) return Cache[contenttype];
+
+            /* Single type, no parameters */
+            if (!Regex.IsMatch(contenttype, @"[;,]"))
+            {
+                var tct = Lookup.ContainsKey(contenttype)
+                    ? (ContentType) Lookup[contenttype]
+                    : ContentType.CUSTOM_TEXT;
+
+                Cache[contenttype] = tct;
+                return tct;
+            }
+
+            /* Multiple types or parameters */
+            foreach (var part in contenttype.Split(';', ','))
+            {
+                var ctype = part.Trim();
+                if (!Lookup.ContainsKey(ctype)) continue;
+                var tct = (ContentType)Lookup[ctype];
+
+                Cache[contenttype] = tct;
+                return tct;
+            }
+
+            /* Cache default value */
+            Cache[contenttype] = 0;
+            return 0;
         }
     }
 
