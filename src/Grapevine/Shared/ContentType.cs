@@ -1,10 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Grapevine.Shared
 {
     public static class ContentTypeExtensions
     {
+        private static readonly IDictionary<string, int> contenttypes;
+
+        static ContentTypeExtensions()
+        {
+            contenttypes = new Dictionary<string, int>();
+            foreach (var ctype in Enum.GetValues(typeof(ContentType)).Cast<ContentType>())
+            {
+                var key = ctype.ToValue();
+                if (!contenttypes.ContainsKey(key)) contenttypes.Add(key, (int)ctype);
+            }
+        }
+
         /// <summary>
         /// Returns the ContentTypeMetadata for the given content type
         /// </summary>
@@ -47,12 +60,18 @@ namespace Grapevine.Shared
             return GetMetadata(ct).IsBinary;
         }
 
+        /// <summary>
+        /// Returns a ContentType value for the MIME type string provided
+        /// </summary>
+        /// <param name="ct"></param>
+        /// <param name="contentType"></param>
+        /// <returns></returns>
         public static ContentType FromString(this ContentType ct, string contentType)
         {
             if (string.IsNullOrWhiteSpace(contentType)) return ContentType.CUSTOM_TEXT;
-
             var contenttype = contentType.Split(';', ',')[0];
-            return Enum.GetValues(typeof(ContentType)).Cast<ContentType>().FirstOrDefault(t => t.ToValue().Equals(contenttype));
+
+            return contenttypes.ContainsKey(contenttype) ? (ContentType)contenttypes[contenttype] : ContentType.CUSTOM_TEXT;
         }
     }
 
