@@ -986,6 +986,9 @@ namespace Grapevine.Shared
         [ContentTypeMetadata(Value = "application/x-gnumeric", IsBinary = true)]
         GNUMERIC,
 
+        [ContentTypeMetadata(Value = "application/vnd.google.protobuf", IsBinary = true)]
+        GoogleProtoBuf,
+
         [ContentTypeMetadata(Value = "application/vnd.flographit", IsBinary = true)]
         GPH,
 
@@ -1628,8 +1631,23 @@ namespace Grapevine.Shared
         [ContentTypeMetadata(Value = "model/vnd.mts", IsBinary = true)]
         MTS,
 
+        [ContentTypeMetadata(Value = "multipart/alternative", IsText = true)]
+        MultipartAlternative,
+
+        [ContentTypeMetadata(Value = "multipart/encrypted", IsText = true)]
+        MultipartEncrypted,
+
         [ContentTypeMetadata(Value = "multipart/form-data", IsText = true)]
         MultipartFormData,
+
+        [ContentTypeMetadata(Value = "multipart/mixed", IsText = true)]
+        MultipartMixed,
+
+        [ContentTypeMetadata(Value = "multipart/related", IsText = true)]
+        MultipartRelated,
+
+        [ContentTypeMetadata(Value = "multipart/signed", IsText = true)]
+        MultipartSigned,
 
         [ContentTypeMetadata(Value = "application/vnd.musician", IsBinary = true)]
         MUS,
@@ -3042,6 +3060,9 @@ namespace Grapevine.Shared
 
         [ContentTypeMetadata(Value = "application/vnd.is-xpr", IsBinary = true)]
         XPR,
+
+        [ContentTypeMetadata(Value = "application/x-protobuf", IsBinary = true)]
+        XProtoBuf,
 
         [ContentTypeMetadata(Value = "application/vnd.ms-xpsdocument", IsBinary = true)]
         XPS,
