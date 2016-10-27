@@ -254,6 +254,7 @@ namespace Grapevine.Client
         public static int GlobalTimeout = 100000;
 
         private string _resource;
+        private ContentType _contentType;
 
         public string Accept { get; set; }
         public bool AllowAutoRedirect { get; set; }
@@ -265,7 +266,6 @@ namespace Grapevine.Client
         public string Connection { get; set; }
         public string ConnectionGroupName { get; set; }
         public long ContentLength { get; set; }
-        public ContentType ContentType { get; set; }
         public HttpContinueDelegate ContinueDelegate { get; set; }
         public ICredentials Credentials { get; set; }
         public DateTime Date { get; set; }
@@ -339,6 +339,16 @@ namespace Grapevine.Client
             Timeout = GlobalTimeout;
         }
 
+        public ContentType ContentType
+        {
+            get { return _contentType; }
+            set
+            {
+                _contentType = value;
+                Advanced.ContentType = _contentType.ToValue();
+            }
+        }
+
         public string Resource
         {
             get
@@ -377,7 +387,10 @@ namespace Grapevine.Client
         internal AdvancedRestRequest(RestRequest request)
         {
             _request = request;
+            ContentType = _request.ContentType.ToValue();
         }
+
+        public string ContentType { get; set; }
 
         /// <summary>
         /// Gets the current request as an HttpWebRequest
@@ -404,7 +417,7 @@ namespace Grapevine.Client
             request.Connection = _request.Connection;
             request.ConnectionGroupName = _request.ConnectionGroupName;
             request.ContentLength = _request.ContentLength;
-            request.ContentType = _request.ContentType.ToValue();
+            request.ContentType = ContentType;
             request.ContinueDelegate = _request.ContinueDelegate;
             request.CookieContainer = cookies;
             request.Credentials = _request.Credentials;

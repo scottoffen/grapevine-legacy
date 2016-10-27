@@ -125,11 +125,12 @@ namespace Grapevine.Client
     {
         private readonly HttpWebResponse _response;
         private string _content;
+        private ContentType _contentType;
+        private bool _parsedContentType;
 
         public string CharacterSet => _response.CharacterSet;
         public string ContentEncoding => _response.ContentEncoding;
         public long ContentLength => _response.ContentLength;
-        public ContentType ContentType { get; }
         public CookieCollection Cookies => _response.Cookies;
         public long ElapsedTime { get; protected internal set; }
         public string Error { get; protected internal set; }
@@ -155,11 +156,21 @@ namespace Grapevine.Client
         {
             _response = response;
             Advanced = new AdvancedRestResponse(_response);
-            ContentType = ContentType.CUSTOM_TEXT.FromString(_response.ContentType);
             Error = string.Empty;
             ErrorStatus = WebExceptionStatus.Success;
-            HttpMethod = (HttpMethod)Enum.Parse(typeof(HttpMethod), _response.Method);
+            HttpMethod = HttpMethod.ALL.FromString(_response.Method);
             StatusCode = (HttpStatusCode) (int) _response.StatusCode;
+        }
+
+        public ContentType ContentType
+        {
+            get
+            {
+                if (_parsedContentType) return _contentType;
+                _contentType = _contentType.FromString(_response.ContentType);
+                _parsedContentType = true;
+                return _contentType;
+            }
         }
 
         public string GetContent()

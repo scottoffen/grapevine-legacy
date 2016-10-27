@@ -199,6 +199,8 @@ namespace Grapevine.Interfaces.Server
     public class HttpRequest : IHttpRequest
     {
         private string _payload;
+        private ContentType _contentType;
+        private bool _parsedContentType;
 
         /// <summary>
         /// The underlying HttpListenerRequest for this instance
@@ -228,7 +230,16 @@ namespace Grapevine.Interfaces.Server
 
         public long ContentLength64 => Request.ContentLength64;
 
-        public ContentType ContentType => ContentType.DEFAULT.FromString(Request.ContentType);
+        public ContentType ContentType
+        {
+            get
+            {
+                if (_parsedContentType) return _contentType;
+                _contentType = _contentType.FromString(Request.ContentType);
+                _parsedContentType = true;
+                return _contentType;
+            }
+        }
 
         public CookieCollection Cookies => Request.Cookies;
 
