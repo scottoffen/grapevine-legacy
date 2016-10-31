@@ -309,7 +309,7 @@ namespace Grapevine.Interfaces.Server
             if (isFilePath)
             {
                 if (NotModified(response)) return;
-                var type = GetFileType(response);
+                var type = ContentType.DEFAULT.FromExtension(response);
                 SendResponse(new FileStream(response, FileMode.Open, FileAccess.Read), type, response);
             }
             else
@@ -373,14 +373,6 @@ namespace Grapevine.Interfaces.Server
 
             SendResponse(HttpStatusCode.NotModified);
             return true;
-        }
-
-        protected ContentType GetFileType(string filepath)
-        {
-            var ext = Path.GetExtension(filepath)?.ToUpper().TrimStart('.');
-            return !string.IsNullOrWhiteSpace(ext) && Enum.IsDefined(typeof(ContentType), ext)
-                ? (ContentType)Enum.Parse(typeof(ContentType), ext)
-                : ContentType.CUSTOM_TEXT;
         }
 
         /// <summary>

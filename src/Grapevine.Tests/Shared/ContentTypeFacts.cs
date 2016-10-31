@@ -90,10 +90,10 @@ namespace Grapevine.Tests.Shared
                     ContentType.CUSTOM_TEXT.FromString("text/html; charset=UTF-8,text/plain").Equals(ContentType.HTML).ShouldBeTrue();
                 }
 
-                [Fact]
+                [Fact(Skip="For local performance testing only")]
                 public void MaintainsPerformance()
                 {
-                    const int cycles = 1000;
+                    const int cycles = 10000;
                     const ContentType ct = ContentType.DEFAULT;
                     const long maxThreshold = 50000;
                     const long minThreshold = 1000;
@@ -125,7 +125,37 @@ namespace Grapevine.Tests.Shared
                     }
                     sw.Stop();
 
+                    //throw new Exception($"Ticks: {sw.ElapsedTicks}{Environment.NewLine}Milli: {sw.ElapsedMilliseconds}{Environment.NewLine}Per: {sw.ElapsedTicks / (cycles * 11)}");
                     sw.ElapsedTicks.ShouldBeInRange(minThreshold, maxThreshold);
+                }
+            }
+
+            public class FromExtension
+            {
+                private const ContentType DefaultContentType = 0;
+
+                [Fact]
+                public void ReturnsDefaultWhenNoExtensionOnArgument()
+                {
+                    ContentType.DEFAULT.FromExtension("/ihavenoextension").ShouldBe(DefaultContentType);
+                }
+
+                [Fact]
+                public void ReturnsDefaultWhenExtentionNotInEnum()
+                {
+                    ContentType.DEFAULT.FromExtension("/thisextention.doesnotexist").ShouldBe(DefaultContentType);
+                }
+
+                [Fact]
+                public void ReturnsEnumFromExtension()
+                {
+                    ContentType.DEFAULT.FromExtension("/image.jpg").ShouldBe(ContentType.JPG);
+                }
+
+                [Fact]
+                public void HtmlExtensionReturnsHtmlContentType()
+                {
+                    ContentType.DEFAULT.FromExtension("page.html").ShouldBe(ContentType.HTML);
                 }
             }
         }

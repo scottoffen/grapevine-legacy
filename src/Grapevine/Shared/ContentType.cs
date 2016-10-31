@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -8,21 +8,25 @@ namespace Grapevine.Shared
 {
     public static class ContentTypeExtensions
     {
-        private static readonly ConcurrentDictionary<string, int> Lookup;
-        private static readonly ConcurrentDictionary<string, ContentType> Cache;
+        private static readonly ConcurrentDictionary<string, int> ValueLookup;
+        private static readonly ConcurrentDictionary<string, int> ValueCache;
+        private static readonly ConcurrentDictionary<string, int> ExtensionLookup;
 
         static ContentTypeExtensions()
         {
-            Lookup = new ConcurrentDictionary<string, int>();
-            Cache = new ConcurrentDictionary<string, ContentType>();
+            ValueLookup = new ConcurrentDictionary<string, int>();
+            ValueCache = new ConcurrentDictionary<string, int>();
+            ExtensionLookup = new ConcurrentDictionary<string, int>();
 
             foreach (var ctype in Enum.GetValues(typeof(ContentType)).Cast<ContentType>())
             {
                 var key = ctype.ToValue();
-                if (!Lookup.ContainsKey(key)) Lookup[key] = (int) ctype;
-            }
+                var ext = ctype.ToString();
 
-            Cache = new ConcurrentDictionary<string, ContentType>();
+                if (!ValueLookup.ContainsKey(key)) ValueLookup[key] = (int)ctype;
+                if (!ValueCache.ContainsKey(key)) ValueCache[key] = (int)ctype;
+                ExtensionLookup[ext] = (int)ctype;
+            }
         }
 
         /// <summary>
@@ -75,39 +79,30 @@ namespace Grapevine.Shared
         /// <returns></returns>
         public static ContentType FromString(this ContentType ct, string contentType)
         {
-            /* Null, empty string or whitespace only */
             if (string.IsNullOrWhiteSpace(contentType)) return ContentType.CUSTOM_TEXT;
-
             var contenttype = contentType.Trim();
 
-            /* Check for a cached value */
-            if (Cache.ContainsKey(contenttype)) return Cache[contenttype];
+            if (ValueCache.ContainsKey(contenttype)) return (ContentType) ValueCache[contenttype];
 
-            /* Single type, no parameters */
-            if (!Regex.IsMatch(contenttype, @"[;,]"))
-            {
-                var tct = Lookup.ContainsKey(contenttype)
-                    ? (ContentType) Lookup[contenttype]
-                    : ContentType.CUSTOM_TEXT;
-
-                Cache[contenttype] = tct;
-                return tct;
-            }
-
-            /* Multiple types or parameters */
             foreach (var part in contenttype.Split(';', ','))
             {
                 var ctype = part.Trim();
-                if (!Lookup.ContainsKey(ctype)) continue;
-                var tct = (ContentType)Lookup[ctype];
+                if (!ValueLookup.ContainsKey(ctype)) continue;
+                var tct = (ContentType)ValueLookup[ctype];
 
-                Cache[contenttype] = tct;
+                ValueCache[contenttype] = (int)tct;
                 return tct;
             }
 
-            /* Cache default value */
-            Cache[contenttype] = 0;
+            ValueCache[contenttype] = 0;
             return 0;
+        }
+
+        public static ContentType FromExtension(this ContentType ct, string filename)
+        {
+            var ext = Path.GetExtension(filename)?.ToUpper().TrimStart('.');
+            if (ext == null) return 0;
+            return ExtensionLookup.ContainsKey(ext) ? (ContentType) ExtensionLookup[ext] : 0;
         }
     }
 

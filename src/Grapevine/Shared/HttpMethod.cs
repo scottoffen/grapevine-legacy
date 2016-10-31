@@ -39,7 +39,7 @@ namespace Grapevine.Shared
             foreach (var val in Enum.GetValues(typeof(HttpMethod)).Cast<HttpMethod>())
             {
                 var key = val.ToString();
-                if (!Lookup.ContainsKey(key)) Lookup[key] = (int)val;
+                Lookup[key] = (int)val;
             }
         }
 
@@ -62,7 +62,8 @@ namespace Grapevine.Shared
         /// <returns></returns>
         public static HttpMethod FromString(this HttpMethod httpMethod, string method)
         {
-            return (Lookup.ContainsKey(method)) ? (HttpMethod) Lookup[method] : 0;
+            var ucMethod = method.ToUpper();
+            return (Lookup.ContainsKey(ucMethod)) ? (HttpMethod) Lookup[ucMethod] : 0;
         }
     }
 }

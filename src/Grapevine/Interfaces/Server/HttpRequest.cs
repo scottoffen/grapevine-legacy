@@ -200,7 +200,9 @@ namespace Grapevine.Interfaces.Server
     {
         private string _payload;
         private ContentType _contentType;
+        private HttpMethod _httpMethod;
         private bool _parsedContentType;
+        private bool _parsedHttpMethod;
 
         /// <summary>
         /// The underlying HttpListenerRequest for this instance
@@ -215,7 +217,6 @@ namespace Grapevine.Interfaces.Server
         protected internal HttpRequest(HttpListenerRequest request)
         {
             Request = request;
-            HttpMethod = (HttpMethod) Enum.Parse(typeof (HttpMethod), Request.HttpMethod);
             PathInfo = RawUrl.Split(new[] { '?' }, 2)[0];
             Name = $"{HttpMethod} {PathInfo}";
             Id = Guid.NewGuid().Truncate();
@@ -247,7 +248,16 @@ namespace Grapevine.Interfaces.Server
 
         public NameValueCollection Headers => Request.Headers;
 
-        public HttpMethod HttpMethod { get; }
+        public HttpMethod HttpMethod
+        {
+            get
+            {
+                if (_parsedHttpMethod) return _httpMethod;
+                _httpMethod = HttpMethod.ALL.FromString(Request.HttpMethod);
+                _parsedHttpMethod = true;
+                return _httpMethod;
+            }
+        }
 
         public string Id { get; }
 

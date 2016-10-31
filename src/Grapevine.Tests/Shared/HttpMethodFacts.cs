@@ -29,6 +29,24 @@ namespace Grapevine.Tests.Shared
                     HttpMethod.GET.IsEquivalent(HttpMethod.ALL).ShouldBeTrue();
                 }
             }
+
+            public class FromStringMethod
+            {
+                [Fact]
+                public void ReturnsDefaultWhenNoMatchExists()
+                {
+                    HttpMethod.POST.FromString("NoMatch").ShouldBe(HttpMethod.ALL);
+                }
+
+                [Fact]
+                public void ReturnsCorrectValue()
+                {
+                    HttpMethod.ALL.FromString("Get").ShouldBe(HttpMethod.GET);
+                    HttpMethod.ALL.FromString("put").ShouldBe(HttpMethod.PUT);
+                    HttpMethod.ALL.FromString("pOST").ShouldBe(HttpMethod.POST);
+                    HttpMethod.ALL.FromString("DELETE").ShouldBe(HttpMethod.DELETE);
+                }
+            }
         }
     }
 }
