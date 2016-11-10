@@ -259,6 +259,8 @@ namespace Grapevine.Server
                 return context => (IHttpContext) method.Invoke(null, new object[] {context});
             }
 
+            method.ReflectedType.CacheDisposablility();
+
             // Generates new instance every time
             return context =>
             {
@@ -266,13 +268,13 @@ namespace Grapevine.Server
                 var disposed = false;
                 try
                 {
-                    var ctx = (IHttpContext)method.Invoke(instance, new object[] { context });
+                    var ctx = (IHttpContext) method.Invoke(instance, new object[] {context});
                     disposed = instance.TryDisposing();
                     return ctx;
                 }
                 finally
                 {
-                    if (!disposed) instance?.TryDisposing();
+                    if (!disposed) instance.TryDisposing();
                 }
             };
 

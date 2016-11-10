@@ -33,17 +33,21 @@ namespace Grapevine.Shared
         /// <param name="obj"></param>
         internal static bool TryDisposing(this object obj)
         {
-            var type = obj.GetType();
-            if (!type.Implements<IDisposable>()) return true;
+            if (CanDispose[obj.GetType()]) ((IDisposable)obj).Dispose();
+            return true;
+        }
 
-            if (!CanDispose.ContainsKey(type))
+        internal static void CacheDisposablility(this Type type)
+        {
+            if (CanDispose.ContainsKey(type)) return;
+            if (!type.Implements<IDisposable>())
             {
-                var method = type.GetMethod("Dispose", BindingFlags.Instance | BindingFlags.Public, null, Type.EmptyTypes, null);
-                CanDispose.TryAdd(type, method != null);
+                CanDispose.TryAdd(type, false);
+                return;
             }
 
-            if (CanDispose[type]) ((IDisposable)obj).Dispose();
-            return true;
+            var method = type.GetMethod("Dispose", BindingFlags.Instance | BindingFlags.Public, null, Type.EmptyTypes, null);
+            CanDispose.TryAdd(type, method != null);
         }
 
         /// <summary>
