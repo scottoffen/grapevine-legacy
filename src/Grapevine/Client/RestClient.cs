@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -58,6 +59,8 @@ namespace Grapevine.Client
         IRestResponse Execute(IRestRequest restRequest);
     }
 
+    public delegate void WebExceptionHandler(IRestClient client, IRestRequest request, WebException exception);
+
     public class RestClient : IRestClient
     {
         protected UriBuilder Builder;
@@ -65,13 +68,28 @@ namespace Grapevine.Client
         public Uri BaseUrl => Builder.Uri;
         public CookieContainer Cookies { get; }
         public ICredentials Credentials { get; set; }
-        public Action RequestTimeoutAction { get; set; }
+
+        private Action _requestTimeoutAction;
+
+        public Dictionary<WebExceptionStatus, WebExceptionHandler> WebExceptionHandlers;
 
         public RestClient()
         {
             Builder = new UriBuilder();
             Scheme = UriScheme.Http;
             Cookies = new CookieContainer();
+            WebExceptionHandlers = new Dictionary<WebExceptionStatus, WebExceptionHandler>();
+        }
+
+        [Obsolete("RequestTimeoutAction is deprecated, add an entry to WebExceptionHandlers instead.")]
+        public Action RequestTimeoutAction
+        {
+            get { return _requestTimeoutAction; }
+            set
+            {
+                _requestTimeoutAction = value;
+                WebExceptionHandlers[WebExceptionStatus.Timeout] = (client, request, exception) => _requestTimeoutAction();
+            }
         }
 
         public string Host
@@ -122,16 +140,15 @@ namespace Grapevine.Client
             }
             catch (WebException e)
             {
-                if (e.Status == WebExceptionStatus.Timeout)
-                {
-                    if (RequestTimeoutAction == null)
-                        throw;
+                var elapsed = stopwatch.ElapsedMilliseconds;
 
-                    RequestTimeoutAction();
+                if (WebExceptionHandlers.ContainsKey(e.Status))
+                {
+                    WebExceptionHandlers[e.Status].Invoke(this, restRequest, e);
                     return null;
                 }
+                if (e.Response == null) throw;
 
-                var elapsed = stopwatch.ElapsedMilliseconds;
                 var httpresponse = (HttpWebResponse) e.Response;
                 response = new RestResponse(httpresponse)
                 {
