@@ -253,10 +253,30 @@ namespace Grapevine.Server
         {
             method.IsRestRouteEligible(true); // throws an aggregate exception if the method is not eligible
 
-            var instance = (method.IsStatic || method.ReflectedType == null) ? null : Activator.CreateInstance(method.ReflectedType);
-            Func<IHttpContext, IHttpContext> function = context => (IHttpContext)method.Invoke(instance, new object[] { context });
+            // Static method
+            if (method.IsStatic || method.ReflectedType == null)
+            {
+                return context => (IHttpContext) method.Invoke(null, new object[] {context});
+            }
 
-            return function;
+            // Generates new instance every time
+            return context =>
+            {
+                var instance = Activator.CreateInstance(method.ReflectedType);
+                var disposed = false;
+                try
+                {
+                    var ctx = (IHttpContext)method.Invoke(instance, new object[] { context });
+                    disposed = instance.TryDisposing();
+                    return ctx;
+                }
+                finally
+                {
+                    if (!disposed) instance?.TryDisposing();
+                }
+            };
+
+            // TODO: Create and used a cached instance, like in earlier versions of Grapevine?
         }
     }
 
