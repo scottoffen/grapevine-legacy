@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Grapevine.Exceptions.Server;
 using Grapevine.Shared;
-using Microsoft.CSharp.RuntimeBinder;
 using Shouldly;
 using Xunit;
 
@@ -10,15 +10,15 @@ namespace Grapevine.Tests.Shared
 {
     public class DynamicPropertiesFact
     {
-        public class ConstructorMethod
+        public class Constructors
         {
             [Fact]
-            public void DynamicPropertyNotInitializedUntilFirstAccess()
+            public void PropertyNotInitializedUntilFirstAccess()
             {
-                var props = new ConcreteDynmProp();
+                var props = new ObjectWithProperties();
                 props.IsInitialized.ShouldBeFalse();
 
-                props.Properties.Key = "value";
+                props.Properties["Key"] = "value";
 
                 props.IsInitialized.ShouldBeTrue();
             }
@@ -29,17 +29,17 @@ namespace Grapevine.Tests.Shared
             [Fact]
             public void StoresAndReturnsValue()
             {
-                var props = new ConcreteDynmProp();
-                props.Properties.Key = "value";
-                var val = props.Properties.Key;
+                var props = new ObjectWithProperties();
+                props.Properties["Key"] = "value";
+                var val = props.Properties["Key"];
                 Assert.True(val.Equals("value"));
             }
 
             [Fact]
             public void ThrowsExceptionWhenIndexDoesNotExists()
             {
-                var props = new ConcreteDynmProp();
-                Should.Throw<RuntimeBinderException>(() => props.Properties.Key);
+                var props = new ObjectWithProperties();
+                Should.Throw<KeyNotFoundException>(() => { var x = props.Properties["Key"]; });
             }
         }
 
@@ -50,8 +50,8 @@ namespace Grapevine.Tests.Shared
                 [Fact]
                 public void ReturnsValueAsSpecifiedType()
                 {
-                    var props = new ConcreteDynmProp();
-                    props.Properties.Key = "value";
+                    var props = new ObjectWithProperties();
+                    props.Properties["Key"] = "value";
 
                     var val = props.GetPropertyValueAs<string>("Key");
 
@@ -62,8 +62,8 @@ namespace Grapevine.Tests.Shared
                 [Fact]
                 public void ThrowsExceptionWhenKeyIsNull()
                 {
-                    var props = new ConcreteDynmProp();
-                    props.Properties.Key = "value";
+                    var props = new ObjectWithProperties();
+                    props.Properties["Key"] = "value";
 
                     Should.Throw<ArgumentNullException>(() => props.GetPropertyValueAs<string>(null));
                 }
@@ -71,8 +71,8 @@ namespace Grapevine.Tests.Shared
                 [Fact]
                 public void ThrowsExceptionWhenKeyIsEmptyString()
                 {
-                    var props = new ConcreteDynmProp();
-                    props.Properties.Key = "value";
+                    var props = new ObjectWithProperties();
+                    props.Properties["Key"] = "value";
 
                     Should.Throw<ArgumentException>(() => props.GetPropertyValueAs<string>(string.Empty));
                     Should.Throw<ArgumentException>(() => props.GetPropertyValueAs<string>(""));
@@ -81,8 +81,8 @@ namespace Grapevine.Tests.Shared
                 [Fact]
                 public void ThrowsExceptionWhenKeyIsNotFound()
                 {
-                    var props = new ConcreteDynmProp();
-                    props.Properties.Key = "value";
+                    var props = new ObjectWithProperties();
+                    props.Properties["Key"] = "value";
 
                     Should.Throw<DynamicValueNotFoundException>(() => props.GetPropertyValueAs<string>("AnotheKey"));
                 }
@@ -90,8 +90,8 @@ namespace Grapevine.Tests.Shared
                 [Fact]
                 public void CovertsBetweenTypes()
                 {
-                    var props = new ConcreteDynmProp();
-                    props.Properties.MyNumber = 50;
+                    var props = new ObjectWithProperties();
+                    props.Properties["MyNumber"] = 50;
 
                     var val = props.GetPropertyValueAs<string>("MyNumber");
 
@@ -102,8 +102,8 @@ namespace Grapevine.Tests.Shared
                 [Fact]
                 public void ThrowsExcecptionWhenCanNotConvert()
                 {
-                    var props = new ConcreteDynmProp();
-                    props.Properties.Key = "value";
+                    var props = new ObjectWithProperties();
+                    props.Properties["Key"] = "value";
                     Should.Throw<InvalidCastException>(() => props.GetPropertyValueAs<FakeType>("Key"));
                 }
 
@@ -114,14 +114,14 @@ namespace Grapevine.Tests.Shared
                 [Fact]
                 public void ThrowsExceptionWhenKeyIsNull()
                 {
-                    var props = new ConcreteDynmProp();
+                    var props = new ObjectWithProperties();
                     Should.Throw<ArgumentNullException>(() => props.ContainsProperty(null));
                 }
 
                 [Fact]
                 public void ThrowsExceptionWhenKeyIsEmptyString()
                 {
-                    var props = new ConcreteDynmProp();
+                    var props = new ObjectWithProperties();
                     Should.Throw<ArgumentException>(() => props.ContainsProperty(string.Empty));
                     Should.Throw<ArgumentException>(() => props.ContainsProperty(""));
                 }
@@ -129,26 +129,26 @@ namespace Grapevine.Tests.Shared
                 [Fact]
                 public void ReturnsTrueWhenPropertyExists()
                 {
-                    var props = new ConcreteDynmProp();
-                    props.Properties.Key = "value";
+                    var props = new ObjectWithProperties();
+                    props.Properties["Key"] = "value";
                     props.ContainsProperty("Key").ShouldBeTrue();
                 }
 
                 [Fact]
                 public void ReturnsFalseWhenPropertyDoesNotExist()
                 {
-                    var props = new ConcreteDynmProp();
+                    var props = new ObjectWithProperties();
                     props.ContainsProperty("Key1").ShouldBeFalse();
                 }
             }
         }
     }
 
-    public class ConcreteDynmProp : DynamicProperties
+    public class ObjectWithProperties : DynamicProperties
     {
         private static FieldInfo _fieldInfo;
 
-        public ConcreteDynmProp()
+        public ObjectWithProperties()
         {
             if (_fieldInfo != null) return;
             var memberInfo = GetType().BaseType;
