@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Dynamic;
 using Grapevine.Exceptions.Server;
 
 namespace Grapevine.Shared
@@ -8,21 +8,21 @@ namespace Grapevine.Shared
     public interface IDynamicProperties
     {
         /// <summary>
-        /// Gets a dynamic object available for adding dynamic properties at run-time
+        /// Gets a concurrent dictionary object available for adding application-specific properties at run-time
         /// </summary>
-        dynamic Properties { get; }
+        IDictionary<string, object> Properties { get; }
     }
 
     public abstract class DynamicProperties : IDynamicProperties
     {
-        private ExpandoObject _properties;
+        private ConcurrentDictionary<string, object> _properties;
 
-        public dynamic Properties
+        public IDictionary<string, object> Properties
         {
             get
             {
                 if (_properties != null) return _properties;
-                _properties = new ExpandoObject();
+                _properties = new ConcurrentDictionary<string, object>();
                 return _properties;
             }
         }
@@ -35,10 +35,9 @@ namespace Grapevine.Shared
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (string.IsNullOrWhiteSpace(key)) throw new ArgumentException(nameof(key));
 
-            var dictionary = props.Properties as IDictionary<string, object>;
-            if (dictionary == null || !dictionary.ContainsKey(key)) throw new DynamicValueNotFoundException(key);
+            if (!props.Properties.ContainsKey(key)) throw new DynamicValueNotFoundException(key);
 
-            var property = dictionary[key];
+            var property = props.Properties[key];
             if (property is T) return (T)property;
 
             var result = Convert.ChangeType(property, typeof(T));
@@ -49,9 +48,7 @@ namespace Grapevine.Shared
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (string.IsNullOrWhiteSpace(key)) throw new ArgumentException(nameof(key));
-
-            var dictionary = props.Properties as IDictionary<string, object>;
-            return dictionary != null && dictionary.ContainsKey(key);
+            return props.Properties.ContainsKey(key);
         }
     }
 }

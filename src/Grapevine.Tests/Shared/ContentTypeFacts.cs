@@ -135,27 +135,39 @@ namespace Grapevine.Tests.Shared
                 private const ContentType DefaultContentType = 0;
 
                 [Fact]
+                public void ReturnsDefaulttWhenArgumentIsNull()
+                {
+                    DefaultContentType.FromExtension(null).ShouldBe(DefaultContentType);
+                }
+
+                [Fact]
+                public void ReturnsDefaulttWhenArgumentIsEmpty()
+                {
+                    DefaultContentType.FromExtension(string.Empty).ShouldBe(DefaultContentType);
+                }
+
+                [Fact]
                 public void ReturnsDefaultWhenNoExtensionOnArgument()
                 {
-                    ContentType.DEFAULT.FromExtension("/ihavenoextension").ShouldBe(DefaultContentType);
+                    DefaultContentType.FromExtension("/ihavenoextension").ShouldBe(DefaultContentType);
                 }
 
                 [Fact]
                 public void ReturnsDefaultWhenExtentionNotInEnum()
                 {
-                    ContentType.DEFAULT.FromExtension("/thisextention.doesnotexist").ShouldBe(DefaultContentType);
+                    DefaultContentType.FromExtension("/thisextention.doesnotexist").ShouldBe(DefaultContentType);
                 }
 
                 [Fact]
                 public void ReturnsEnumFromExtension()
                 {
-                    ContentType.DEFAULT.FromExtension("/image.jpg").ShouldBe(ContentType.JPG);
+                    DefaultContentType.FromExtension("/image.jpg").ShouldBe(ContentType.JPG);
                 }
 
                 [Fact]
                 public void HtmlExtensionReturnsHtmlContentType()
                 {
-                    ContentType.DEFAULT.FromExtension("page.html").ShouldBe(ContentType.HTML);
+                    DefaultContentType.FromExtension("page.html").ShouldBe(ContentType.HTML);
                 }
             }
         }

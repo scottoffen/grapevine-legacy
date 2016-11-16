@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -11,8 +10,6 @@ namespace Grapevine.Shared
     {
         private static readonly Regex CamelCaseInner = new Regex(@"(\P{Ll})(\P{Ll}\p{Ll})", RegexOptions.Singleline | RegexOptions.Compiled);
         private static readonly Regex CamelCaseOuter = new Regex(@"(\p{Ll})(\P{Ll})", RegexOptions.Singleline | RegexOptions.Compiled);
-
-        private static readonly ConcurrentDictionary<Type, bool> CanDispose = new ConcurrentDictionary<Type, bool>();
 
         /// <summary>
         /// Returns the string with spaces between inserted in the camel casing.
@@ -33,21 +30,9 @@ namespace Grapevine.Shared
         /// <param name="obj"></param>
         internal static bool TryDisposing(this object obj)
         {
-            if (CanDispose[obj.GetType()]) ((IDisposable)obj).Dispose();
+            if (!obj.GetType().Implements<IDisposable>()) return true;
+            ((IDisposable) obj).Dispose();
             return true;
-        }
-
-        internal static void CacheDisposablility(this Type type)
-        {
-            if (CanDispose.ContainsKey(type)) return;
-            if (!type.Implements<IDisposable>())
-            {
-                CanDispose.TryAdd(type, false);
-                return;
-            }
-
-            var method = type.GetMethod("Dispose", BindingFlags.Instance | BindingFlags.Public, null, Type.EmptyTypes, null);
-            CanDispose.TryAdd(type, method != null);
         }
 
         /// <summary>
