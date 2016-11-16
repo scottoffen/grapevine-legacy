@@ -259,8 +259,6 @@ namespace Grapevine.Server
                 return context => (IHttpContext) method.Invoke(null, new object[] {context});
             }
 
-            method.ReflectedType.CacheDisposablility();
-
             // Generates new instance every time
             return context =>
             {
@@ -278,7 +276,7 @@ namespace Grapevine.Server
                 }
             };
 
-            // TODO: Create and used a cached instance, like in earlier versions of Grapevine?
+            // TODO: Create and use a cached instance, like in earlier versions of Grapevine?
         }
     }
 
