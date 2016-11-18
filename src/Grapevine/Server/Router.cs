@@ -11,6 +11,12 @@ using Grapevine.Shared.Loggers;
 namespace Grapevine.Server
 {
     /// <summary>
+    /// Delegate for the <see cref="IRouter.BeforeRouting"/> and <see cref="IRouter.AfterRouting"/> events
+    /// </summary>
+    /// <param name="context">The <see cref="IHttpContext"/> that is being routed.</param>
+    public delegate void RoutingEventHandler(IHttpContext context);
+
+    /// <summary>
     /// Provides a mechanism to register routes and invoke them according to the produced routing table
     /// </summary>
     public interface IRouter
@@ -18,12 +24,24 @@ namespace Grapevine.Server
         /// <summary>
         /// Gets or sets a function to be executed prior to any routes being executed
         /// </summary>
+        [Obsolete("The After delegate has been replace with the AfterRouting event and will be removed in the next version.")]
         Func<IHttpContext, IHttpContext> After { get; set; }
+
+        /// <summary>
+        /// Raised after a request has completed invoking matching routes
+        /// </summary>
+        event RoutingEventHandler AfterRouting;
 
         /// <summary>
         /// Gets or sets a function to be executed after route execution has completed
         /// </summary>
+        [Obsolete("The Before delegate has been replace with the BeforeRouting event and will be removed in the next version.")]
         Func<IHttpContext, IHttpContext> Before { get; set; }
+
+        /// <summary>
+        /// Raised prior to sending any request though matching routes
+        /// </summary>
+        event RoutingEventHandler BeforeRouting;
 
         /// <summary>
         /// Gets or sets a value to indicate whether request routing should continue even after a response has been sent.
@@ -275,7 +293,10 @@ namespace Grapevine.Server
         private IGrapevineLogger _logger;
 
         public Func<IHttpContext, IHttpContext> After { get; set; }
+        public event RoutingEventHandler AfterRouting;
+
         public Func<IHttpContext, IHttpContext> Before { get; set; }
+        public event RoutingEventHandler BeforeRouting;
 
         public bool ContinueRoutingAfterResponseSent { get; set; }
         public string Scope { get; protected set; }
@@ -533,10 +554,11 @@ namespace Grapevine.Server
 
             Logger.BeginRouting($"{context.Request.Id} - {context.Request.Name} has {totalRoutes} routes");
 
-            if (Before != null) routeContext = Before.Invoke(routeContext);
-
             try
             {
+                if (Before != null) routeContext = Before.Invoke(routeContext);
+                OnBeforeRouting(routeContext);
+
                 foreach (var route in routing.Where(route => route.Enabled))
                 {
                     routeCounter++;
@@ -550,6 +572,8 @@ namespace Grapevine.Server
             finally
             {
                 if (After != null) routeContext = After.Invoke(routeContext);
+                OnAfterRouting(routeContext);
+
                 Logger.EndRouting($"{context.Request.Id} - {routeCounter} of {totalRoutes} routes invoked");
             }
 
@@ -573,6 +597,28 @@ namespace Grapevine.Server
         protected void AddToRoutingTable(IEnumerable<IRoute> routes)
         {
             routes.ToList().ForEach(AddToRoutingTable);
+        }
+
+        /// <summary>
+        /// Event handler for when the <see cref="BeforeRouting"/> event is raised
+        /// </summary>
+        /// <param name="context">The <see cref="IHttpContext"/> being routed</param>
+        protected void OnBeforeRouting(IHttpContext context)
+        {
+            BeforeRouting?.Invoke(context);
+        }
+
+        /// <summary>
+        /// Event handler for when the <see cref="AfterRouting"/> event is raised
+        /// </summary>
+        /// <param name="context">The <see cref="IHttpContext"/> being routed</param>
+        protected void OnAfterRouting(IHttpContext context)
+        {
+            if (AfterRouting == null) return;
+            foreach (var action in AfterRouting.GetInvocationList().Reverse().Cast<RoutingEventHandler>())
+            {
+                action(context);
+            }
         }
     }
 }

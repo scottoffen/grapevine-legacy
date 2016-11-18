@@ -86,7 +86,7 @@ namespace Grapevine.Tests.Server
             }
         }
 
-        public class AfterProperty
+        public class AfterEvent
         {
             [Fact]
             public void ExecutesAfterRouting()
@@ -104,9 +104,33 @@ namespace Grapevine.Tests.Server
                 executionOrder[0].ShouldBe("function");
                 executionOrder[1].ShouldBe("after");
             }
+
+            [Fact]
+            public void ExecutesOnAfterRoutingAfterRouting()
+            {
+                var firingOrder = new List<string>();
+                var context = Mocks.HttpContext();
+                RoutingEventHandler one = ctx => { firingOrder.Add("1"); };
+                RoutingEventHandler two = ctx => { firingOrder.Add("2"); };
+
+                var router = new Router().Register(ctx =>
+                {
+                    context.WasRespondedTo.Returns(true);
+                    return ctx;
+                });
+
+                router.AfterRouting += one;
+                router.AfterRouting += two;
+
+                router.Route(context);
+
+                firingOrder.Count.ShouldBe(2);
+                firingOrder[0].ShouldBe("2");
+                firingOrder[1].ShouldBe("1");
+            }
         }
 
-        public class BeforeProperty
+        public class BeforeEvent
         {
             [Fact]
             public void ExecutesBeforeRouting()
@@ -123,6 +147,30 @@ namespace Grapevine.Tests.Server
 
                 executionOrder[0].ShouldBe("before");
                 executionOrder[1].ShouldBe("function");
+            }
+
+            [Fact]
+            public void ExecutesOnBeforeRoutingBeforeRouting()
+            {
+                var firingOrder = new List<string>();
+                var context = Mocks.HttpContext();
+                RoutingEventHandler one = ctx => { firingOrder.Add("1"); };
+                RoutingEventHandler two = ctx => { firingOrder.Add("2"); };
+
+                var router = new Router().Register(ctx =>
+                {
+                    context.WasRespondedTo.Returns(true);
+                    return ctx;
+                });
+
+                router.BeforeRouting += one;
+                router.BeforeRouting += two;
+
+                router.Route(context);
+
+                firingOrder.Count.ShouldBe(2);
+                firingOrder[0].ShouldBe("1");
+                firingOrder[1].ShouldBe("2");
             }
         }
 

@@ -318,6 +318,34 @@ namespace Grapevine.Tests.Server
                 route1.Invoke(Mocks.HttpContext());
                 instance.InstanceHits.ShouldBe(3);
             }
+
+            [Fact]
+            public void DisposesWhenExceptionIsThrown()
+            {
+                var method = typeof(IsDisposeable).GetMethod("TestDisposing");
+                var route = new Route(method);
+
+                IsDisposeable.WasDisposed.ShouldBeFalse();
+
+                Should.Throw<Exception>(() => route.Invoke(Mocks.HttpContext()));
+
+                IsDisposeable.WasDisposed.ShouldBeTrue();
+            }
+
+            public class IsDisposeable : IDisposable
+            {
+                public static bool WasDisposed = false;
+
+                public IHttpContext TestDisposing(IHttpContext context)
+                {
+                    throw new Exception();
+                }
+
+                public void Dispose()
+                {
+                    WasDisposed = true;
+                }
+            }
         }
 
         public class MatchesMethod

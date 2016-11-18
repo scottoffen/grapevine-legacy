@@ -476,7 +476,6 @@ namespace Grapevine.Server
         }
     }
 
-
     public static class RestServerExtensions
     {
         /// <summary>

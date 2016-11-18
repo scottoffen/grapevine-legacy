@@ -10,7 +10,6 @@ using Grapevine.Server;
 using Grapevine.Shared;
 using Grapevine.Shared.Loggers;
 using NSubstitute;
-using NSubstitute.ReturnsExtensions;
 using Shouldly;
 using Xunit;
 
