@@ -261,14 +261,6 @@ namespace Grapevine.Server
             return this;
         }
 
-        /// <summary>
-        /// For use in routes that want to stop the server; starts a new thread and then calls Stop on the server
-        /// </summary>
-        public void ThreadSafeStop()
-        {
-            new Thread(Stop).Start();
-        }
-
         private void HandleRequests()
         {
             while (Listener.IsListening)
@@ -481,6 +473,18 @@ namespace Grapevine.Server
         public void Stop()
         {
             _listener.Stop();
+        }
+    }
+
+
+    public static class RestServerExtensions
+    {
+        /// <summary>
+        /// For use in routes that want to stop the server; starts a new thread and then calls Stop on the server
+        /// </summary>
+        public static void ThreadSafeStop(this IRestServer server)
+        {
+            new Thread(server.Stop).Start();
         }
     }
 }
