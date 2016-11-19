@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 using Grapevine.Server;
 using Grapevine.Shared.Loggers;
 using Shouldly;
@@ -86,6 +88,77 @@ namespace Grapevine.Tests.Server
                 options.OnBeforeStop.ShouldBeNull();
                 options.OnAfterStop.ShouldBe(action2);
                 options.OnStop.ShouldBe(action2);
+            }
+        }
+
+        public class CloneEventHandlersMethod
+        {
+            [Fact]
+            public void ClonesBeforeStartHandlersInCorrectOrder()
+            {
+                var settings = new ServerSettings();
+                var server = new RestServer();
+                var order = new List<string>();
+
+                settings.BeforeStarting += rs => { order.Add("1"); };
+                settings.BeforeStarting += rs => { order.Add("2"); };
+                settings.CloneEventHandlers(server);
+                server.GetType().GetMethod("OnBeforeStarting", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(server, null);
+
+                order.Count.ShouldBe(2);
+                order[0].ShouldBe("1");
+                order[1].ShouldBe("2");
+            }
+
+            [Fact]
+            public void ClonesAfterStartHandlersInCorrectOrder()
+            {
+                var settings = new ServerSettings();
+                var server = new RestServer();
+                var order = new List<string>();
+
+                settings.AfterStarting += rs => { order.Add("1"); };
+                settings.AfterStarting += rs => { order.Add("2"); };
+                settings.CloneEventHandlers(server);
+                server.GetType().GetMethod("OnAfterStarting", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(server, null);
+
+                order.Count.ShouldBe(2);
+                order[0].ShouldBe("1");
+                order[1].ShouldBe("2");
+            }
+
+            [Fact]
+            public void ClonesBeforeStopHandlersInCorrectOrder()
+            {
+                var settings = new ServerSettings();
+                var server = new RestServer();
+                var order = new List<string>();
+
+                settings.BeforeStopping += rs => { order.Add("1"); };
+                settings.BeforeStopping += rs => { order.Add("2"); };
+                settings.CloneEventHandlers(server);
+                server.GetType().GetMethod("OnBeforeStopping", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(server, null);
+
+                order.Count.ShouldBe(2);
+                order[0].ShouldBe("1");
+                order[1].ShouldBe("2");
+            }
+
+            [Fact]
+            public void ClonesAfterStopHandlersInCorrectOrder()
+            {
+                var settings = new ServerSettings();
+                var server = new RestServer();
+                var order = new List<string>();
+
+                settings.AfterStopping += rs => { order.Add("1"); };
+                settings.AfterStopping += rs => { order.Add("2"); };
+                settings.CloneEventHandlers(server);
+                server.GetType().GetMethod("OnAfterStopping", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(server, null);
+
+                order.Count.ShouldBe(2);
+                order[0].ShouldBe("1");
+                order[1].ShouldBe("2");
             }
         }
     }

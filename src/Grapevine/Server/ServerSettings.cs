@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Grapevine.Interfaces.Shared;
 using Grapevine.Shared.Loggers;
 
@@ -6,6 +7,26 @@ namespace Grapevine.Server
 {
     public interface IServerSettings
     {
+        /// <summary>
+        /// Raised after the server has finished starting
+        /// </summary>
+        event ServerEventHandler AfterStarting;
+
+        /// <summary>
+        /// Raised after the server has finished stopping
+        /// </summary>
+        event ServerEventHandler AfterStopping;
+
+        /// <summary>
+        /// Raised when the server starts
+        /// </summary>
+        event ServerEventHandler BeforeStarting;
+
+        /// <summary>
+        /// Raised when the server stops
+        /// </summary>
+        event ServerEventHandler BeforeStopping;
+
         /// <summary>
         /// Gets or sets the number of HTTP connection threads maintained per processor; defaults to 50
         /// </summary>
@@ -31,31 +52,37 @@ namespace Grapevine.Server
         /// <summary>
         /// Gets or sets the Action that will be executed immediately following server start; synonym for OnAfterStart
         /// </summary>
+        [Obsolete("The OnStart delegate has been replace with the BeforeStarting event and will be removed in the next version.")]
         Action OnStart { get; set; }
 
         /// <summary>
         /// Gets or sets the Action that will be executed before attempting to start the server
         /// </summary>
+        [Obsolete("The OnBeforeStart delegate has been replace with the BeforeStarting event and will be removed in the next version.")]
         Action OnBeforeStart { get; set; }
 
         /// <summary>
         /// Gets or sets the Action that will be executed immediately following server start
         /// </summary>
+        [Obsolete("The OnAfterStart delegate has been replace with the AfterStarting event and will be removed in the next version.")]
         Action OnAfterStart { get; set; }
 
         /// <summary>
         /// Gets or sets the Action that will be executed immediately following server stop; synonym for OnAfterStop
         /// </summary>
+        [Obsolete("The OnStop delegate has been replace with the AfterStopping event and will be removed in the next version.")]
         Action OnStop { get; set; }
 
         /// <summary>
         /// Gets or sets the Action that will be executed before attempting to stop the server
         /// </summary>
+        [Obsolete("The OnBeforeStop delegate has been replace with the BeforeStopping event and will be removed in the next version.")]
         Action OnBeforeStop { get; set; }
 
         /// <summary>
         /// Gets or sets the Action that will be executed immediately following server stops
         /// </summary>
+        [Obsolete("The OnAfterStop delegate has been replace with the AfterStopping event and will be removed in the next version.")]
         Action OnAfterStop { get; set; }
 
         /// <summary>
@@ -80,10 +107,21 @@ namespace Grapevine.Server
         /// https://msdn.microsoft.com/en-us/library/system.net.httplistener(v=vs.110).aspx
         /// </summary>
         bool UseHttps { get; set; }
+
+        /// <summary>
+        /// Clones the event handlers on to an <see cref="IRestServer"/> object, preserving order
+        /// </summary>
+        /// <param name="server">The <see cref="IRestServer"/> object to clone the events to</param>
+        void CloneEventHandlers(IRestServer server);
     }
 
     public class ServerSettings : IServerSettings
     {
+        public event ServerEventHandler AfterStarting;
+        public event ServerEventHandler AfterStopping;
+        public event ServerEventHandler BeforeStarting;
+        public event ServerEventHandler BeforeStopping;
+
         public int Connections { get; set; }
         public bool EnableThrowingExceptions { get; set; }
         public string Host { get; set; }
@@ -118,6 +156,41 @@ namespace Grapevine.Server
             PublicFolder = new PublicFolder();
             Router = new Router();
             UseHttps = false;
+        }
+
+        public void CloneEventHandlers(IRestServer server)
+        {
+            if (BeforeStarting != null)
+            {
+                foreach (var action in BeforeStarting.GetInvocationList().Reverse().Cast<ServerEventHandler>())
+                {
+                    server.BeforeStarting += action;
+                }
+            }
+
+            if (AfterStarting != null)
+            {
+                foreach (var action in AfterStarting.GetInvocationList().Reverse().Cast<ServerEventHandler>())
+                {
+                    server.AfterStarting += action;
+                }
+            }
+
+            if (BeforeStopping != null)
+            {
+                foreach (var action in BeforeStopping.GetInvocationList().Reverse().Cast<ServerEventHandler>())
+                {
+                    server.BeforeStopping += action;
+                }
+            }
+
+            if (AfterStopping != null)
+            {
+                foreach (var action in AfterStopping.GetInvocationList().Reverse().Cast<ServerEventHandler>())
+                {
+                    server.AfterStopping += action;
+                }
+            }
         }
     }
 }

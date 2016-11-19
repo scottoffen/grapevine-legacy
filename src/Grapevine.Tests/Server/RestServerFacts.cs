@@ -273,6 +273,194 @@ namespace Grapevine.Tests.Server
             }
         }
 
+        public class CloneEventHandlersMethod
+        {
+            [Fact]
+            public void ClonesBeforeStartHandlersInCorrectOrder()
+            {
+                var server1 = new RestServer();
+                var server2 = new RestServer();
+                var order = new List<string>();
+
+                server1.BeforeStarting += rs => { order.Add("1"); };
+                server1.BeforeStarting += rs => { order.Add("2"); };
+                server1.CloneEventHandlers(server2);
+                server2.GetType().GetMethod("OnBeforeStarting", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(server2, null);
+
+                order.Count.ShouldBe(2);
+                order[0].ShouldBe("1");
+                order[1].ShouldBe("2");
+            }
+
+            [Fact]
+            public void ClonesAfterStartHandlersInCorrectOrder()
+            {
+                var server1 = new RestServer();
+                var server2 = new RestServer();
+                var order = new List<string>();
+
+                server1.AfterStarting += rs => { order.Add("1"); };
+                server1.AfterStarting += rs => { order.Add("2"); };
+                server1.CloneEventHandlers(server2);
+                server2.GetType().GetMethod("OnAfterStarting", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(server2, null);
+
+                order.Count.ShouldBe(2);
+                order[0].ShouldBe("1");
+                order[1].ShouldBe("2");
+            }
+
+            [Fact]
+            public void ClonesBeforeStopHandlersInCorrectOrder()
+            {
+                var server1 = new RestServer();
+                var server2 = new RestServer();
+                var order = new List<string>();
+
+                server1.BeforeStopping += rs => { order.Add("1"); };
+                server1.BeforeStopping += rs => { order.Add("2"); };
+                server1.CloneEventHandlers(server2);
+                server2.GetType().GetMethod("OnBeforeStopping", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(server2, null);
+
+                order.Count.ShouldBe(2);
+                order[0].ShouldBe("1");
+                order[1].ShouldBe("2");
+            }
+
+            [Fact]
+            public void ClonesAfterStopHandlersInCorrectOrder()
+            {
+                var server1 = new RestServer();
+                var server2 = new RestServer();
+                var order = new List<string>();
+
+                server1.AfterStopping += rs => { order.Add("1"); };
+                server1.AfterStopping += rs => { order.Add("2"); };
+                server1.CloneEventHandlers(server2);
+                server2.GetType().GetMethod("OnAfterStopping", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(server2, null);
+
+                order.Count.ShouldBe(2);
+                order[0].ShouldBe("1");
+                order[1].ShouldBe("2");
+            }
+        }
+
+        public class EventHandlers
+        {
+            [Fact]
+            public void BeforeStartingThrowsAggregateException()
+            {
+                var listener = Substitute.For<IHttpListener>();
+                var order = new List<int>();
+
+                using (var server = new RestServer(listener))
+                {
+                    server.BeforeStarting += restServer => { order.Add(1); throw new Exception("blah"); };
+                    server.BeforeStarting += restServer => { order.Add(2); };
+                    server.AfterStarting += restServer => { order.Add(3); };
+
+                    try
+                    {
+                        server.Start();
+                    }
+                    catch (Exception e)
+                    {
+                        e.InnerException.ShouldNotBeNull();
+                        e.InnerException?.GetType().ShouldBe(typeof(AggregateException));
+                    }
+                }
+
+                order.Count.ShouldBe(2);
+                order.Contains(3).ShouldBeFalse();
+            }
+
+            [Fact]
+            public void AfterStartingThrowsAggregateException()
+            {
+                var listener = Substitute.For<IHttpListener>();
+                var order = new List<int>();
+
+                using (var server = new RestServer(listener))
+                {
+                    server.BeforeStarting += restServer => { order.Add(1); listener.IsListening.Returns(true); };
+                    server.AfterStarting += restServer => { order.Add(2); throw new Exception("blah"); };
+                    server.AfterStarting += restServer => { order.Add(3); };
+
+                    try
+                    {
+                        server.Start();
+                    }
+                    catch (Exception e)
+                    {
+                        e.InnerException.ShouldNotBeNull();
+                        e.InnerException?.GetType().ShouldBe(typeof(AggregateException));
+                    }
+
+                    listener.IsListening.Returns(false);
+                }
+
+                order.Count.ShouldBe(3);
+            }
+
+            [Fact]
+            public void BeforeStoppingThrowsAggregateException()
+            {
+                var listener = Substitute.For<IHttpListener>();
+                listener.IsListening.Returns(true);
+
+                var order = new List<int>();
+
+                using (var server = new RestServer(listener))
+                {
+                    server.BeforeStopping += restServer => { order.Add(1); throw new Exception("blah"); };
+                    server.BeforeStopping += restServer => { order.Add(2); };
+                    server.AfterStopping += restServer => { order.Add(3); };
+
+                    try
+                    {
+                        server.Stop();
+                    }
+                    catch (Exception e)
+                    {
+                        e.InnerException.ShouldNotBeNull();
+                        e.InnerException?.GetType().ShouldBe(typeof(AggregateException));
+                        listener.IsListening.Returns(false);
+                    }
+                }
+
+                order.Count.ShouldBe(2);
+                order.Contains(3).ShouldBeFalse();
+            }
+
+            [Fact]
+            public void AfterStoppingThrowsAggregateException()
+            {
+                var listener = Substitute.For<IHttpListener>();
+                listener.IsListening.Returns(true);
+                var order = new List<int>();
+
+                using (var server = new RestServer(listener))
+                {
+                    server.BeforeStopping += restServer => { order.Add(1); listener.IsListening.Returns(false); };
+                    server.AfterStopping += restServer => { order.Add(2); throw new Exception("blah"); };
+                    server.AfterStopping += restServer => { order.Add(3); };
+
+                    try
+                    {
+                        server.Stop();
+                    }
+                    catch (Exception e)
+                    {
+                        e.InnerException.ShouldNotBeNull();
+                        e.InnerException?.GetType().ShouldBe(typeof(AggregateException));
+                    }
+
+                    listener.IsListening.Returns(false);
+                }
+
+                order.Count.ShouldBe(3);
+            }
+        }
+
         public class DisposeMethod
         {
             [Fact]

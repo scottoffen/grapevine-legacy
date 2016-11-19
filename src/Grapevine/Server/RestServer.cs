@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Security.Authentication.ExtendedProtection;
 using System.Threading;
@@ -14,6 +16,12 @@ using HttpListener = Grapevine.Interfaces.Server.HttpListener;
 
 namespace Grapevine.Server
 {
+    /// <summary>
+    /// Delegate for the <see cref="IRestServer.BeforeStarting"/>, <see cref="IRestServer.AfterStarting"/>, <see cref="IRestServer.BeforeStopping"/> and <see cref="IRestServer.AfterStopping"/> events
+    /// </summary>
+    /// <param name="server"></param>
+    public delegate void ServerEventHandler(RestServer server);
+
     /// <summary>
     /// Provides a programmatically controlled REST implementation for a single Prefix using HttpListener
     /// </summary>
@@ -57,6 +65,11 @@ namespace Grapevine.Server
 
         protected internal bool TestingMode = false;
 
+        public event ServerEventHandler AfterStarting;
+        public event ServerEventHandler AfterStopping;
+        public event ServerEventHandler BeforeStarting;
+        public event ServerEventHandler BeforeStopping;
+
         public bool EnableThrowingExceptions { get; set; }
         public Action OnBeforeStart { get; set; }
         public Action OnAfterStart { get; set; }
@@ -80,6 +93,7 @@ namespace Grapevine.Server
             ReadyEvent = new ManualResetEvent(false);
             StopEvent = new ManualResetEvent(false);
 
+            options.CloneEventHandlers(this);
             Connections = options.Connections;
             Host = options.Host;
             Logger = options.Logger;
@@ -189,7 +203,7 @@ namespace Grapevine.Server
 
             try
             {
-                OnBeforeStart?.Invoke();
+                OnBeforeStarting();
                 if (Router.RoutingTable.Count == 0) Router.ScanAssemblies();
 
                 Listener.Prefixes?.Add(ListenerPrefix);
@@ -207,7 +221,7 @@ namespace Grapevine.Server
                 }
 
                 Logger.Trace($"Listening: {ListenerPrefix}");
-                if (IsListening) OnAfterStart?.Invoke();
+                if (IsListening) OnAfterStarting();
             }
             catch (Exception e)
             {
@@ -227,7 +241,7 @@ namespace Grapevine.Server
 
             try
             {
-                OnBeforeStop?.Invoke();
+                OnBeforeStopping();
 
                 StopEvent.Set();
                 if (!TestingMode)
@@ -237,7 +251,7 @@ namespace Grapevine.Server
                 }
                 Listener.Stop();
 
-                if (!IsListening) OnAfterStop?.Invoke();
+                if (!IsListening) OnAfterStopping();
             }
             catch (Exception e)
             {
@@ -255,10 +269,96 @@ namespace Grapevine.Server
             Listener?.Close();
         }
 
+        public void CloneEventHandlers(IRestServer server)
+        {
+            if (BeforeStarting != null)
+            {
+                foreach (var action in BeforeStarting.GetInvocationList().Reverse().Cast<ServerEventHandler>())
+                {
+                    server.BeforeStarting += action;
+                }
+            }
+
+            if (AfterStarting != null)
+            {
+                foreach (var action in AfterStarting.GetInvocationList().Reverse().Cast<ServerEventHandler>())
+                {
+                    server.AfterStarting += action;
+                }
+            }
+
+            if (BeforeStopping != null)
+            {
+                foreach (var action in BeforeStopping.GetInvocationList().Reverse().Cast<ServerEventHandler>())
+                {
+                    server.BeforeStopping += action;
+                }
+            }
+
+            if (AfterStopping != null)
+            {
+                foreach (var action in AfterStopping.GetInvocationList().Reverse().Cast<ServerEventHandler>())
+                {
+                    server.AfterStopping += action;
+                }
+            }
+        }
+
         public IRestServer LogToConsole()
         {
             Logger = new ConsoleLogger();
             return this;
+        }
+
+        private List<Exception> InvokeServerEventHandlers(IEnumerable<ServerEventHandler> actions)
+        {
+            var exceptions = new List<Exception>();
+
+            foreach (var action in actions)
+            {
+                try
+                {
+                    action.Invoke(this);
+                }
+                catch (Exception e)
+                {
+                    exceptions.Add(e);
+                }
+            }
+
+            return exceptions;
+        }
+
+        protected void OnBeforeStarting()
+        {
+            OnBeforeStart?.Invoke();
+            if (BeforeStarting == null) return;
+            var exceptions = InvokeServerEventHandlers(BeforeStarting.GetInvocationList().Reverse().Cast<ServerEventHandler>());
+            if (exceptions.Count > 0) throw new AggregateException(exceptions);
+        }
+
+        protected void OnAfterStarting()
+        {
+            OnAfterStart?.Invoke();
+            if (AfterStarting == null) return;
+            var exceptions = InvokeServerEventHandlers(AfterStarting.GetInvocationList().Reverse().Cast<ServerEventHandler>());
+            if (exceptions.Count > 0) throw new AggregateException(exceptions);
+        }
+
+        protected void OnBeforeStopping()
+        {
+            OnBeforeStop?.Invoke();
+            if (BeforeStopping == null) return;
+            var exceptions = InvokeServerEventHandlers(BeforeStopping.GetInvocationList().Reverse().Cast<ServerEventHandler>());
+            if (exceptions.Count > 0) throw new AggregateException(exceptions);
+        }
+
+        protected void OnAfterStopping()
+        {
+            OnAfterStop?.Invoke();
+            if (AfterStopping == null) return;
+            var exceptions = InvokeServerEventHandlers(AfterStopping.GetInvocationList().Reverse().Cast<ServerEventHandler>());
+            if (exceptions.Count > 0) throw new AggregateException(exceptions);
         }
 
         private void HandleRequests()
