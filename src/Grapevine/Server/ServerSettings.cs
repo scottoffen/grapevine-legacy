@@ -30,6 +30,7 @@ namespace Grapevine.Server
         /// <summary>
         /// Gets or sets the number of HTTP connection threads maintained per processor; defaults to 50
         /// </summary>
+        [Obsolete("Connections has been deprecated and is not longer used.")]
         int Connections { get; set; }
 
         /// <summary>

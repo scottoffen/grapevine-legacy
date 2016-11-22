@@ -80,22 +80,6 @@ namespace Grapevine.Tests.Server
             }
         }
 
-        public class ConnectionsProperty
-        {
-            [Fact]
-            public void ThrowsExceptionWhenChangingWhileListenerIsListening()
-            {
-                var listener = Substitute.For<IHttpListener>();
-                listener.IsListening.Returns(true);
-
-                using (var server = new RestServer(listener))
-                {
-                    Should.Throw<ServerStateException>(() => server.Connections = 5);
-                    listener.IsListening.Returns(false);
-                }
-            }
-        }
-
         public class HostProperty
         {
             [Fact]

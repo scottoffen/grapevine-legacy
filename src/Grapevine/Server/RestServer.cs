@@ -50,20 +50,16 @@ namespace Grapevine.Server
 
     public class RestServer : DynamicProperties, IRestServer
     {
-        private string _host;
-        private string _port;
-        private string _protocol = "http";
-        private int _connections;
+        private readonly UriBuilder _uriBuilder = new UriBuilder("http", "localhost", 1234, "/");
+
         private IGrapevineLogger _logger;
         protected bool IsStopping;
         protected bool IsStarting;
         protected readonly IHttpListener Listener;
         protected readonly Thread Listening;
-        protected readonly ConcurrentQueue<HttpListenerContext> Queue;
-        protected readonly ManualResetEvent ReadyEvent, StopEvent;
-        protected Thread[] Workers;
+        protected readonly ManualResetEvent StopEvent;
 
-        protected internal bool TestingMode = false;
+        protected internal bool TestingMode;
 
         public event ServerEventHandler AfterStarting;
         public event ServerEventHandler AfterStopping;
@@ -89,22 +85,23 @@ namespace Grapevine.Server
         {
             Listener = new HttpListener(new System.Net.HttpListener());
             Listening = new Thread(HandleRequests);
-            Queue = new ConcurrentQueue<HttpListenerContext>();
-            ReadyEvent = new ManualResetEvent(false);
+            //ReadyEvent = new ManualResetEvent(false);
             StopEvent = new ManualResetEvent(false);
 
             options.CloneEventHandlers(this);
-            Connections = options.Connections;
             Host = options.Host;
             Logger = options.Logger;
-            OnBeforeStart = options.OnBeforeStart;
-            OnAfterStart = options.OnAfterStart;
-            OnBeforeStop = options.OnBeforeStop;
-            OnAfterStop = options.OnAfterStop;
             Port = options.Port;
             PublicFolder = options.PublicFolder;
             Router = options.Router;
             UseHttps = options.UseHttps;
+
+            /* Obsolete */
+            Connections = options.Connections;
+            OnBeforeStart = options.OnBeforeStart;
+            OnAfterStart = options.OnAfterStart;
+            OnBeforeStop = options.OnBeforeStop;
+            OnAfterStop = options.OnAfterStop;
 
             Advanced = new AdvancedRestServer(Listener);
             Listener.IgnoreWriteExceptions = true;
@@ -127,23 +124,15 @@ namespace Grapevine.Server
         /// </summary>
         public AdvancedRestServer Advanced { get; }
 
-        public int Connections
-        {
-            get { return _connections; }
-            set
-            {
-                if (IsListening) throw new ServerStateException();
-                _connections = value;
-            }
-        }
+        public int Connections { get; set; }
 
         public string Host
         {
-            get { return _host; }
+            get { return _uriBuilder.Host; }
             set
             {
                 if (IsListening) throw new ServerStateException();
-                _host = value == "0.0.0.0" ? "+" : value.ToLower();
+                _uriBuilder.Host = value == "0.0.0.0" ? "+" : value.ToLower();
             }
         }
 
@@ -171,15 +160,15 @@ namespace Grapevine.Server
             set { OnAfterStop = value; }
         }
 
-        public string ListenerPrefix => $"{_protocol}://{Host}:{Port}/";
+        public string ListenerPrefix => _uriBuilder.ToString();
 
         public string Port
         {
-            get { return _port; }
+            get { return _uriBuilder.Port.ToString(); }
             set
             {
                 if (IsListening) throw new ServerStateException();
-                _port = value;
+                _uriBuilder.Port = int.Parse(value);
             }
         }
 
@@ -187,11 +176,11 @@ namespace Grapevine.Server
 
         public bool UseHttps
         {
-            get { return _protocol == "https"; }
+            get { return _uriBuilder.Scheme == "https"; }
             set
             {
                 if (IsListening) throw new ServerStateException();
-                _protocol = value ? "https" : "http";
+                _uriBuilder.Scheme = value ? "https" : "http";
             }
         }
 
@@ -206,19 +195,11 @@ namespace Grapevine.Server
                 OnBeforeStarting();
                 if (Router.RoutingTable.Count == 0) Router.ScanAssemblies();
 
+                Listener.Prefixes?.Clear();
                 Listener.Prefixes?.Add(ListenerPrefix);
                 Listener.Start();
-                if (!TestingMode)
-                {
-                    Listening.Start();
 
-                    Workers = new Thread[_connections*Environment.ProcessorCount];
-                    for (var i = 0; i < Workers.Length; i++)
-                    {
-                        Workers[i] = new Thread(Worker);
-                        Workers[i].Start();
-                    }
-                }
+                if (!TestingMode) Listening.Start();
 
                 Logger.Trace($"Listening: {ListenerPrefix}");
                 if (IsListening) OnAfterStarting();
@@ -244,11 +225,7 @@ namespace Grapevine.Server
                 OnBeforeStopping();
 
                 StopEvent.Set();
-                if (!TestingMode)
-                {
-                    Listening.Join();
-                    foreach (var worker in Workers) worker.Join();
-                }
+                if (!TestingMode) Listening.Join();
                 Listener.Stop();
 
                 if (!IsListening) OnAfterStopping();
@@ -374,11 +351,8 @@ namespace Grapevine.Server
         {
             try
             {
-                lock (Queue)
-                {
-                    Queue.Enqueue(Listener.EndGetContext(result));
-                    ReadyEvent.Set();
-                }
+                var context = new HttpContext(Listener.EndGetContext(result), this);
+                ThreadPool.QueueUserWorkItem(RouteContext, context);
             }
             catch (ObjectDisposedException) { /* Intentionally not doing anything with this */ }
             catch (Exception e)
@@ -389,31 +363,11 @@ namespace Grapevine.Server
             }
         }
 
-        private void Worker()
+        private static void RouteContext(object state)
         {
-            WaitHandle[] wait = { ReadyEvent, StopEvent };
-            while (0 == WaitHandle.WaitAny(wait))
-            {
-                IHttpContext context;
+            var context = state as IHttpContext;
+            if (context == null) return;
 
-                lock (Queue)
-                {
-                    if (Queue.Count > 0)
-                    {
-                        HttpListenerContext ctx;
-                        Queue.TryDequeue(out ctx);
-                        if (ctx == null) continue;
-                        context = new HttpContext(ctx, this);
-                    }
-                    else { ReadyEvent.Reset(); continue; }
-                }
-
-                RouteContext(context);
-            }
-        }
-
-        private static void RouteContext(IHttpContext context)
-        {
             var server = context.Server;
 
             try
@@ -422,7 +376,7 @@ namespace Grapevine.Server
             }
             catch (RouteNotFoundException rnf)
             {
-                server.Logger.Log(new LogEvent {Exception = rnf, Level = LogLevel.Error, Message = rnf.Message});
+                server.Logger.Log(new LogEvent { Exception = rnf, Level = LogLevel.Error, Message = rnf.Message });
                 if (server.EnableThrowingExceptions) throw;
                 context.Response.SendResponse(HttpStatusCode.NotFound);
             }
