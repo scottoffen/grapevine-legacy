@@ -352,7 +352,7 @@ namespace Grapevine.Server
             try
             {
                 var context = new HttpContext(Listener.EndGetContext(result), this);
-                ThreadPool.QueueUserWorkItem(RouteContext, context);
+                ThreadPool.QueueUserWorkItem(Router.Route, context);
             }
             catch (ObjectDisposedException) { /* Intentionally not doing anything with this */ }
             catch (Exception e)
@@ -361,59 +361,6 @@ namespace Grapevine.Server
                 if (IsStopping && e is HttpListenerException && ((HttpListenerException)e).NativeErrorCode == 995) return;
                 Logger.Debug(e);
             }
-        }
-
-        private static void RouteContext(object state)
-        {
-            var context = state as IHttpContext;
-            if (context == null) return;
-
-            var server = context.Server;
-
-            try
-            {
-                UnsafeRouteContext(context);
-            }
-            catch (RouteNotFoundException rnf)
-            {
-                server.Logger.Log(new LogEvent { Exception = rnf, Level = LogLevel.Error, Message = rnf.Message });
-                if (server.EnableThrowingExceptions) throw;
-                context.Response.SendResponse(HttpStatusCode.NotFound);
-            }
-            catch (NotImplementedException ni)
-            {
-                server.Logger.Log(new LogEvent { Exception = ni, Level = LogLevel.Error, Message = ni.Message });
-                if (server.EnableThrowingExceptions) throw;
-                context.Response.SendResponse(HttpStatusCode.NotImplemented);
-            }
-            catch (Exception e)
-            {
-                server.Logger.Log(new LogEvent { Exception = e, Level = LogLevel.Error, Message = e.Message });
-                if (server.EnableThrowingExceptions) throw;
-                context.Response.SendResponse(HttpStatusCode.InternalServerError, e);
-            }
-        }
-
-        private static void UnsafeRouteContext(IHttpContext context)
-        {
-            var server = context.Server;
-
-            context = server.PublicFolder.RespondWithFile(context);
-
-            if (server.PublicFolder.ShouldRespondWithFile(context) || context.WasRespondedTo)
-            {
-                if (context.WasRespondedTo)
-                {
-                    server.Logger.Trace($"Returned file {context.Request.PathInfo}");
-                }
-                else
-                {
-                    context.Response.SendResponse(HttpStatusCode.NotFound);
-                }
-                return;
-            }
-
-            if (!server.Router.Route(context)) throw new RouteNotFoundException(context);
         }
     }
 

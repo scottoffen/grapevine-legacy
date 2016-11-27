@@ -92,14 +92,16 @@ namespace Grapevine.Tests.Server
             public void ExecutesAfterRouting()
             {
                 var executionOrder = new List<string>();
+                var context = Mocks.HttpContext();
 
                 IList<IRoute> routing = new List<IRoute>();
-                var route = new Route(ctx => { executionOrder.Add("function"); return ctx; });
+                var route = new Route(ctx => { executionOrder.Add("function");
+                    context.WasRespondedTo.Returns(true); return ctx; });
                 routing.Add(route);
 
                 var router = new Router { After = ctx => { executionOrder.Add("after"); return ctx; } };
 
-                router.Route(Mocks.HttpContext(), routing);
+                router.Route(context, routing);
 
                 executionOrder[0].ShouldBe("function");
                 executionOrder[1].ShouldBe("after");
@@ -136,14 +138,16 @@ namespace Grapevine.Tests.Server
             public void ExecutesBeforeRouting()
             {
                 var executionOrder = new List<string>();
+                var context = Mocks.HttpContext();
 
                 IList<IRoute> routing = new List<IRoute>();
-                var route = new Route(ctx => { executionOrder.Add("function"); return ctx; });
+                var route = new Route(ctx => { executionOrder.Add("function");
+                    context.WasRespondedTo.Returns(true); return ctx; });
                 routing.Add(route);
 
                 var router = new Router { Before = ctx => { executionOrder.Add("before"); return ctx; } };
 
-                router.Route(Mocks.HttpContext(), routing);
+                router.Route(context, routing);
 
                 executionOrder[0].ShouldBe("before");
                 executionOrder[1].ShouldBe("function");
@@ -192,7 +196,7 @@ namespace Grapevine.Tests.Server
                     return ctx;
                 });
 
-                router.Route(context).ShouldBeTrue();
+                router.Route(context);
                 executed.ShouldBeTrue();
             }
 
@@ -212,7 +216,7 @@ namespace Grapevine.Tests.Server
                     return ctx;
                 });
 
-                router.Route(context).ShouldBeTrue();
+                router.Route(context);
                 executed.ShouldBeFalse();
             }
         }
@@ -837,7 +841,7 @@ namespace Grapevine.Tests.Server
                 IList<IRoute> routing = new List<IRoute>();
                 routing.Add(route);
 
-                router.Route(context, routing).ShouldBeTrue();
+                router.Route(context, routing);
 
                 executed.ShouldBeFalse();
             }
@@ -851,7 +855,7 @@ namespace Grapevine.Tests.Server
                 var router = new Router().Import<RouterToImport>();
                 var context = Mocks.HttpContext(new Dictionary<string, object> {{"HttpMethod", HttpMethod.GET}, {"PathInfo", "/user/list"}});
 
-                var routes = router.RouteFor(context);
+                var routes = router.RoutesFor(context);
 
                 router.RoutingTable.Count.ShouldBe(8);
                 routes.Count.ShouldBe(1);
@@ -863,7 +867,7 @@ namespace Grapevine.Tests.Server
                 var router = new Router().Import<RouterToImport>();
                 var context = Mocks.HttpContext(new Dictionary<string, object> { { "HttpMethod", HttpMethod.POST }, { "PathInfo", "/user" } });
 
-                var routes = router.RouteFor(context);
+                var routes = router.RoutesFor(context);
 
                 router.RoutingTable.Count.ShouldBe(8);
                 routes.Count.ShouldBe(1);
@@ -909,7 +913,7 @@ namespace Grapevine.Tests.Server
     {
         public RouterToImport()
         {
-            AddToRoutingTable(Scanner.ScanAssembly(typeof(DefaultRouter).Assembly));
+            AppendRoutingTable(Scanner.ScanAssembly(typeof(DefaultRouter).Assembly));
         }
     }
 
@@ -918,7 +922,7 @@ namespace Grapevine.Tests.Server
         internal static void AddRouteToTable(this Router router, IRoute route)
         {
             var memberInfo = router.GetType();
-            var method = memberInfo?.GetMethod("AddToRoutingTable", BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(IRoute) }, null);
+            var method = memberInfo?.GetMethod("AppendRoutingTable", BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(IRoute) }, null);
 
             try
             {

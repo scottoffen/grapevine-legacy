@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Grapevine.Exceptions.Server;
 using Grapevine.Interfaces.Server;
 using Grapevine.Interfaces.Shared;
+using Grapevine.Server.Attributes;
 using Grapevine.Shared;
 using Grapevine.Shared.Loggers;
 
@@ -21,22 +24,30 @@ namespace Grapevine.Server
     /// </summary>
     public interface IRouter
     {
+        #region Deprecated
+
         /// <summary>
         /// Gets or sets a function to be executed prior to any routes being executed
         /// </summary>
-        [Obsolete("The After delegate has been replace with the AfterRouting event and will be removed in the next version.")]
+        [Obsolete(
+             "The After delegate has been replace with the AfterRouting event and will be removed in the next version.")
+        ]
         Func<IHttpContext, IHttpContext> After { get; set; }
+
+        /// <summary>
+        /// Gets or sets a function to be executed after route execution has completed
+        /// </summary>
+        [Obsolete(
+             "The Before delegate has been replace with the BeforeRouting event and will be removed in the next version."
+         )]
+        Func<IHttpContext, IHttpContext> Before { get; set; }
+
+        #endregion
 
         /// <summary>
         /// Raised after a request has completed invoking matching routes
         /// </summary>
         event RoutingEventHandler AfterRouting;
-
-        /// <summary>
-        /// Gets or sets a function to be executed after route execution has completed
-        /// </summary>
-        [Obsolete("The Before delegate has been replace with the BeforeRouting event and will be removed in the next version.")]
-        Func<IHttpContext, IHttpContext> Before { get; set; }
 
         /// <summary>
         /// Raised prior to sending any request though matching routes
@@ -82,7 +93,7 @@ namespace Grapevine.Server
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns>IRouter</returns>
-        IRouter Import<T>() where T : IRouter;
+        IRouter Import<T>() where T : IRouter, new();
 
         /// <summary>
         /// Inserts the route into the routing table after the specified index
@@ -265,60 +276,64 @@ namespace Grapevine.Server
         IRouter ScanAssemblies();
 
         /// <summary>
-        /// Routes the IHttpContext through all enabled registered routes that match the IHttpConext provided; returns true if at least one route is invoked
+        /// Routes the IHttpContext through all enabled registered routes that match the IHttpConext provided
         /// </summary>
-        /// <param name="context"></param>
-        /// <returns></returns>
-        bool Route(IHttpContext context);
+        /// <param name="state"></param>
+        void Route(object state);
 
         /// <summary>
-        /// Routes the IHttpContext through the list of routes provided; returns true if at least one route is invoked
+        /// Routes the IHttpContext through the list of routes provided
         /// </summary>
         /// <param name="context"></param>
         /// <param name="routing"></param>
-        /// <returns></returns>
-        bool Route(IHttpContext context, IList<IRoute> routing);
+        void Route(IHttpContext context, IList<IRoute> routing);
 
         /// <summary>
         /// Gets a list of enabled registered routes that match the IHttpContext provided
         /// </summary>
         /// <param name="context"></param>
         /// <returns>IList&lt;IRoute&gt;</returns>
-        IList<IRoute> RouteFor(IHttpContext context);
+        IList<IRoute> RoutesFor(IHttpContext context);
     }
 
     public class Router : IRouter
     {
-        private readonly IList<IRoute> _routingTable;
-        private IGrapevineLogger _logger;
+        #region Deprecated
 
         public Func<IHttpContext, IHttpContext> After { get; set; }
-        public event RoutingEventHandler AfterRouting;
-
         public Func<IHttpContext, IHttpContext> Before { get; set; }
+        private IGrapevineLogger _logger;
+
+        #endregion
+
+        protected readonly IList<IRoute> RegisteredRoutes;
+        protected ConcurrentDictionary<string, IList<IRoute>> RouteCache;
+
+        public event RoutingEventHandler AfterRouting;
         public event RoutingEventHandler BeforeRouting;
 
         public bool ContinueRoutingAfterResponseSent { get; set; }
-        public string Scope { get; protected set; }
-
+        public string Scope { get; }
         public IRouteScanner Scanner { get; protected internal set; }
+        public IList<IRoute> RoutingTable => RegisteredRoutes.ToList().AsReadOnly();
 
         /// <summary>
-        /// Returns a new Router object
+        /// Creates a new Router object
         /// </summary>
         public Router()
         {
-            _routingTable = new List<IRoute>();
+            RegisteredRoutes = new List<IRoute>();
+            RouteCache = new ConcurrentDictionary<string, IList<IRoute>>();
             Logger = NullLogger.GetInstance();
             Scanner = new RouteScanner();
             Scope = string.Empty;
         }
 
         /// <summary>
-        /// Returns a new Router object with the Scope property set to the parameter supplied
+        /// Creates a new Router object with the Scope property set to the parameter supplied
         /// </summary>
         /// <param name="scope"></param>
-        public Router(string scope):this()
+        public Router(string scope) : this()
         {
             Scope = scope;
         }
@@ -336,96 +351,9 @@ namespace Grapevine.Server
             return router;
         }
 
-        public IGrapevineLogger Logger
-        {
-            get { return _logger; }
-            set
-            {
-                _logger = value ?? NullLogger.GetInstance();
-                if (Scanner != null) Scanner.Logger = _logger;
-            }
-        }
-
-        public IRouter Register(IRoute route)
-        {
-            AddToRoutingTable(route);
-            return this;
-        }
-
-        public IRouter Register(Func<IHttpContext, IHttpContext> func)
-        {
-            AddToRoutingTable(new Route(func));
-            return this;
-        }
-
-        public IRouter Register(Func<IHttpContext, IHttpContext> func, string pathInfo)
-        {
-            AddToRoutingTable(new Route(func, pathInfo));
-            return this;
-        }
-
-        public IRouter Register(Func<IHttpContext, IHttpContext> func, HttpMethod httpMethod)
-        {
-            AddToRoutingTable(new Route(func, httpMethod));
-            return this;
-        }
-
-        public IRouter Register(Func<IHttpContext, IHttpContext> func, HttpMethod httpMethod, string pathInfo)
-        {
-            AddToRoutingTable(new Route(func, httpMethod, pathInfo));
-            return this;
-        }
-
-        public IRouter Register(MethodInfo methodInfo)
-        {
-            AddToRoutingTable(new Route(methodInfo));
-            return this;
-        }
-
-        public IRouter Register(MethodInfo methodInfo, string pathInfo)
-        {
-            AddToRoutingTable(new Route(methodInfo, pathInfo));
-            return this;
-        }
-
-        public IRouter Register(MethodInfo methodInfo, HttpMethod httpMethod)
-        {
-            AddToRoutingTable(new Route(methodInfo, httpMethod));
-            return this;
-        }
-
-        public IRouter Register(MethodInfo methodInfo, HttpMethod httpMethod, string pathInfo)
-        {
-            AddToRoutingTable(new Route(methodInfo, httpMethod, pathInfo));
-            return this;
-        }
-
-        public IRouter Register(Type type)
-        {
-            AddToRoutingTable(Scanner.ScanType(type));
-            return this;
-        }
-
-        public IRouter Register<T>()
-        {
-            return Register(typeof(T));
-        }
-
-        public IRouter Register(Assembly assembly)
-        {
-            AddToRoutingTable(Scanner.ScanAssembly(assembly));
-            return this;
-        }
-
-        public IRouter ScanAssemblies()
-        {
-            AddToRoutingTable(Scanner.Scan());
-            return this;
-        }
-
         public IRouter Import(IRouter router)
         {
-            AddToRoutingTable(router.RoutingTable);
+            AppendRoutingTable(router.RoutingTable);
             return this;
         }
 
@@ -434,78 +362,67 @@ namespace Grapevine.Server
             if (!type.IsClass) throw new ArgumentException($"Cannot Import: {type.FullName} type is not a class");
             if (type.IsAbstract) throw new ArgumentException($"Cannot Import: {type.FullName} is an abstract class");
             if (!type.Implements<IRouter>()) throw new ArgumentException($"Cannot Import: {type.FullName} does not implement {typeof(IRouter).FullName}");
-            return Import((IRouter) Activator.CreateInstance(type));
+            if (!type.HasParameterlessConstructor()) throw new ArgumentException($"Cannot Import: {type.FullName} does not have parameterless constructor");
+            return Import((IRouter)Activator.CreateInstance(type));
         }
 
-        public IRouter Import<T>() where T : IRouter
+        public IRouter Import<T>() where T : IRouter, new()
         {
-            return Import(typeof (T));
+            var type = typeof(T);
+            if (type.IsAbstract) throw new ArgumentException($"Cannot Import: {type.FullName} is an abstract class");
+            return Import((IRouter)Activator.CreateInstance(type));
         }
 
         public IRouter InsertAfter(int index, IRoute route)
         {
-            if (index < 0) return this;
-            InsertAt(index + 1, route);
+            if (index >= 0) InsertAt(index + 1, route);
             return this;
         }
 
         public IRouter InsertAfter(IRoute afterThisRoute, IRoute insertThisRoute)
         {
-            if (!_routingTable.Contains(afterThisRoute)) return this;
-            InsertAt(_routingTable.IndexOf(afterThisRoute) + 1, insertThisRoute);
+            if (RegisteredRoutes.Contains(afterThisRoute))
+                InsertAt(RegisteredRoutes.IndexOf(afterThisRoute) + 1, insertThisRoute);
             return this;
         }
 
         public IRouter InsertAfter(int index, IList<IRoute> insertTheseRoutes)
         {
             var counter = index + 1;
-            if (counter == 0) return this;
-
-            insertTheseRoutes.Aggregate(counter, InsertAt);
-
+            if (counter > 0) insertTheseRoutes.Aggregate(counter, InsertAt);
             return this;
         }
 
         public IRouter InsertAfter(IRoute afterThisRoute, IList<IRoute> insertTheseRoutes)
         {
-            var counter = _routingTable.IndexOf(afterThisRoute) + 1;
-            if (counter == 0) return this;
-
-            insertTheseRoutes.Aggregate(counter, InsertAt);
-
+            var counter = RegisteredRoutes.IndexOf(afterThisRoute) + 1;
+            if (counter > 0) insertTheseRoutes.Aggregate(counter, InsertAt);
             return this;
         }
 
         public IRouter InsertBefore(int index, IRoute route)
         {
-            if (index < 0) return this;
-            InsertAt(index, route);
+            if (index >= 0) InsertAt(index, route);
             return this;
         }
 
         public IRouter InsertBefore(IRoute beforeThisRoute, IRoute insertThisRoute)
         {
-            InsertAt(_routingTable.IndexOf(beforeThisRoute), insertThisRoute);
+            if (RegisteredRoutes.Contains(beforeThisRoute))
+                InsertAt(RegisteredRoutes.IndexOf(beforeThisRoute), insertThisRoute);
             return this;
         }
 
         public IRouter InsertBefore(int index, IList<IRoute> insertTheseRoutes)
         {
-            var counter = index;
-            if (counter < 0) return this;
-
-            insertTheseRoutes.Aggregate(counter, InsertAt);
-
+            if (index >= 0) insertTheseRoutes.Aggregate(index, InsertAt);
             return this;
         }
 
         public IRouter InsertBefore(IRoute beforeThisRoute, IList<IRoute> insertTheseRoutes)
         {
-            var counter = _routingTable.IndexOf(beforeThisRoute);
-            if (counter < 0) return this;
-
-            insertTheseRoutes.Aggregate(counter, InsertAt);
-
+            var counter = RegisteredRoutes.IndexOf(beforeThisRoute);
+            if (counter >= 0) insertTheseRoutes.Aggregate(counter, InsertAt);
             return this;
         }
 
@@ -518,37 +435,132 @@ namespace Grapevine.Server
         public IRouter InsertFirst(IList<IRoute> routes)
         {
             const int counter = 0;
-
             routes.Aggregate(counter, InsertAt);
-
             return this;
         }
 
-        private int InsertAt(int index, IRoute route)
+        public IGrapevineLogger Logger
         {
-            if (index < 0 || _routingTable.Contains(route)) return index;
-            _routingTable.Insert(index, route);
-            return index + 1;
+            get { return _logger; }
+            set
+            {
+                _logger = value ?? NullLogger.GetInstance();
+                if (Scanner != null) Scanner.Logger = _logger;
+            }
         }
 
-        public IList<IRoute> RouteFor(IHttpContext context)
+        public IRouter Register(IRoute route)
         {
-            return _routingTable.Where(r => r.Matches(context) && r.Enabled).ToList();
+            AppendRoutingTable(route);
+            return this;
         }
 
-        public IList<IRoute> RoutingTable => _routingTable.ToList().AsReadOnly();
-
-        public bool Route(IHttpContext context)
+        public IRouter Register(Func<IHttpContext, IHttpContext> func)
         {
-            return Route(context, RouteFor(context));
+            AppendRoutingTable(new Route(func));
+            return this;
         }
 
-        public bool Route(IHttpContext context, IList<IRoute> routing)
+        public IRouter Register(Func<IHttpContext, IHttpContext> func, string pathInfo)
         {
+            AppendRoutingTable(new Route(func, pathInfo));
+            return this;
+        }
+
+        public IRouter Register(Func<IHttpContext, IHttpContext> func, HttpMethod httpMethod)
+        {
+            AppendRoutingTable(new Route(func, httpMethod));
+            return this;
+        }
+
+        public IRouter Register(Func<IHttpContext, IHttpContext> func, HttpMethod httpMethod, string pathInfo)
+        {
+            AppendRoutingTable(new Route(func, httpMethod, pathInfo));
+            return this;
+        }
+
+        public IRouter Register(MethodInfo methodInfo)
+        {
+            AppendRoutingTable(new Route(methodInfo));
+            return this;
+        }
+
+        public IRouter Register(MethodInfo methodInfo, string pathInfo)
+        {
+            AppendRoutingTable(new Route(methodInfo, pathInfo));
+            return this;
+        }
+
+        public IRouter Register(MethodInfo methodInfo, HttpMethod httpMethod)
+        {
+            AppendRoutingTable(new Route(methodInfo, httpMethod));
+            return this;
+        }
+
+        public IRouter Register(MethodInfo methodInfo, HttpMethod httpMethod, string pathInfo)
+        {
+            AppendRoutingTable(new Route(methodInfo, httpMethod, pathInfo));
+            return this;
+        }
+
+        public IRouter Register(Type type)
+        {
+            AppendRoutingTable(Scanner.ScanType(type));
+            return this;
+        }
+
+        public IRouter Register<T>()
+        {
+            return Register(typeof(T));
+        }
+
+        public IRouter Register(Assembly assembly)
+        {
+            AppendRoutingTable(Scanner.ScanAssembly(assembly));
+            return this;
+        }
+
+        public IRouter ScanAssemblies()
+        {
+            AppendRoutingTable(Scanner.Scan());
+            return this;
+        }
+
+        public void Route(object state)
+        {
+            var context = state as IHttpContext;
+            if (context == null) return;
+
+            var server = context.Server;
+
+            try
+            {
+                Route(context, RoutesFor(context));
+            }
+            catch (RouteNotFoundException rnf)
+            {
+                Logger.Log(new LogEvent {Exception = rnf, Level = LogLevel.Error, Message = rnf.Message});
+                if (server.EnableThrowingExceptions) throw;
+                context.Response.SendResponse(HttpStatusCode.NotFound);
+            }
+            catch (NotImplementedException ni)
+            {
+                Logger.Log(new LogEvent { Exception = ni, Level = LogLevel.Error, Message = ni.Message });
+                if (server.EnableThrowingExceptions) throw;
+                context.Response.SendResponse(HttpStatusCode.NotImplemented);
+            }
+            catch (Exception e)
+            {
+                Logger.Log(new LogEvent { Exception = e, Level = LogLevel.Error, Message = e.Message });
+                if (server.EnableThrowingExceptions) throw;
+                context.Response.SendResponse(HttpStatusCode.InternalServerError, e);
+            }
+        }
+
+        public void Route(IHttpContext context, IList<IRoute> routing)
+        {
+            if (context.WasRespondedTo) return;
             if (routing == null || !routing.Any()) throw new RouteNotFoundException(context);
-            if (context.WasRespondedTo) return true;
-
-            var routeContext = context;
             var totalRoutes = routing.Count;
             var routeCounter = 0;
 
@@ -556,47 +568,33 @@ namespace Grapevine.Server
 
             try
             {
-                if (Before != null) routeContext = Before.Invoke(routeContext);
-                OnBeforeRouting(routeContext);
+                OnBeforeRouting(context);
 
                 foreach (var route in routing.Where(route => route.Enabled))
                 {
                     routeCounter++;
-                    routeContext = route.Invoke(routeContext);
+                    route.Invoke(context);
 
                     Logger.RouteInvoked($"{context.Request.Id} - {routeCounter}/{totalRoutes} {route.Name}");
+
                     if (ContinueRoutingAfterResponseSent) continue;
-                    if (routeContext.WasRespondedTo) break;
+                    if (context.WasRespondedTo) break;
                 }
             }
             finally
             {
-                if (After != null) routeContext = After.Invoke(routeContext);
-                OnAfterRouting(routeContext);
-
+                OnAfterRouting(context);
                 Logger.EndRouting($"{context.Request.Id} - {routeCounter} of {totalRoutes} routes invoked");
             }
 
-            return routeContext.WasRespondedTo;
+            if (!context.WasRespondedTo) throw new RouteNotFoundException(context);
         }
 
-        /// <summary>
-        /// Adds the route to the routing table excluding duplicates
-        /// </summary>
-        /// <param name="route"></param>
-        protected void AddToRoutingTable(IRoute route)
+        public IList<IRoute> RoutesFor(IHttpContext context)
         {
-            if (route.Function == null) throw new ArgumentNullException(nameof(route));
-            if (!_routingTable.Contains(route)) _routingTable.Add(route);
-        }
-
-        /// <summary>
-        /// Adds the routes to the routing table excluding duplicates
-        /// </summary>
-        /// <param name="routes"></param>
-        protected void AddToRoutingTable(IEnumerable<IRoute> routes)
-        {
-            routes.ToList().ForEach(AddToRoutingTable);
+            var key = $"{context.Request.HttpMethod}:{context.Request.PathInfo}";
+            if (!RouteCache.ContainsKey(key)) RouteCache.GetOrAdd(key, RegisteredRoutes.Where(r => r.Matches(context) && r.Enabled).ToList());
+            return RouteCache[key];
         }
 
         /// <summary>
@@ -605,6 +603,7 @@ namespace Grapevine.Server
         /// <param name="context">The <see cref="IHttpContext"/> being routed</param>
         protected void OnBeforeRouting(IHttpContext context)
         {
+            Before?.Invoke(context);
             BeforeRouting?.Invoke(context);
         }
 
@@ -614,11 +613,45 @@ namespace Grapevine.Server
         /// <param name="context">The <see cref="IHttpContext"/> being routed</param>
         protected void OnAfterRouting(IHttpContext context)
         {
+            After?.Invoke(context);
             if (AfterRouting == null) return;
             foreach (var action in AfterRouting.GetInvocationList().Reverse().Cast<RoutingEventHandler>())
             {
                 action(context);
             }
+        }
+
+        /// <summary>
+        /// Adds the route to the routing table excluding duplicates
+        /// </summary>
+        /// <param name="route"></param>
+        protected void AppendRoutingTable(IRoute route)
+        {
+            if (route.Function == null) throw new ArgumentNullException(nameof(route));
+            if (!RegisteredRoutes.Contains(route)) RegisteredRoutes.Add(route);
+            if (!RouteCache.IsEmpty) RouteCache.Clear();
+        }
+
+        /// <summary>
+        /// Adds the routes to the routing table excluding duplicates
+        /// </summary>
+        /// <param name="routes"></param>
+        protected void AppendRoutingTable(IEnumerable<IRoute> routes)
+        {
+            routes.ToList().ForEach(AppendRoutingTable);
+        }
+
+        /// <summary>
+        /// Inserts the specified route into the routing table at the specified index
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="route"></param>
+        /// <returns>Returns the index the next route can be inserted at.</returns>
+        protected int InsertAt(int index, IRoute route)
+        {
+            if (index < 0 || RegisteredRoutes.Contains(route)) return index;
+            RegisteredRoutes.Insert(index, route);
+            return index + 1;
         }
     }
 }

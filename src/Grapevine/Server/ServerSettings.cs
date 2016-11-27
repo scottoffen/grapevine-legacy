@@ -118,23 +118,11 @@ namespace Grapevine.Server
 
     public class ServerSettings : IServerSettings
     {
-        public event ServerEventHandler AfterStarting;
-        public event ServerEventHandler AfterStopping;
-        public event ServerEventHandler BeforeStarting;
-        public event ServerEventHandler BeforeStopping;
-
-        public int Connections { get; set; }
-        public bool EnableThrowingExceptions { get; set; }
-        public string Host { get; set; }
-        public IGrapevineLogger Logger { get; set; }
+        #region Deprecated
         public Action OnBeforeStart { get; set; }
         public Action OnAfterStart { get; set; }
         public Action OnBeforeStop { get; set; }
         public Action OnAfterStop { get; set; }
-        public string Port { get; set; }
-        public IPublicFolder PublicFolder { get; }
-        public IRouter Router { get; set; }
-        public bool UseHttps { get; set; }
 
         public Action OnStart
         {
@@ -147,6 +135,25 @@ namespace Grapevine.Server
             get { return OnAfterStop; }
             set { OnAfterStop = value; }
         }
+
+        public int Connections { get; set; }
+        #endregion
+
+        public event ServerEventHandler AfterStarting;
+        public event ServerEventHandler AfterStopping;
+        public event ServerEventHandler BeforeStarting;
+        public event ServerEventHandler BeforeStopping;
+
+        public bool EnableThrowingExceptions { get; set; }
+
+        public string Host { get; set; }
+        public string Port { get; set; }
+        public bool UseHttps { get; set; }
+
+        public IGrapevineLogger Logger { get; set; }
+        public IPublicFolder PublicFolder { get; }
+
+        public IRouter Router { get; set; }
 
         public ServerSettings()
         {
