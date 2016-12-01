@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices.ComTypes;
 using Grapevine.Exceptions.Server;
 using Grapevine.Interfaces.Server;
+using Grapevine.Interfaces.Shared;
 using Grapevine.Server;
 using Grapevine.Server.Attributes;
 using Grapevine.Shared;
@@ -242,6 +244,13 @@ namespace Grapevine.Tests.Server
             {
                 var router = new Router();
                 Should.Throw<ArgumentException>(() => router.Import(typeof(AbstractRouter)));
+            }
+
+            [Fact]
+            public void ThrowsExceptionWhenTypeDoesNotHaveParameterlessConstructor()
+            {
+                var router = new Router();
+                Should.Throw<ArgumentException>(() => router.Import(typeof(NoParameterlessConstructor)));
             }
 
             [Fact]
@@ -628,6 +637,24 @@ namespace Grapevine.Tests.Server
             }
         }
 
+        public class AppendRoutingTableMethod
+        {
+            [Fact]
+            public void ClearsRouteCacheWhenCacheIsNotEmpty()
+            {
+                var router = new Router().Import<RouterToImport>() as Router;
+                var context = Mocks.HttpContext(new Dictionary<string, object> { { "HttpMethod", HttpMethod.POST }, { "PathInfo", "/user" } });
+
+                router.ShouldNotBeNull();
+                router.RoutesFor(context);
+                router.RouteCache.ShouldNotBeEmpty();
+
+                router.AppendRoutingTable(new Route(ctx => ctx));
+
+                router.RouteCache.ShouldBeEmpty();
+            }
+        }
+
         public class RegisterMethod
         {
             [Fact]
@@ -813,41 +840,254 @@ namespace Grapevine.Tests.Server
         public class RouteMethod
         {
             [Fact]
-            public void ThrowsExceptionWhenRoutingIsNull()
+            public void ReturnsWithoutExceptionWhenStateIsNull()
             {
                 var router = new Router();
-                IList<IRoute> routing = null;
-                Should.Throw<RouteNotFoundException>(() => router.Route(Mocks.HttpContext(), routing));
+                router.Route(null);
             }
 
             [Fact]
-            public void ThrowsExceptionWhenRoutingIsEmpty()
+            public void ReturnsWithoutExceptionWhenStateIsNotContext()
             {
                 var router = new Router();
-                IList<IRoute> routing = new List<IRoute>();
-                Should.Throw<RouteNotFoundException>(() => router.Route(Mocks.HttpContext(), routing));
+                router.Route("Not Context");
             }
 
             [Fact]
-            public void ReturnsTrueWhenContextHasBeenRespondedTo()
+            public void CallsSendFileOnGet()
+            {
+                var folder = Substitute.For<PublicFolder>();
+                var server = Substitute.For<IRestServer>();
+                server.PublicFolder.Returns(folder);
+
+                var context = Mocks.HttpContext();
+                context.Server.Returns(server);
+
+                var route = new Route(ctx =>
+                {
+                    context.WasRespondedTo.Returns(true);
+                    return ctx;
+                }, HttpMethod.GET);
+
+                var router = new Router();
+                router.Register(route);
+
+                router.Route(context);
+
+                folder.ReceivedWithAnyArgs().SendFile(context);
+            }
+
+            [Fact]
+            public void DoesNotCallSendFileOnNonGet()
+            {
+                var folder = Substitute.For<PublicFolder>();
+                var server = Substitute.For<IRestServer>();
+                server.PublicFolder.Returns(folder);
+
+                var context = Mocks.HttpContext();
+                context.Server.Returns(server);
+                context.Request.HttpMethod.Returns(HttpMethod.POST);
+
+                var route = new Route(ctx =>
+                {
+                    context.WasRespondedTo.Returns(true);
+                    return ctx;
+                }, HttpMethod.POST);
+
+                var router = new Router();
+                router.Register(route);
+
+                router.Route(context);
+
+                folder.DidNotReceive().SendFile(context);
+            }
+
+            [Fact]
+            public void IteratestOverAllPublicFolders()
+            {
+                var folders = new List<IPublicFolder> { Substitute.For<IPublicFolder>(), Substitute.For<IPublicFolder>() };
+                var server = Substitute.For<IRestServer>();
+                server.PublicFolders.Returns(folders);
+
+                var context = Mocks.HttpContext();
+                context.Request.HttpMethod.ShouldBe(HttpMethod.GET);
+                context.Server.Returns(server);
+
+                folders[1].When(x => x.SendFile(context)).Do(x => context.WasRespondedTo.Returns(true));
+
+                var router = new Router();
+                router.Route(context);
+
+                folders[0].ReceivedWithAnyArgs().SendFile(context);
+                folders[1].ReceivedWithAnyArgs().SendFile(context);
+            }
+
+            [Fact]
+            public void SendResponseNotCalledIfRequestAlreadyRespondedTo()
+            {
+                var exception = new Exception("Generic Exception");
+                var context = Mocks.HttpContext();
+
+                var router = new Router();
+                router.Register(ctx =>
+                {
+                    context.WasRespondedTo.Returns(true);
+                    throw exception;
+                });
+
+                router.Route(context);
+
+                context.Response.DidNotReceive().SendResponse(HttpStatusCode.InternalServerError, exception);
+            }
+
+            [Fact]
+            public void ThrowsExcpetionWhenExceptionThrownAndExceptionThrowingIsEnabled()
+            {
+                var server = Substitute.For<IRestServer>();
+                server.EnableThrowingExceptions.Returns(true);
+
+                var context = Mocks.HttpContext();
+                context.Server.Returns(server);
+
+                var router = new Router();
+                router.Register(ctx => { throw new Exception("Generic Exception"); });
+
+                Should.Throw<Exception>(() => router.Route(context));
+            }
+
+            [Fact]
+            public void SendsNotFoundResponseWhenFileNotFoundExceptionThrown()
+            {
+                const string fileRequested = "/some/file/on/server";
+                var message = $"File {fileRequested} was not found";
+
+                var folder = Substitute.For<IPublicFolder>();
+
+                var server = Substitute.For<IRestServer>();
+                server.PublicFolders.Returns(new List<IPublicFolder> { folder });
+
+                var context = Mocks.HttpContext();
+                context.Request.PathInfo.Returns(fileRequested);
+                context.Server.Returns(server);
+
+                folder.When(_ => _.SendFile(context)).Do(info => { throw new FileNotFoundException(context); });
+
+                var router = new Router();
+                router.Route(context);
+
+                context.Response.Received().SendResponse(HttpStatusCode.NotFound, message);
+            }
+
+            [Fact]
+            public void SendsNotFoundResponseWhenRouteNotFoundExceptionThrown()
+            {
+                const string pathinfo = "resource/parameter";
+                var message = $"Route Not Found For {HttpMethod.POST} {pathinfo}";
+
+                var context = Mocks.HttpContext();
+                context.Request.HttpMethod.Returns(HttpMethod.POST);
+                context.Request.PathInfo.Returns(pathinfo);
+
+                var router = new Router();
+                router.Route(context);
+
+                context.Response.Received().SendResponse(HttpStatusCode.NotFound, message);
+            }
+
+            [Fact]
+            public void SendsNotImplementedResponseWhenNotImplementedExceptionThrown()
+            {
+                const string message = "this has not been implemented";
+
+                var context = Mocks.HttpContext();
+
+                var router = new Router().Register(ctx => { throw new NotImplementedException(message); });
+                router.Route(context);
+
+                context.Response.Received().SendResponse(HttpStatusCode.NotImplemented, message);
+            }
+
+            [Fact]
+            public void SendsInternalServerErrorResponseWhenExceptionThrown()
+            {
+                var exception = new Exception("Generic Exception");
+
+                var context = Mocks.HttpContext();
+
+                var router = new Router().Register(ctx => { throw exception; });
+                router.Route(context);
+
+                context.Response.Received().SendResponse(HttpStatusCode.InternalServerError, exception);
+            }
+
+            [Fact]
+            public void ThrowsRouteNotFoundExceptionWhenRouteListIsNull()
+            {
+                Should.Throw<RouteNotFoundException>(() => new Router().Route(Mocks.HttpContext(), null));
+            }
+
+            [Fact]
+            public void ThrowsRouteNotFoundExceptionWhenRouteListIsEmpty()
+            {
+                Should.Throw<RouteNotFoundException>(() => new Router().Route(Mocks.HttpContext(), new List<IRoute>()));
+            }
+
+            [Fact]
+            public void ThrowsRouteNotFoundExceptionWhenNoRouteSendsResponse()
+            {
+                Should.Throw<RouteNotFoundException>(() => new Router().Route(Mocks.HttpContext(), new List<IRoute> {new Route(context => context)}));
+            }
+
+            [Fact]
+            public void RoutingStopsAfterResponseIsSentByDefault()
             {
                 var executed = false;
-                var route = new Route(ctx => { executed = true; return ctx; });
+                var context = Mocks.HttpContext();
 
-                var context = Substitute.For<IHttpContext>();
-                context.WasRespondedTo.Returns(true);
+                var routes = new List<IRoute>
+                {
+                    new Route(ctx =>
+                    {
+                        context.WasRespondedTo.Returns(true);
+                        return ctx;
+                    }),
+                    new Route(ctx =>
+                    {
+                        executed = true;
+                        return ctx;
+                    })
+                };
 
-                var router = new Router();
-                IList<IRoute> routing = new List<IRoute>();
-                routing.Add(route);
-
-                router.Route(context, routing);
-
+                new Router().Route(context, routes);
                 executed.ShouldBeFalse();
+            }
+
+            [Fact]
+            public void RoutingContinuesAfterResponseIsSentWhenContinueRoutingAfterResponseSentIsTrue()
+            {
+                var executed = false;
+                var context = Mocks.HttpContext();
+
+                var routes = new List<IRoute>
+                {
+                    new Route(ctx =>
+                    {
+                        context.WasRespondedTo.Returns(true);
+                        return ctx;
+                    }),
+                    new Route(ctx =>
+                    {
+                        executed = true;
+                        return ctx;
+                    })
+                };
+
+                new Router {ContinueRoutingAfterResponseSent = true}.Route(context, routes);
+                executed.ShouldBeTrue();
             }
         }
 
-        public class RouteForMethod
+        public class RoutesForMethod
         {
             [Fact]
             public void ReturnsRoutesForGet()
@@ -871,6 +1111,22 @@ namespace Grapevine.Tests.Server
 
                 router.RoutingTable.Count.ShouldBe(8);
                 routes.Count.ShouldBe(1);
+            }
+
+            [Fact]
+            public void CachesRoutesForRequest()
+            {
+                var router = new Router().Import<RouterToImport>() as Router;
+                var context = Mocks.HttpContext(new Dictionary<string, object> { { "HttpMethod", HttpMethod.POST }, { "PathInfo", "/user" } });
+
+                router.ShouldNotBeNull();
+                router.RouteCache.ShouldBeEmpty();
+
+                var routes = router.RoutesFor(context);
+
+                router.RoutingTable.Count.ShouldBe(8);
+                routes.Count.ShouldBe(1);
+                router.RouteCache.ShouldNotBeEmpty();
             }
         }
 
@@ -901,6 +1157,173 @@ namespace Grapevine.Tests.Server
     {
         /* This class intentionally left blank */
         /* This is not an IRouter */
+    }
+
+    public class NoParameterlessConstructor : IRouter
+    {
+        /* This is an implementation of IRouter */
+        /* But it lacks a parameterless constructor */
+
+        private readonly string _parameter;
+
+        public NoParameterlessConstructor(string parameter)
+        {
+            _parameter = parameter;
+        }
+
+        public Func<IHttpContext, IHttpContext> After { get; set; }
+        public Func<IHttpContext, IHttpContext> Before { get; set; }
+        public event RoutingEventHandler AfterRouting;
+        public event RoutingEventHandler BeforeRouting;
+        public bool ContinueRoutingAfterResponseSent { get; set; }
+        public IRouteScanner Scanner { get; }
+        public IList<IRoute> RoutingTable { get; }
+        public string Scope { get; }
+        public IRouter Import(IRouter router)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter Import(Type type)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter Import<T>() where T : IRouter, new()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter InsertAfter(int index, IRoute route)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter InsertAfter(IRoute afterThisRoute, IRoute insertThisRoute)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter InsertAfter(int index, IList<IRoute> routes)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter InsertAfter(IRoute afterThisRoute, IList<IRoute> insertTheseRoutes)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter InsertBefore(int index, IRoute route)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter InsertBefore(IRoute beforeThisRoute, IRoute insertThisRoute)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter InsertBefore(int index, IList<IRoute> routes)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter InsertBefore(IRoute beforeThisRoute, IList<IRoute> insertTheseRoutes)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter InsertFirst(IRoute route)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter InsertFirst(IList<IRoute> routes)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IGrapevineLogger Logger { get; set; }
+        public IRouter Register(IRoute route)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter Register(Func<IHttpContext, IHttpContext> func)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter Register(Func<IHttpContext, IHttpContext> func, string pathInfo)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter Register(Func<IHttpContext, IHttpContext> func, HttpMethod httpMethod)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter Register(Func<IHttpContext, IHttpContext> func, HttpMethod httpMethod, string pathInfo)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter Register(MethodInfo method)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter Register(MethodInfo method, string pathInfo)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter Register(MethodInfo method, HttpMethod httpMethod)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter Register(MethodInfo method, HttpMethod httpMethod, string pathInfo)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter Register(Type type)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter Register<T>()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter Register(Assembly assembly)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IRouter ScanAssemblies()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Route(object state)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Route(IHttpContext context, IList<IRoute> routing)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IList<IRoute> RoutesFor(IHttpContext context)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class MethodsToRegister

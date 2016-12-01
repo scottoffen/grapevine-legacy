@@ -45,6 +45,7 @@
     <Compile Include="Client\PathParams.cs" />
     <Compile Include="Client\QueryString.cs" />
     <Compile Include="Exceptions\Client\ClientStateException.cs" />
+    <Compile Include="Exceptions\Server\NotFoundException.cs" />
     <Compile Include="Interfaces\Server\IHttpListenerContext.cs" />
     <Compile Include="Interfaces\Shared\IGrapevineLogger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -55,7 +56,6 @@
     <Compile Include="Server\Attributes\RestRoute.cs" />
     <Compile Include="Exceptions\Server\DynamicValueNotFoundException.cs" />
     <Compile Include="Exceptions\Server\InvalidRouteMethodException.cs" />
-    <Compile Include="Exceptions\Server\RouteNotFoundException.cs" />
     <Compile Include="Exceptions\Server\ServerStateException.cs" />
     <Compile Include="Exceptions\Server\UnableToStartHostException.cs" />
     <Compile Include="Exceptions\Server\UnableToStopHostException.cs" />
