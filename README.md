@@ -6,6 +6,8 @@
 
 *The best solutions are the simplest to implement*. Embedding a REST/HTTP server in your application should be **simple**. Consuming REST resources from inside your application should be **simple**. If what you've been using *doesn't feel simple*, try **Grapevine**. It doesn't get any simpler than this.
 
+> I'm **always** open to [flattry](https://flattr.com/submit/auto?fid=x79jw7&url=https%3A%2F%2Fgithub.com%2Fsukona%2FGrapevine)
+
 ### Introduction ###
 
 Grapevine is a .NET class library focused on solving two problems:
