@@ -27,6 +27,12 @@ TestResult.xml
 #SonarQube
 .sonarqube/
 
+#Build
+.build/
+
+#Cake
+tools/
+
 # Build Results of an ATL Project
 [Dd]ebugPS/
 [Rr]eleasePS/
