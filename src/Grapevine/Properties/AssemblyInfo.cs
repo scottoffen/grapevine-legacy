@@ -17,7 +17,6 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyCopyright("© 2014-2016 Scott Offen")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCulture("")]
 [assembly: Guid("f6ac4c2c-4801-465c-8dd4-932dc1890747")]
 
 [assembly: InternalsVisibleTo("Grapevine.Tests")]

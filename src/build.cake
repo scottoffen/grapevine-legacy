@@ -13,7 +13,8 @@ var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
 var projectName = Argument<string>("projectName");
 var toolVersion = Argument<string>("toolVersion", "4.6");
-var version = Argument<string>("projectVersion", "4.0.0");
+var version = Argument<string>("projectVersion");
+var projectKey = Argument<string>("projectKey");
 
 var toolVersions = new Dictionary<string,MSBuildToolVersion>
 {
@@ -31,6 +32,7 @@ var buildDir = Directory("./" + projectName +"/bin") + Directory(configuration);
 var buildDirectory = "./.build";
 var buildOutputPath = buildDirectory + "/" + toolVersion;
 var testOutputPath = buildOutputPath + "/test-results";
+var xunitFilePath = testOutputPath + projectName + ".Tests.dll.xml";
 var coverageOutputPath = testOutputPath + "/coverage";
 var coverageOutputFile = testOutputPath + "/coverage/result.xml";
 var coverageReportsOutputPath = coverageOutputPath + "/reports";
@@ -95,6 +97,13 @@ Task("Build")
     .IsDependentOn("Restore-NuGet-Packages")
     .Does(() =>
 {
+    SonarBegin(new SonarBeginSettings{
+        Name=projectName,
+        Key=projectKey,
+        OpenCoverReportsPath=coverageOutputFile,
+        XUnitReportsPath=xunitFilePath,
+        Version=version
+    });
 
 	if(!toolVersions.ContainsKey(toolVersion)) {
 		throw new Exception(string.Format(@"The following tool version: {0}, is not contained in the valid tool versions {1}.
@@ -131,6 +140,8 @@ Task("Run-Unit-Tests")
     ReportGenerator(coverageOutputFile, coverageReportsOutputPath, new ReportGeneratorSettings {
         ReportTypes = new ReportGeneratorReportType[]{ReportGeneratorReportType.Badges, ReportGeneratorReportType.Html}
     });
+
+    SonarEnd(new SonarEndSettings{});
 });
 
 //////////////////////////////////////////////////////////////////////
