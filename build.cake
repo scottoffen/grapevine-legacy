@@ -28,7 +28,8 @@ var toolVersions = new Dictionary<string,MSBuildToolVersion>
 //////////////////////////////////////////////////////////////////////
 
 // Define directories.
-var buildDir = Directory("./" + projectName +"/bin") + Directory(configuration);
+var projectPath = "./src/" + projectName;
+var buildDir = Directory(projectPath +"/bin") + Directory(configuration);
 var buildDirectory = "./.build";
 var buildOutputPath = buildDirectory + "/" + toolVersion;
 var testOutputPath = buildOutputPath + "/test-results";
@@ -36,7 +37,7 @@ var xunitFilePath = testOutputPath + projectName + ".Tests.dll.xml";
 var coverageOutputPath = testOutputPath + "/coverage";
 var coverageOutputFile = testOutputPath + "/coverage/result.xml";
 var coverageReportsOutputPath = coverageOutputPath + "/reports";
-var assemblyInfoPath = string.Format("./{0}/Properties/AssemblyInfo.cs",projectName);
+var assemblyInfoPath = string.Format("{0}/Properties/AssemblyInfo.cs",projectPath);
 
 void RunXUnit(ICakeContext cake, string path) {
     cake.XUnit2(path, new XUnit2Settings {
@@ -90,7 +91,7 @@ Task("Restore-NuGet-Packages")
     .IsDependentOn("Version")
     .Does(() =>
 {
-    NuGetRestore("./"+ projectName +".sln");
+    NuGetRestore(projectPath +".sln");
 });
 
 Task("Build")
@@ -114,7 +115,7 @@ Task("Build")
     CreateDirectory(buildOutputPath);    
 	 
 	// Use MSBuild
-    MSBuild("./" + projectName + ".sln", new MSBuildSettings {
+    MSBuild(projectPath + ".sln", new MSBuildSettings {
         ToolVersion = toolVersions[toolVersion],
         Configuration = configuration
     });
