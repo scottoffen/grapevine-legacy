@@ -234,7 +234,7 @@ namespace Grapevine.Server
             var parsed = new Dictionary<string, string>();
             var idx = 0;
 
-            var matches = x.Matches(pathinfo)[0].Groups;
+            var matches = PathInfoPattern.Matches(pathinfo)[0].Groups;
             for (int i = 1; i <= matches.Count-1; i++)
             {
                 var key = PatternKeys.Count > 0 && PatternKeys.Count > idx ? PatternKeys[idx] : $"p{idx}";
