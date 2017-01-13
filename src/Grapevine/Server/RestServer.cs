@@ -354,11 +354,26 @@ namespace Grapevine.Server
                 var context = new HttpContext(Listener.EndGetContext(result), this);
                 ThreadPool.QueueUserWorkItem(Router.Route, context);
             }
-            catch (ObjectDisposedException) { /* Intentionally not doing anything with this */ }
+            catch (ObjectDisposedException)
+            {
+                /* Intentionally not doing anything with this */
+            }
+            catch (HttpListenerException hle)
+            {
+                switch (hle.NativeErrorCode)
+                {
+                    case 995:
+                        /* Ignores exceptions thrown by incomplete async methods listening for incoming requests */
+                        if (IsStopping) break;
+                        Logger.Debug($"Unexpected HttpListenerExcpetion Occured (IsStopping:{IsStopping}, NativeErrorCode:995)", hle);
+                        break;
+                    default:
+                        Logger.Debug($"Unexpected HttpListenerException Occured (IsStopping:{IsStopping}, NativeErrorCode:{hle.NativeErrorCode})", hle);
+                        break;
+                }
+            }
             catch (Exception e)
             {
-                /* Ignore exceptions thrown by incomplete async methods listening for incoming requests */
-                if (IsStopping && e is HttpListenerException && ((HttpListenerException)e).NativeErrorCode == 995) return;
                 Logger.Debug(e);
             }
         }
