@@ -235,7 +235,7 @@ namespace Grapevine.Server
             var idx = 0;
 
             var matches = PathInfoPattern.Matches(pathinfo)[0].Groups;
-            for (int i = 1; i <= matches.Count-1; i++)
+            for (int i = 1; i < matches.Count; i++)
             {
                 var key = PatternKeys.Count > 0 && PatternKeys.Count > idx ? PatternKeys[idx] : $"p{idx}";
                 parsed.Add(key, matches[i].Value);
