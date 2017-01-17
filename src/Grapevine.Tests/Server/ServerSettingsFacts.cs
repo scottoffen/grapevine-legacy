@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Grapevine.Server;
 using Grapevine.Shared.Loggers;
@@ -23,8 +24,9 @@ namespace Grapevine.Tests.Server
                 options.Router.ShouldNotBeNull();
                 options.Router.ShouldBeOfType<Router>();
 
+                options.PublicFolders.Any().ShouldBeFalse();
                 options.PublicFolder.ShouldNotBeNull();
-                options.PublicFolder.ShouldBeOfType<PublicFolder>();
+                options.PublicFolders.Any().ShouldBeTrue();
 
                 options.UseHttps.ShouldBeFalse();
                 options.Host.ShouldBe("localhost");
@@ -88,6 +90,61 @@ namespace Grapevine.Tests.Server
                 options.OnBeforeStop.ShouldBeNull();
                 options.OnAfterStop.ShouldBe(action2);
                 options.OnStop.ShouldBe(action2);
+            }
+        }
+
+        public class PublicFolderProperty
+        {
+            [Fact]
+            public void CreatesFolderWhenRequestedAndDoesNotAlreadyExist()
+            {
+                var settings = new ServerSettings();
+                settings.PublicFolders.Any().ShouldBeFalse();
+                settings.PublicFolder.ShouldNotBeNull();
+                settings.PublicFolders.Any().ShouldBeTrue();
+            }
+
+            [Fact]
+            public void DoesNotSetValueToNull()
+            {
+                var settings = new ServerSettings();
+                settings.PublicFolder.ShouldNotBeNull();
+                settings.PublicFolders.Any().ShouldBeTrue();
+
+                settings.PublicFolder = null;
+
+                settings.PublicFolders.Any().ShouldBeTrue();
+            }
+
+            [Fact]
+            public void AddsFolderToEmptyCollection()
+            {
+                var settings = new ServerSettings();
+                settings.PublicFolders.Any().ShouldBeFalse();
+
+                settings.PublicFolder = new PublicFolder(PublicFolder.DefaultFolderName);
+
+                settings.PublicFolders.Any().ShouldBeTrue();
+            }
+
+            [Fact]
+            public void ReplacesFirstFolderInCollection()
+            {
+                const string foldername = "replaces-first-folder-in-collection";
+                const string secondname = "second-folder";
+
+                var settings = new ServerSettings();
+                settings.PublicFolder.ShouldNotBeNull();
+                settings.PublicFolders.Add(new PublicFolder(secondname));
+                settings.PublicFolders.Count.ShouldBe(2);
+
+                settings.PublicFolder = new PublicFolder(foldername);
+
+                settings.PublicFolders.Count.ShouldBe(2);
+                settings.PublicFolder.FolderPath.EndsWith(foldername).ShouldBeTrue();
+                settings.PublicFolders[1].FolderPath.EndsWith(secondname).ShouldBeTrue();
+
+                settings.PublicFolders.ToList().ForEach(x => x.CleanUp());
             }
         }
 

@@ -90,6 +90,7 @@
     <Compile Include="Server\FluentRouteCreatorFacts.cs" />
     <Compile Include="Server\PublicFolderFacts.cs" />
     <Compile Include="Server\RestClusterFacts.cs" />
+    <Compile Include="Server\RestServerExtensionsFacts.cs" />
     <Compile Include="Server\RestServerFacts.cs" />
     <Compile Include="Server\RouteFacts.cs" />
     <Compile Include="Server\RouterFacts.cs" />

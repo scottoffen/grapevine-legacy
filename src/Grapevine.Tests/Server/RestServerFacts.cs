@@ -37,7 +37,9 @@ namespace Grapevine.Tests.Server
                     server.OnStart.ShouldBeNull();
                     server.OnStop.ShouldBeNull();
                     server.Port.ShouldBe("1234");
-                    server.PublicFolder.ShouldBeOfType<PublicFolder>();
+                    server.PublicFolders.Any().ShouldBeFalse();
+                    server.PublicFolder.ShouldNotBeNull();
+                    server.PublicFolders.Any().ShouldBeTrue();
                     server.Router.ShouldBeOfType<Router>();
                     server.UseHttps.ShouldBeFalse();
                 }
@@ -52,11 +54,11 @@ namespace Grapevine.Tests.Server
                 using (var server = RestServer.For(_ =>
                 {
                     _.Port = port;
-                    _.PublicFolder.DefaultFileName = index;
+                    _.PublicFolder = new PublicFolder { IndexFileName = index};
                 }))
                 {
                     server.Port.ShouldBe(port);
-                    server.PublicFolder.DefaultFileName.ShouldBe(index);
+                    server.PublicFolder.IndexFileName.ShouldBe(index);
                 }
             }
 
@@ -730,33 +732,6 @@ namespace Grapevine.Tests.Server
                     server.Stop();
                     invoked.ShouldBeFalse();
                     listener.IsListening.Returns(false);
-                }
-            }
-        }
-
-        public class ThreadSafeStopMethod
-        {
-            [Fact]
-            public void StopsServer()
-            {
-                const int maxTicksToStop = 300;
-                var port = PortFinder.FindNextLocalOpenPort();
-                var ticksToStop = 0;
-
-                using (var server = new RestServer {Connections = 1, Port = port})
-                {
-
-                    server.Start();
-                    server.IsListening.ShouldBeTrue();
-                    server.ListenerPrefix.ShouldBe($"http://localhost:{port}/");
-                    server.ThreadSafeStop();
-                    while (server.IsListening && ticksToStop <= maxTicksToStop)
-                    {
-                        ticksToStop += 1;
-                        Thread.Sleep(10);
-                    }
-
-                    server.IsListening.ShouldBeFalse();
                 }
             }
         }

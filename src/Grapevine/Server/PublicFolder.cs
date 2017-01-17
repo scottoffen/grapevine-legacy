@@ -1,15 +1,19 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Grapevine.Interfaces.Server;
-using Grapevine.Shared;
+using FileNotFoundException = Grapevine.Exceptions.Server.FileNotFoundException;
 
 namespace Grapevine.Server
 {
-    public interface IPublicFolder
+    public interface IPublicFolder : IDisposable
     {
         /// <summary>
         /// Gets or sets the default file to return when a directory is requested
         /// </summary>
-        string DefaultFileName { get; set; }
+        string IndexFileName { get; set; }
 
         /// <summary>
         /// Gets or sets the optional prefix for specifying when static content should be returned
@@ -19,93 +23,164 @@ namespace Grapevine.Server
         /// <summary>
         /// Gets or sets the folder to be scanned for static content requests
         /// </summary>
-        string FolderPath { get; set; }
+        string FolderPath { get; }
 
         /// <summary>
-        /// If it exists, responds to the request with the requested file
-        /// </summary>
-        IHttpContext RespondWithFile(IHttpContext context);
-
-        /// <summary>
-        /// Returns a value that indicates whether or not the request should return a static asset
+        /// Send file
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        bool ShouldRespondWithFile(IHttpContext context);
+        void SendFile(IHttpContext context);
     }
 
-    /// <summary>
-    /// Provides methods for working with files and folder for static content
-    /// </summary>
     public class PublicFolder : IPublicFolder
     {
-        protected const string DefaultFolder = "public";
-        protected const bool IsFilePath = true;
-        private string _folderPath;
-        private string _prefix = string.Empty;
+        protected ConcurrentDictionary<string, string> DirectoryList { get; set; }
 
-        /// <inheritdoc/>
-        public string DefaultFileName { get; set; } = "index.html";
+        public static string DefaultFolderName { get; } = "public";
+        public static string DefaultIndexFileName { get; } = "index.html";
 
-        /// <inheritdoc/>
+        private FileSystemWatcher _watcher;
+        private string _indexFileName = "index.html";
+        private string _prefix;
+        private string _path;
+
+        public PublicFolder() : this(Path.Combine(Directory.GetCurrentDirectory(), DefaultFolderName), string.Empty) { }
+
+        public PublicFolder(string path) : this(path, string.Empty) { }
+
+        public PublicFolder(string path, string prefix)
+        {
+            DirectoryList = new ConcurrentDictionary<string, string>();
+            FolderPath = Path.GetFullPath(path);
+            Prefix = prefix;
+
+            Watcher = new FileSystemWatcher
+            {
+                Path = FolderPath,
+                Filter = "*",
+                EnableRaisingEvents = true,
+                IncludeSubdirectories = true,
+                NotifyFilter = NotifyFilters.FileName
+            };
+
+            Watcher.Created += (sender, args) => { AddToDirectoryList(args.FullPath); };
+            Watcher.Deleted += (sender, args) => { RemoveFromDirectoryList(args.FullPath); };
+            Watcher.Renamed += (sender, args) => { RenameInDirectoryList(args.OldFullPath, args.FullPath); };
+
+            PopulateDirectoryList();
+        }
+
+        public string IndexFileName
+        {
+            get { return _indexFileName; }
+            set
+            {
+                if (string.IsNullOrEmpty(value) || value == _indexFileName) return;
+                _indexFileName = value;
+                PopulateDirectoryList();
+            }
+        }
+
         public string Prefix
         {
             get { return _prefix; }
-            set { _prefix = value == null ? string.Empty : $"/{value.Trim().TrimStart('/').TrimEnd('/')}"; }
+            set
+            {
+                var prefix = string.IsNullOrWhiteSpace(value) ? string.Empty : $"/{value.Trim().TrimStart('/').TrimEnd('/').Trim()}";
+                if (prefix.Equals(_prefix)) return;
+
+                _prefix = prefix;
+                PopulateDirectoryList();
+            }
         }
 
-        /// <inheritdoc/>
         public string FolderPath
         {
             get
             {
-                if (_folderPath != null) return _folderPath;
-                var path = Path.Combine(Directory.GetCurrentDirectory(), DefaultFolder);
-                _folderPath = Directory.Exists(path) ? path : Directory.CreateDirectory(path).FullName;
-                return _folderPath;
+                return _path;
             }
-            set
+
+            protected internal set
             {
-                _folderPath = Directory.Exists(value) ? value : Directory.CreateDirectory(value).FullName;
+                var path = Path.GetFullPath(value);
+                if (!Directory.Exists(path)) path = Directory.CreateDirectory(path).FullName;
+                _path = path;
             }
         }
 
-        /// <inheritdoc/>
-        public IHttpContext RespondWithFile(IHttpContext context)
+        public FileSystemWatcher Watcher
         {
-            if (context.Request.HttpMethod != HttpMethod.GET && context.Request.HttpMethod != HttpMethod.HEAD)
-                return context;
-
-            if (!string.IsNullOrWhiteSpace(Prefix) && !context.Request.PathInfo.StartsWith(Prefix)) return context;
-
-            var filepath = GetFilePath(context.Request.PathInfo);
-            if (filepath != null) context.Response.SendResponse(filepath, IsFilePath);
-
-            return context;
+            get { return _watcher; }
+            protected internal set
+            {
+                if (value == null || value == _watcher) return;
+                var tmpwatcher = _watcher;
+                _watcher = value;
+                tmpwatcher?.Dispose();
+            }
         }
 
-        /// <inheritdoc/>
-        public bool ShouldRespondWithFile(IHttpContext context)
+        public IDictionary<string, string> DirectoryListing => DirectoryList as IDictionary<string, string>;
+
+        //public void UploadFile(IHttpContext context)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        public void SendFile(IHttpContext context)
         {
-            return !string.IsNullOrWhiteSpace(Prefix) && context.Request.PathInfo.StartsWith(Prefix);
+            if (DirectoryList.ContainsKey(context.Request.PathInfo))
+            {
+                context.Response.SendResponse(DirectoryList[context.Request.PathInfo], true);
+            }
+
+            if (!string.IsNullOrEmpty(Prefix) && context.Request.PathInfo.StartsWith(Prefix) && !context.WasRespondedTo)
+            {
+                throw new FileNotFoundException(context);
+            }
         }
 
-        /// <summary>
-        /// Returns the path to the file specified by the pathinfo
-        /// </summary>
-        private string GetFilePath(string pathinfo)
+        protected void PopulateDirectoryList()
         {
-            if (string.IsNullOrWhiteSpace(pathinfo)) return null;
+            DirectoryList.Clear();
+            foreach (var item in Directory.GetFiles(FolderPath, "*", SearchOption.AllDirectories).ToList())
+            {
+                AddToDirectoryList(item);
+            }
+        }
 
-            var path = Path.Combine(FolderPath,
-                (string.IsNullOrWhiteSpace(Prefix) ? pathinfo : pathinfo.Replace(Prefix, "")).TrimStart('/', '\\')
-                    .Replace("/", Path.DirectorySeparatorChar.ToString()));
+        protected void AddToDirectoryList(string fullPath)
+        {
+            DirectoryList[CreateDirectoryListKey(fullPath)] = fullPath;
+            if (fullPath.EndsWith($"\\{_indexFileName}"))
+                DirectoryList[CreateDirectoryListKey(fullPath.Replace($"\\{_indexFileName}", ""))] = fullPath;
+        }
 
-            if (File.Exists(path)) return path;
-            if (!Directory.Exists(path)) return null;
+        protected void RemoveFromDirectoryList(string fullPath)
+        {
+            DirectoryList.Where(x => x.Value == fullPath).ToList().ForEach(pair =>
+            {
+                string key;
+                DirectoryList.TryRemove(pair.Key, out key);
+            });
+        }
 
-            path = Path.Combine(path, DefaultFileName);
-            return File.Exists(path) ? path : null;
+        protected void RenameInDirectoryList(string oldFullPath, string newFullPath)
+        {
+            RemoveFromDirectoryList(oldFullPath);
+            AddToDirectoryList(newFullPath);
+        }
+
+        protected string CreateDirectoryListKey(string item)
+        {
+            return $"{Prefix}{item.Replace(FolderPath, string.Empty).Replace(@"\", "/")}";
+        }
+
+        public void Dispose()
+        {
+            _watcher.Dispose();
         }
     }
 }

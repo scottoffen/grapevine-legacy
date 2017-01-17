@@ -13,8 +13,7 @@ namespace Grapevine.Local
             using (var server = new RestServer())
             {
                 server.LogToConsole();
-                server.PublicFolder.Prefix = "Grapevine";
-                server.PublicFolder.FolderPath = @"C:\source\github\gv-gh-pages";
+                server.PublicFolder = new PublicFolder(@"C:\source\github\gv-gh-pages") {Prefix = "Grapevine"};
 
                 server.OnBeforeStart = () => Console.WriteLine("---------------> Starting Server");
                 server.OnAfterStart = () => Console.WriteLine($"<--------------- Server Started");

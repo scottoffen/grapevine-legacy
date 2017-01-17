@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using Grapevine.Exceptions.Server;
 using Grapevine.Interfaces.Server;
 using Grapevine.Interfaces.Shared;
@@ -306,8 +305,8 @@ namespace Grapevine.Server
 
         #endregion
 
-        protected readonly IList<IRoute> RegisteredRoutes;
-        protected ConcurrentDictionary<string, IList<IRoute>> RouteCache;
+        protected internal readonly IList<IRoute> RegisteredRoutes;
+        protected internal ConcurrentDictionary<string, IList<IRoute>> RouteCache;
 
         public event RoutingEventHandler AfterRouting;
         public event RoutingEventHandler BeforeRouting;
@@ -368,9 +367,7 @@ namespace Grapevine.Server
 
         public IRouter Import<T>() where T : IRouter, new()
         {
-            var type = typeof(T);
-            if (type.IsAbstract) throw new ArgumentException($"Cannot Import: {type.FullName} is an abstract class");
-            return Import((IRouter)Activator.CreateInstance(type));
+            return Import((IRouter)Activator.CreateInstance(typeof(T)));
         }
 
         public IRouter InsertAfter(int index, IRoute route)
@@ -531,35 +528,44 @@ namespace Grapevine.Server
             var context = state as IHttpContext;
             if (context == null) return;
 
-            var server = context.Server;
-
             try
             {
+                if (context.Request.HttpMethod == HttpMethod.GET)
+                {
+                    foreach (var folder in context.Server.PublicFolders)
+                    {
+                        folder.SendFile(context);
+                        if (context.WasRespondedTo) return;
+                    }
+                }
+
                 Route(context, RoutesFor(context));
-            }
-            catch (RouteNotFoundException rnf)
-            {
-                Logger.Log(new LogEvent {Exception = rnf, Level = LogLevel.Error, Message = rnf.Message});
-                if (server.EnableThrowingExceptions) throw;
-                context.Response.SendResponse(HttpStatusCode.NotFound);
-            }
-            catch (NotImplementedException ni)
-            {
-                Logger.Log(new LogEvent { Exception = ni, Level = LogLevel.Error, Message = ni.Message });
-                if (server.EnableThrowingExceptions) throw;
-                context.Response.SendResponse(HttpStatusCode.NotImplemented);
             }
             catch (Exception e)
             {
                 Logger.Log(new LogEvent { Exception = e, Level = LogLevel.Error, Message = e.Message });
-                if (server.EnableThrowingExceptions) throw;
+                if (context.Server.EnableThrowingExceptions) throw;
+
+                if (context.WasRespondedTo) return;
+
+                if (e is NotFoundException)
+                {
+                    context.Response.SendResponse(HttpStatusCode.NotFound, e.Message);
+                    return;
+                }
+
+                if (e is NotImplementedException)
+                {
+                    context.Response.SendResponse(HttpStatusCode.NotImplemented, e.Message);
+                    return;
+                }
+
                 context.Response.SendResponse(HttpStatusCode.InternalServerError, e);
             }
         }
 
         public void Route(IHttpContext context, IList<IRoute> routing)
         {
-            if (context.WasRespondedTo) return;
             if (routing == null || !routing.Any()) throw new RouteNotFoundException(context);
             var totalRoutes = routing.Count;
             var routeCounter = 0;
@@ -593,15 +599,14 @@ namespace Grapevine.Server
         public IList<IRoute> RoutesFor(IHttpContext context)
         {
             var key = $"{context.Request.HttpMethod}:{context.Request.PathInfo}";
-            if (!RouteCache.ContainsKey(key)) RouteCache.GetOrAdd(key, RegisteredRoutes.Where(r => r.Matches(context) && r.Enabled).ToList());
-            return RouteCache[key];
+            return RouteCache.GetOrAdd(key, RegisteredRoutes.Where(r => r.Matches(context) && r.Enabled).ToList());
         }
 
         /// <summary>
         /// Event handler for when the <see cref="BeforeRouting"/> event is raised
         /// </summary>
         /// <param name="context">The <see cref="IHttpContext"/> being routed</param>
-        protected void OnBeforeRouting(IHttpContext context)
+        protected internal void OnBeforeRouting(IHttpContext context)
         {
             Before?.Invoke(context);
             BeforeRouting?.Invoke(context);
@@ -611,7 +616,7 @@ namespace Grapevine.Server
         /// Event handler for when the <see cref="AfterRouting"/> event is raised
         /// </summary>
         /// <param name="context">The <see cref="IHttpContext"/> being routed</param>
-        protected void OnAfterRouting(IHttpContext context)
+        protected internal void OnAfterRouting(IHttpContext context)
         {
             After?.Invoke(context);
             if (AfterRouting == null) return;
@@ -625,7 +630,7 @@ namespace Grapevine.Server
         /// Adds the route to the routing table excluding duplicates
         /// </summary>
         /// <param name="route"></param>
-        protected void AppendRoutingTable(IRoute route)
+        protected internal void AppendRoutingTable(IRoute route)
         {
             if (route.Function == null) throw new ArgumentNullException(nameof(route));
             if (!RegisteredRoutes.Contains(route)) RegisteredRoutes.Add(route);
@@ -636,7 +641,7 @@ namespace Grapevine.Server
         /// Adds the routes to the routing table excluding duplicates
         /// </summary>
         /// <param name="routes"></param>
-        protected void AppendRoutingTable(IEnumerable<IRoute> routes)
+        protected internal void AppendRoutingTable(IEnumerable<IRoute> routes)
         {
             routes.ToList().ForEach(AppendRoutingTable);
         }
@@ -647,7 +652,7 @@ namespace Grapevine.Server
         /// <param name="index"></param>
         /// <param name="route"></param>
         /// <returns>Returns the index the next route can be inserted at.</returns>
-        protected int InsertAt(int index, IRoute route)
+        protected internal int InsertAt(int index, IRoute route)
         {
             if (index < 0 || RegisteredRoutes.Contains(route)) return index;
             RegisteredRoutes.Insert(index, route);

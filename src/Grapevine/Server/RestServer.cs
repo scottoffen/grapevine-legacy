@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -10,7 +9,6 @@ using Grapevine.Interfaces.Server;
 using Grapevine.Interfaces.Shared;
 using Grapevine.Shared;
 using Grapevine.Shared.Loggers;
-using HttpStatusCode = Grapevine.Shared.HttpStatusCode;
 using ExtendedProtectionSelector = System.Net.HttpListener.ExtendedProtectionSelector;
 using HttpListener = Grapevine.Interfaces.Server.HttpListener;
 
@@ -71,6 +69,7 @@ namespace Grapevine.Server
         public Action OnAfterStart { get; set; }
         public Action OnBeforeStop { get; set; }
         public Action OnAfterStop { get; set; }
+        public IList<IPublicFolder> PublicFolders { get; }
         public IRouter Router { get; set; }
 
         public RestServer() : this(new ServerSettings()) { }
@@ -85,14 +84,13 @@ namespace Grapevine.Server
         {
             Listener = new HttpListener(new System.Net.HttpListener());
             Listening = new Thread(HandleRequests);
-            //ReadyEvent = new ManualResetEvent(false);
             StopEvent = new ManualResetEvent(false);
 
             options.CloneEventHandlers(this);
             Host = options.Host;
             Logger = options.Logger;
             Port = options.Port;
-            PublicFolder = options.PublicFolder;
+            PublicFolders = options.PublicFolders;
             Router = options.Router;
             UseHttps = options.UseHttps;
 
@@ -172,7 +170,24 @@ namespace Grapevine.Server
             }
         }
 
-        public IPublicFolder PublicFolder { get; }
+        public IPublicFolder PublicFolder
+        {
+            get
+            {
+                if (!PublicFolders.Any()) PublicFolders.Add(new PublicFolder());
+                return PublicFolders.First();
+            }
+            set
+            {
+                if (value == null) return;
+                if (PublicFolders.Any())
+                {
+                    PublicFolders[0] = value;
+                    return;
+                }
+                PublicFolders.Add(value);
+            }
+        }
 
         public bool UseHttps
         {
