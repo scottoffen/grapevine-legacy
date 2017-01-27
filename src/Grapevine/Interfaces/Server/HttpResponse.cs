@@ -15,6 +15,8 @@ namespace Grapevine.Interfaces.Server
     /// </summary>
     public interface IHttpResponse
     {
+        AdvancedHttpResponse Advanced { get; }
+
         /// <summary>
         /// Gets or sets the Encoding for this response's OutputStream
         /// </summary>
@@ -113,41 +115,10 @@ namespace Grapevine.Interfaces.Server
         void Redirect(string url);
 
         /// <summary>
-        /// Sends the specified response to the client and closes the response
+        /// Write the contents of the buffer to and then closes the OutputStream, followed by closing the Response
         /// </summary>
-        /// <param name="response"></param>
-        /// <param name="isFilePath"></param>
-        void SendResponse(string response, bool isFilePath = false);
-
-        /// <summary>
-        /// Sends the specified string response to the client using the specified encoding and closes the response
-        /// </summary>
-        /// <param name="response"></param>
-        /// <param name="encoding"></param>
-        void SendResponse(string response, Encoding encoding);
-
-        /// <summary>
-        /// Sends the specified binary response with the specifed content type to the client and closes the response; sets the attachment header on the response with the provided filename if asAttachment is true
-        /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="type"></param>
-        /// <param name="filename"></param>
-        /// <param name="asAttachment"></param>
-        void SendResponse(FileStream stream, ContentType type, string filename, bool asAttachment = false);
-
-        /// <summary>
-        /// Sends the specified status code and exception as a response to the client and closes the response
-        /// </summary>
-        /// <param name="statusCode"></param>
-        /// <param name="exception"></param>
-        void SendResponse(HttpStatusCode statusCode, Exception exception);
-
-        /// <summary>
-        /// Sends the specified response to the client with the given response and closes the response
-        /// </summary>
-        /// <param name="statusCode"></param>
-        /// <param name="response"></param>
-        void SendResponse(HttpStatusCode statusCode, string response = null);
+        /// <param name="contents"></param>
+        void SendResponse(byte[] contents);
 
         /// <summary>
         /// Adds or updates a Cookie in the collection of cookies sent with this response
@@ -304,161 +275,65 @@ namespace Grapevine.Interfaces.Server
             Response.Redirect(url);
         }
 
-        public void SendResponse(string response, bool isFilePath = false)
-        {
-            if (isFilePath)
-            {
-                if (NotModified(response)) return;
-                var type = ContentType.DEFAULT.FromExtension(response);
-                SendResponse(new FileStream(response, FileMode.Open, FileAccess.Read), type, response);
-            }
-            else
-            {
-                SendResponse(response, Response.ContentEncoding);
-            }
-        }
-
-        public void SendResponse(string response, Encoding encoding)
-        {
-            Response.ContentEncoding = encoding;
-            FlushResponse(encoding.GetBytes(response));
-        }
-
-        public void SendResponse(FileStream stream, ContentType type, string filename, bool asAttachment = false)
-        {
-            ContentType = type;
-            if (!Response.Headers.AllKeys.Contains("Expires")) Response.AddHeader("Expires", DateTime.Now.AddHours(HoursToExpire).ToString("R"));
-            if (asAttachment) Response.AddHeader("Content-Disposition", $"attachment; filename=\"{filename}\"");
-
-            var buffer = GetFileBytes(stream, type.IsText());
-            FlushResponse(buffer);
-        }
-
-        public void SendResponse(HttpStatusCode statusCode, Exception exception)
-        {
-            SendResponse(statusCode, $"{exception.Message}{Environment.NewLine}<br>{Environment.NewLine}{exception.StackTrace}");
-        }
-
-        public void SendResponse(HttpStatusCode statusCode, string response = null)
-        {
-            StatusDescription = statusCode.ToString().ConvertCamelCase();
-            StatusCode = statusCode;
-            byte[] buffer;
-
-            if (string.IsNullOrWhiteSpace(response))
-            {
-                ContentType = ContentType.HTML;
-                buffer = Encoding.ASCII.GetBytes($"<h1>{StatusDescription}</h1>");
-            }
-            else
-            {
-                buffer = ContentEncoding.GetBytes(response);
-            }
-
-            FlushResponse(buffer);
-        }
-
         public void SetCookie(Cookie cookie)
         {
             Response.SetCookie(cookie);
         }
 
-        protected bool NotModified(string filepath)
+        public void SendResponse(byte[] contents)
         {
-            var lastModified = File.GetLastWriteTimeUtc(filepath).ToString("R");
-            Response.AddHeader("Last-Modified", lastModified);
-
-            if (!RequestHeaders.AllKeys.Contains("If-Modified-Since")) return false;
-            if (!RequestHeaders["If-Modified-Since"].Equals(lastModified)) return false;
-
-            SendResponse(HttpStatusCode.NotModified);
-            return true;
-        }
-
-        /// <summary>
-        /// Write the content to and closes the OutputStream, then closes the response
-        /// </summary>
-        /// <param name="buffer"></param>
-        protected void FlushResponse(byte[] buffer)
-        {
-            if (RequestHeaders.AllKeys.Contains("Accept-Encoding") && RequestHeaders["Accept-Encoding"].Contains("gzip") && buffer.Length > 1024)
+            if (RequestHeaders.AllKeys.Contains("Accept-Encoding") && RequestHeaders["Accept-Encoding"].Contains("gzip") && contents.Length > 1024)
             {
                 using (var ms = new MemoryStream())
                 {
                     using (var zip = new GZipStream(ms, CompressionMode.Compress))
                     {
-                        zip.Write(buffer, 0, buffer.Length);
+                        zip.Write(contents, 0, contents.Length);
                     }
-                    buffer = ms.ToArray();
+                    contents = ms.ToArray();
                 }
                 Response.Headers["Content-Encoding"] = "gzip";
             }
 
-            Response.ContentLength64 = buffer.Length;
-            Response.OutputStream.Write(buffer, 0, buffer.Length);
+            Response.ContentLength64 = contents.Length;
+            Response.OutputStream.Write(contents, 0, contents.Length);
             Response.OutputStream.Close();
             Advanced.Close();
-        }
-
-        /// <summary>
-        /// Returns a byte array representation of the data in the file referenced by the stream
-        /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="istext"></param>
-        /// <returns></returns>
-        protected byte[] GetFileBytes(FileStream stream, bool istext)
-        {
-            byte[] buffer;
-
-            if (istext)
-            {
-                using (var reader = new StreamReader(stream))
-                {
-                    buffer = ContentEncoding.GetBytes(reader.ReadToEnd());
-                }
-            }
-            else
-            {
-                using (var reader = new BinaryReader(stream))
-                {
-                    buffer = reader.ReadBytes((int)stream.Length);
-                }
-            }
-
-            return buffer;
         }
     }
 
     /// <summary>
     /// Provides direct access to selected methods and properties on the internal HttpListenerResponse instance. This class cannot be inherited.
     /// </summary>
-    public sealed class AdvancedHttpResponse
+    public class AdvancedHttpResponse
     {
-        private readonly HttpResponse _response;
+        protected readonly HttpResponse Response;
 
-        internal AdvancedHttpResponse(HttpResponse response)
+        protected internal AdvancedHttpResponse(HttpResponse response)
         {
-            _response = response;
+            Response = response;
         }
+
+        public int DefaultHoursToExpire { get; set; } = 23;
 
         public string ContentType
         {
-            get { return _response.Response.ContentType; }
-            set { _response.Response.ContentType = value; }
+            get { return Response.Response.ContentType; }
+            set { Response.Response.ContentType = value; }
         }
 
         /// <summary>
         /// Gets a Stream object to which a response can be written
         /// </summary>
-        public Stream OutputStream => _response.Response.OutputStream;
+        public Stream OutputStream => Response.Response.OutputStream;
 
         /// <summary>
         /// Sends the response to the client and releases the resources held by this HttpListenerResponse instance
         /// </summary>
         public void Close()
         {
-            _response.Response.Close();
-            _response.ResponseSent = true;
+            Response.Response.Close();
+            Response.ResponseSent = true;
         }
 
         /// <summary>
@@ -468,8 +343,8 @@ namespace Grapevine.Interfaces.Server
         /// <param name="willBlock"></param>
         public void Close(byte[] responseEntity, bool willBlock)
         {
-            _response.Response.Close(responseEntity, willBlock);
-            _response.ResponseSent = true;
+            Response.Response.Close(responseEntity, willBlock);
+            Response.ResponseSent = true;
         }
     }
 }

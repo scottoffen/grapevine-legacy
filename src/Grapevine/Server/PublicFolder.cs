@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Grapevine.Interfaces.Server;
+using Grapevine.Shared;
 using FileNotFoundException = Grapevine.Exceptions.Server.FileNotFoundException;
 
 namespace Grapevine.Server
@@ -133,7 +134,21 @@ namespace Grapevine.Server
         {
             if (DirectoryList.ContainsKey(context.Request.PathInfo))
             {
-                context.Response.SendResponse(DirectoryList[context.Request.PathInfo], true);
+                var filepath = DirectoryList[context.Request.PathInfo];
+
+                var lastModified = File.GetLastWriteTimeUtc(filepath).ToString("R");
+                context.Response.AddHeader("Last-Modified", lastModified);
+
+                if (context.Request.Headers.AllKeys.Contains("If-Modified-Since"))
+                {
+                    if (context.Request.Headers["If-Modified-Since"].Equals(lastModified))
+                    {
+                        context.Response.SendResponse(HttpStatusCode.NotModified);
+                        return;
+                    }
+                }
+
+                context.Response.SendResponse(new FileStream(filepath, FileMode.Open));
             }
 
             if (!string.IsNullOrEmpty(Prefix) && context.Request.PathInfo.StartsWith(Prefix) && !context.WasRespondedTo)

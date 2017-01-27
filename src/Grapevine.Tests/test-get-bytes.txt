@@ -1,0 +1,1 @@
+This is simple text file to test getting the bytes of a text file.

@@ -88,6 +88,7 @@
     <Compile Include="Server\Attributes\RestResourceFacts.cs" />
     <Compile Include="Server\Attributes\RestRouteFacts.cs" />
     <Compile Include="Server\FluentRouteCreatorFacts.cs" />
+    <Compile Include="Server\HttpResponseExtensionsFacts.cs" />
     <Compile Include="Server\PublicFolderFacts.cs" />
     <Compile Include="Server\RestClusterFacts.cs" />
     <Compile Include="Server\RestServerExtensionsFacts.cs" />
@@ -108,6 +109,7 @@
     <Compile Include="Shared\Loggers\NullLoggerFacts.cs" />
     <Compile Include="Shared\PatternParserFacts.cs" />
     <Compile Include="Shared\PortFinderFacts.cs" />
+    <Compile Include="Shared\StreamExtensionFacts.cs" />
     <Compile Include="Shared\UriSchemeFacts.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -123,7 +125,14 @@
       <Name>Grapevine</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="test-get-bytes.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="test-get-bytes.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

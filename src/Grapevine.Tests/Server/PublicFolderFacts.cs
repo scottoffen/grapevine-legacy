@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading;
 using Grapevine.Server;
@@ -8,6 +10,7 @@ using Grapevine.Shared;
 using NSubstitute;
 using Shouldly;
 using Xunit;
+using HttpStatusCode = Grapevine.Shared.HttpStatusCode;
 
 namespace Grapevine.Tests.Server
 {
@@ -489,32 +492,47 @@ namespace Grapevine.Tests.Server
             }
         }
 
-        public class SendFileMethod
+        public class SendFileMethod : IDisposable
         {
+            private readonly PublicFolder _folder;
+
+            public SendFileMethod()
+            {
+                _folder = new PublicFolder(GenerateUniqueString());
+            }
+
+            public void Dispose()
+            {
+                _folder.CleanUp();
+            }
+
             [Fact]
             public void CallsSendResponseWhenFileExists()
             {
                 var responded = new ManualResetEvent(false);
                 var filename = GenerateUniqueString();
+                var counter = 0;
 
-                var folder = new PublicFolder(GenerateUniqueString());
-                var filepath = Path.Combine(folder.FolderPath, filename);
-                File.WriteAllText(filepath, "for testing purposes - delete me");
+                File.WriteAllText(Path.Combine(_folder.FolderPath, filename), "for testing purposes - delete me");
+                while (_folder.DirectoryListing.Count == 0 && counter < 5)
+                {
+                    Thread.Sleep(100);
+                    counter++;
+                }
 
                 var context = Mocks.HttpContext();
                 context.Request.PathInfo.Returns($"/{filename}");
-                context.Response.When(x => x.SendResponse(Arg.Any<string>(), true)).Do(info =>
+                context.Response.When(x => x.SendResponse(Arg.Any<byte[]>())).Do(info =>
                 {
                     context.WasRespondedTo.Returns(true);
                     responded.Set();
                 });
 
-                folder.SendFile(context);
+                _folder.SendFile(context);
                 responded.WaitOne(300, false);
 
+                context.Response.Received().SendResponse(Arg.Any<byte[]>());
                 context.WasRespondedTo.ShouldBeTrue();
-
-                folder.CleanUp();
             }
 
             [Fact]
@@ -522,14 +540,14 @@ namespace Grapevine.Tests.Server
             {
                 var context = Mocks.HttpContext();
                 context.Request.PathInfo.Returns($"/{GenerateUniqueString()}");
-                context.Response.When(x => x.SendResponse(Arg.Any<string>(), true)).Do(info =>
+                context.Response.When(x => x.SendResponse(Arg.Any<byte[]>())).Do(info =>
                 {
                     context.WasRespondedTo.Returns(true);
                 });
 
-                var folder = new PublicFolder();
-                folder.SendFile(context);
+                _folder.SendFile(context);
 
+                context.Response.DidNotReceive().SendResponse(Arg.Any<byte[]>());
                 context.WasRespondedTo.ShouldBeFalse();
             }
 
@@ -539,14 +557,102 @@ namespace Grapevine.Tests.Server
                 var prefix = GenerateUniqueString();
                 var context = Mocks.HttpContext();
                 context.Request.PathInfo.Returns($"/{prefix}/{GenerateUniqueString()}");
-                context.Response.When(x => x.SendResponse(Arg.Any<string>(), true)).Do(info =>
+                context.Response.When(x => x.SendResponse(Arg.Any<byte[]>())).Do(info =>
                 {
                     context.WasRespondedTo.Returns(true);
                 });
 
-                var folder = new PublicFolder {Prefix = prefix};
+                _folder.Prefix = prefix;
 
-                Should.Throw<Exceptions.Server.FileNotFoundException>(() => folder.SendFile(context));
+                Should.Throw<Exceptions.Server.FileNotFoundException>(() => _folder.SendFile(context));
+            }
+        }
+
+        public class SendFileMethodUsingIfModified : IDisposable
+        {
+            private readonly PublicFolder _folder;
+
+            public SendFileMethodUsingIfModified()
+            {
+                _folder = new PublicFolder(GenerateUniqueString());
+            }
+
+            public void Dispose()
+            {
+                _folder.CleanUp();
+            }
+
+            [Fact]
+            public void ReturnsNotModifiedWhenIfModifiedHeaderAndFileHasNotBeenModified()
+            {
+                var responded = new ManualResetEvent(false);
+                var filename = GenerateUniqueString();
+                var counter = 0;
+                HttpStatusCode statusCode = 0;
+
+                var filepath = Path.Combine(_folder.FolderPath, filename);
+                File.WriteAllText(filepath, "for testing purposes - delete me");
+                while (_folder.DirectoryListing.Count == 0 && counter < 5)
+                {
+                    Thread.Sleep(100);
+                    counter++;
+                }
+
+                var context =
+                    Mocks.HttpContext(new Dictionary<string, object>
+                    {
+                        {
+                            "RequestHeaders",
+                            new WebHeaderCollection
+                            {
+                                {"If-Modified-Since", File.GetLastWriteTimeUtc(filepath).ToString("R")}
+                            }
+                        }
+                    });
+
+                context.Request.PathInfo.Returns($"/{filename}");
+                context.Response.When(x => x.SendResponse(Arg.Any<byte[]>())).Do(info =>
+                {
+                    statusCode = context.Response.StatusCode;
+                    context.WasRespondedTo.Returns(true);
+                    responded.Set();
+                });
+
+                _folder.SendFile(context);
+                responded.WaitOne(300, false);
+
+                context.WasRespondedTo.ShouldBeTrue();
+                statusCode.ShouldBe(HttpStatusCode.NotModified);
+            }
+
+            [Fact]
+            public void ReturnsFileWhenIfModifiedHeaderAndFileHasBeenModified()
+            {
+                var responded = new ManualResetEvent(false);
+                var filename = GenerateUniqueString();
+                var counter = 0;
+
+                File.WriteAllText(Path.Combine(_folder.FolderPath, filename), "for testing purposes - delete me");
+                while (_folder.DirectoryListing.Count == 0 && counter < 5)
+                {
+                    Thread.Sleep(100);
+                    counter++;
+                }
+
+                var context = Mocks.HttpContext();
+                context.Request.PathInfo.Returns($"/{filename}");
+                context.Request.Headers.Add("If-Modified-Since", DateTime.Now.AddDays(-1).ToString("R"));
+                context.Response.When(x => x.SendResponse(Arg.Any<byte[]>())).Do(info =>
+                {
+                    context.WasRespondedTo.Returns(true);
+                    responded.Set();
+                });
+
+                _folder.SendFile(context);
+                responded.WaitOne(300, false);
+
+                context.WasRespondedTo.ShouldBeTrue();
+                context.Response.StatusCode.ShouldNotBe(HttpStatusCode.NotModified);
             }
         }
     }
@@ -571,7 +677,14 @@ namespace Grapevine.Tests.Server
 
                 Directory.Delete(folder.FolderPath);
             }
-            catch { /* ignored */ }
+            catch
+            {
+                /* ignored */
+            }
+            finally
+            {
+                folder.Dispose();
+            }
         }
     }
 }
