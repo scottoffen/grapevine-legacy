@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Net;
+using System.Text;
 using Grapevine.Interfaces.Server;
 using Grapevine.Shared;
 using NSubstitute;
@@ -17,7 +20,10 @@ namespace Grapevine.Tests
                 {"HttpMethod", HttpMethod.GET},
                 {"PathInfo", "/"},
                 {"Name", "mocked"},
-                {"Id", Guid.NewGuid().Truncate()}
+                {"Id", Guid.NewGuid().Truncate()},
+                {"RequestHeaders", new WebHeaderCollection() },
+                {"ResponseHeaders", new WebHeaderCollection() },
+                {"ContentEncoding", Encoding.ASCII}
             };
         }
 
@@ -77,6 +83,7 @@ namespace Grapevine.Tests
             {
                 var target = Substitute.For<IHttpRequest>();
 
+                target.Headers.Returns((WebHeaderCollection)properties["RequestHeaders"]);
                 target.HttpMethod.Returns((HttpMethod)properties["HttpMethod"]);
                 target.PathInfo.Returns((string)properties["PathInfo"]);
                 target.Name.Returns((string)properties["Name"]);
@@ -88,6 +95,15 @@ namespace Grapevine.Tests
             if (typeof(T) == typeof(IHttpResponse))
             {
                 var target = Substitute.For<IHttpResponse>();
+
+                target.Headers.Returns((WebHeaderCollection)properties["ResponseHeaders"]);
+                target.Advanced.Returns(new AdvancedHttpResponse(target as HttpResponse));
+                target.ContentEncoding.Returns((Encoding) properties["ContentEncoding"]);
+
+                target.When(x => x.AddHeader(Arg.Any<string>(), Arg.Any<string>())).Do(info =>
+                {
+                    target.Headers.Add(info.ArgAt<string>(0), info.ArgAt<string>(1));
+                });
 
                 return (T)target;
             }

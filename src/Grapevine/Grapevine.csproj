@@ -62,6 +62,7 @@
     <Compile Include="Interfaces\Server\HttpContext.cs" />
     <Compile Include="Interfaces\Server\HttpRequest.cs" />
     <Compile Include="Interfaces\Server\HttpResponse.cs" />
+    <Compile Include="Server\HttpResponseExtensions.cs" />
     <Compile Include="Shared\DynamicProperties.cs" />
     <Compile Include="Interfaces\Server\IHttpListener.cs" />
     <Compile Include="Server\RouteScanner.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="Shared\Loggers\NullLogger.cs" />
     <Compile Include="Shared\ParamParser.cs" />
     <Compile Include="Shared\PortFinder.cs" />
+    <Compile Include="Shared\StreamExtensions.cs" />
     <Compile Include="Shared\UriSchemeExtensions.cs" />
     <Compile Include="Shared\UriScheme.cs" />
   </ItemGroup>
