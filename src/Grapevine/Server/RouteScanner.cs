@@ -14,6 +14,7 @@ namespace Grapevine.Server
         /// Set a rule to exclude types in the specified namespace when auto-scanning for routes
         /// </summary>
         /// <param name="nameSpace"></param>
+        [Obsolete("This will be removed in the next release")]
         void Exclude(string nameSpace);
 
         /// <summary>
@@ -38,6 +39,7 @@ namespace Grapevine.Server
         /// Set a rule to include types in the specified namespace when auto-scanning for routes
         /// </summary>
         /// <param name="nameSpace"></param>
+        [Obsolete("This will be removed in the next release")]
         void Include(string nameSpace);
 
         /// <summary>
