@@ -778,7 +778,7 @@ namespace Grapevine.Tests.Server
     public class AlternateRouteImpl : IRoute
     {
         public string Description { get; set; }
-        public bool Enabled { get; }
+        public bool Enabled { get; set; }
         public Func<IHttpContext, IHttpContext> Function { get; }
         public HttpMethod HttpMethod { get; }
         public string Name { get; }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Grapevine.Shared;
 using System.Text.RegularExpressions;
@@ -22,7 +21,7 @@ namespace Grapevine.Server
         /// <summary>
         /// Gets a value that indicates whether the route is enabled
         /// </summary>
-        bool Enabled { get; }
+        bool Enabled { get; set; }
 
         /// <summary>
         /// Gets the generic delegate that will be run when the route is invoked
@@ -50,16 +49,6 @@ namespace Grapevine.Server
         Regex PathInfoPattern { get; }
 
         /// <summary>
-        /// Enables the route, allowing it to be invoked during routing
-        /// </summary>
-        void Enable();
-
-        /// <summary>
-        /// Disables the route, preventing it from being invoked during routing
-        /// </summary>
-        void Disable();
-
-        /// <summary>
         /// Returns the result of the route delegate being executed on the IHttpContext
         /// </summary>
         /// <param name="context"></param>
@@ -82,7 +71,7 @@ namespace Grapevine.Server
         protected readonly List<string> PatternKeys;
 
         public string Description { get; set; }
-        public bool Enabled { get; protected set; }
+        public bool Enabled { get; set; }
         public Func<IHttpContext, IHttpContext> Function { get; }
         public HttpMethod HttpMethod { get; }
         public string Name { get; }
@@ -178,16 +167,6 @@ namespace Grapevine.Server
             PathInfo = !string.IsNullOrWhiteSpace(pathInfo) ? pathInfo : string.Empty;
             PatternKeys = PatternParser.GeneratePatternKeys(PathInfo);
             PathInfoPattern = PatternParser.GenerateRegEx(PathInfo);
-        }
-
-        public void Enable()
-        {
-            Enabled = true;
-        }
-
-        public void Disable()
-        {
-            Enabled = false;
         }
 
         public IHttpContext Invoke(IHttpContext context)
@@ -349,6 +328,25 @@ namespace Grapevine.Server
             /// <param name="function"></param>
             /// <returns></returns>
             Route Use(Func<IHttpContext, IHttpContext> function);
+        }
+    }
+
+    public static class RouteInterfaceExtensions
+    {
+        /// <summary>
+        /// Enables the route, allowing it to be invoked during routing
+        /// </summary>
+        public static void Enable(this IRoute route)
+        {
+            route.Enabled = true;
+        }
+
+        /// <summary>
+        /// Disables the route, preventing it from being invoked during routing
+        /// </summary>
+        public static void Disable(this IRoute route)
+        {
+            route.Enabled = false;
         }
     }
 }
