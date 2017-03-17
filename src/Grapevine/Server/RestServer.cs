@@ -427,20 +427,20 @@ namespace Grapevine.Server
         /// <summary>
         /// Get or set the ExtendedProtectionPolicy to use for extended protection for a session
         /// </summary>
-        public ExtendedProtectionPolicy ExtendedProtectionPolicy
-        {
-            get { return _listener.ExtendedProtectionPolicy; }
-            set { _listener.ExtendedProtectionPolicy = value; }
-        }
+        //public ExtendedProtectionPolicy ExtendedProtectionPolicy
+        //{
+        //    get { return _listener.ExtendedProtectionPolicy; }
+        //    set { _listener.ExtendedProtectionPolicy = value; }
+        //}
 
         /// <summary>
         /// Get or set the delegate called to determine the ExtendedProtectionPolicy to use for each request
         /// </summary>
-        public ExtendedProtectionSelector ExtendedProtectionSelectorDelegate
-        {
-            get { return _listener.ExtendedProtectionSelectorDelegate; }
-            set { _listener.ExtendedProtectionSelectorDelegate = value; }
-        }
+        //public ExtendedProtectionSelector ExtendedProtectionSelectorDelegate
+        //{
+        //    get { return _listener.ExtendedProtectionSelectorDelegate; }
+        //    set { _listener.ExtendedProtectionSelectorDelegate = value; }
+        //}
 
         /// <summary>
         /// Gets or sets a Boolean value that specifies whether your application receives exceptions that occur when an HttpListener sends the response to the client
