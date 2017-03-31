@@ -1,0 +1,384 @@
+
+<!DOCTYPE HTML>
+<html lang="en" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>Getting Started · Grapevine API Documentation</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.2">
+        <meta name="author" content="Scott Offen">
+        
+        
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-prism/prism-okaidia.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    
+    <link rel="prev" href="./" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        <li class="header">Grapevine 4</li>
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.2" data-path="getting-started.html">
+            
+                <a href="getting-started.html">
+            
+                    
+                    Getting Started
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="." >Getting Started</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="getting-started-with-grapevine">Getting Started with Grapevine</h1>
+<h2 id="keeping-it-simple">Keeping It Simple</h2>
+<p>Grapevine is founded on the principle of simplicity. In addition to being intentionally unopinionated - it doesn&apos;t want to get in the way of getting your work done - it&apos;s Grapevine&apos;s simple and declarative approach that sets it apart from other solutions. This guide will be focused on the simplest implementation of Grapevine - a console application.</p>
+<p>Create a new console application project and name it &quot;GrapevineConsole&quot;. Add Grapevine in your project, then add the following code to your Main() method.</p>
+<pre class="language-"><code class="lang-csharp"><span class="token keyword">using</span> <span class="token punctuation">(</span><span class="token keyword">var</span> server <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">RestServer</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">{</span>
+    server<span class="token punctuation">.</span><span class="token function">Start</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    Console<span class="token punctuation">.</span><span class="token function">ReadLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    server<span class="token punctuation">.</span><span class="token function">Stop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>When you run it, a console window appears with a blinking cursor, and stays there until you either hit Enter or close the program. If you open a web browser while the application is running to <a href="http://localhost:1234" target="_blank">http://localhost:1234</a>, you will see a very unhelpful page with the words Not Found.</p>
+<h1 id="logging-to-the-console">Logging To The Console</h1>
+<p>We can make this example a little more helpful by having Grapevine log out to the console what it&apos;s doing. Where reasonable, methods on objects in Grapevine are chainable, making it easy to tell the RestServer to write diagnostic information out to the console.</p>
+<pre class="language-"><code class="lang-csharp"><span class="token keyword">using</span> <span class="token punctuation">(</span><span class="token keyword">var</span> server <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">RestServer</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+<span class="token punctuation">{</span>
+    server<span class="token punctuation">.</span><span class="token function">LogToConsole</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">Start</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    Console<span class="token punctuation">.</span><span class="token function">ReadLine</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    server<span class="token punctuation">.</span><span class="token function">Stop</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>Run the application again, and the same console will appear, but this time with information on what&apos;s going on. Your console should display the following:</p>
+<pre class="language-"><code>1/1/2016 12:30:15 PM   Trace   Scanning resources for routes...
+1/1/2016 12:30:15 PM   Trace   Generating routes for assembly GrapevineConsole
+1/1/2016 12:30:17 PM   Trace   Listening: http://localhost:1234/
+</code></pre><p>This gives us a much better idea about what&apos;s going on. The RestServer is scanning for routes and not finding anything, so requests are returned having not found a route that responds to it.</p>
+<h1 id="creating-routes">Creating Routes</h1>
+<p>So far, going to <a href="http://localhost:1234" target="_blank">http://localhost:1234</a> still shows the Not Found page. This is because we haven&apos;t defined any routes in our assembly. Routes are added by creating classes and methods in our project that meet specific criteria.</p>
+<p>For a given Type in an assembly to be automatically scanned for routes, the criteria it must meet are:</p>
+<ul>
+<li>It must be a public, reference-type class; not an abstract class, struct, interface or value-type.</li>
+<li>It must have the <code>[RestResource]</code> attribute on it.</li>
+<li>It must have a parameterless constructor.</li>
+</ul>
+<p>For methods in a class to be automatically registered as routes, the criteria the must meet are:</p>
+<ul>
+<li>It must have the <code>[RestRoute]</code> attribute on it.</li>
+<li>It must take a single argument of type <code>IHttpContext</code>.</li>
+<li>It must have a return value of type <code>IHttpContext</code>.</li>
+</ul>
+<p>The <code>Router</code> on Grapevine&apos;s <code>RestServer</code> maintains an internal list of routes. While you can add routes to it manually, if the list is empty when the server is started, the <code>Router</code> will scan assemblies in your current <code>AppDomain</code> for routes. Assemblies are scanned in alphabetical order (skipping Grapevine and assemblies in the Global Assembly Cache), and each type in an assembly is likewise scanned in alphabetical order. In contrast, methods inside each type are discovered in the order the appear in the class itself.</p>
+<p>This is what is meant by <em><em>optional</em> route registration</em>. As long as your routes follow these conventions, they will be automatically registered with the router and incoming request will be routed to them, and you don&apos;t have to register them manually.</p>
+<p>Armed with this information, let&apos;s create our first routes.</p>
+<pre class="language-"><code class="lang-csharp"><span class="token punctuation">[</span>RestResource<span class="token punctuation">]</span>
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">TestResource</span>
+<span class="token punctuation">{</span>
+    <span class="token punctuation">[</span>RestRoute<span class="token punctuation">]</span>
+    <span class="token keyword">public</span> IHttpContext <span class="token function">HelloWorld</span><span class="token punctuation">(</span>IHttpContext context<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        context<span class="token punctuation">.</span>Response<span class="token punctuation">.</span><span class="token function">SendResponse</span><span class="token punctuation">(</span><span class="token string">&quot;Hello, world.&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> context<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>When we start our server this time, and then go to <a href="http://localhost:1234" target="_blank">http://localhost:1234</a>, our message &quot;Hello, world.&quot; shows up in the browser. Notice that we also see some different output in the console:</p>
+<pre class="language-"><code>1/1/2016 12:30:15 PM   Trace   Scanning resources for routes...
+1/1/2016 12:30:15 PM   Trace   Generating routes for assembly GrapevineConsole
+1/1/2016 12:30:15 PM   Trace   Generating routes from type TestResource
+1/1/2016 12:30:15 PM   Trace   Generated route ALL  &gt; GrapevineConsole.TestResource.HelloWorld
+1/1/2016 12:30:17 PM   Trace   Listening: http://localhost:1234/
+1/1/2016 12:31:00 PM   Info    Routing Request  : 27ebe73f0fe5 - GET / has 1 routes
+1/1/2016 12:31:00 PM   Trace   Route Invoked    : 27ebe73f0fe5 - 1/1 GrapevineConsole.TestResource.HelloWorld
+1/1/2016 12:31:00 PM   Trace   Routing Complete : 27ebe73f0fe5 - 1 of 1 routes invoked
+</code></pre><p>And now we can see that a route was registered, and a request sent to the server was routed to the route, which then responded to it.</p>
+<p>Let&apos;s define another route now, specifying the <code>HttpMethod</code> and <code>PathInfo</code> on the route, and see how they interact together.</p>
+<pre class="language-"><code class="lang-csharp"><span class="token punctuation">[</span>RestResource<span class="token punctuation">]</span>
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">TestResource</span>
+<span class="token punctuation">{</span>
+    <span class="token punctuation">[</span><span class="token function">RestRoute</span><span class="token punctuation">(</span>HttpMethod <span class="token operator">=</span> HttpMethod<span class="token punctuation">.</span>GET<span class="token punctuation">,</span> PathInfo <span class="token operator">=</span> <span class="token string">&quot;/repeat&quot;</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+    <span class="token keyword">public</span> IHttpContext <span class="token function">RepeatMe</span><span class="token punctuation">(</span>IHttpContext context<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token keyword">var</span> word <span class="token operator">=</span> context<span class="token punctuation">.</span>Request<span class="token punctuation">.</span>QueryString<span class="token punctuation">[</span><span class="token string">&quot;word&quot;</span><span class="token punctuation">]</span> <span class="token operator">?</span><span class="token operator">?</span> <span class="token string">&quot;what?&quot;</span><span class="token punctuation">;</span>
+        context<span class="token punctuation">.</span>Response<span class="token punctuation">.</span><span class="token function">SendResponse</span><span class="token punctuation">(</span>word<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> context<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token punctuation">[</span>RestRoute<span class="token punctuation">]</span>
+    <span class="token keyword">public</span> IHttpContext <span class="token function">HelloWorld</span><span class="token punctuation">(</span>IHttpContext context<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        context<span class="token punctuation">.</span>Response<span class="token punctuation">.</span><span class="token function">SendResponse</span><span class="token punctuation">(</span><span class="token string">&quot;Hello, world.&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> context<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>Okay, lets run this and take a look at our console output. The first thing you should notice is that both routes were registered, but the new route was registered first. That&apos;s because it shows up first in the class itself. You should also get a better idea of what the pattern looks like when a route gets registered; namely <code>[HttpMethod] [PathInfo] &gt; [MethodToExecute]</code>.</p>
+<p>The word <code>ALL</code> in the registration for our <code>HelloWorld</code> method means that - since we didn&apos;t specify which http method this route should handle - it will respond to routes with all http methods. The extra space where the <code>PathInfo</code> should be indicates that it will respond to requests from any path info. Compare that to the registration of the <code>RepeatMe</code> method, which will only respond to <code>GET</code> requests sent to <code>/repeat</code>.</p>
+<pre class="language-"><code>1/1/2016 12:30:15 PM   Trace   Scanning resources for routes...
+1/1/2016 12:30:15 PM   Trace   Generating routes for assembly GrapevineConsole
+1/1/2016 12:30:15 PM   Trace   Generating routes from type TestResource
+1/1/2016 12:30:15 PM   Trace   Generated route GET /repeat &gt; GrapevineConsole.TestResource.RepeatMe
+1/1/2016 12:30:15 PM   Trace   Generated route ALL  &gt; GrapevineConsole.TestResource.HelloWorld
+1/1/2016 12:30:17 PM   Trace   Listening: http://localhost:1234/
+</code></pre><p>Open your browser again, and first go to <a href="http://localhost:1234/repeat?word=parrot" target="_blank">http://localhost:1234/repeat?word=parrot</a> and see the word &quot;parrot&quot; show up in the browser. Next go to <a href="http://localhost:1234" target="_blank">http://localhost:1234</a> and see &quot;Hello, world.&quot; again. Then go back to the console window and see what has shown up there as a result of those requests.</p>
+<pre class="language-"><code>1/1/2016 12:30:20 PM   Info    Routing Request  : 0b310261437c - GET /repeat has 2 routes
+1/1/2016 12:30:20 PM   Trace   Route Invoked    : 0b310261437c - 1/2 GrapevineConsole.TestResource.RepeatMe
+1/1/2016 12:30:20 PM   Trace   Routing Complete : 0b310261437c - 1 of 2 routes invoked
+1/1/2016 12:30:25 PM   Info    Routing Request  : 095038b0deed - GET / has 1 routes
+1/1/2016 12:30:25 PM   Trace   Route Invoked    : 095038b0deed - 1/1 GrapevineConsole.TestResource.HelloWorld
+1/1/2016 12:30:25 PM   Trace   Routing Complete : 095038b0deed - 1 of 1 routes invoked
+</code></pre><p>So, for each request we have a set of outputs. The <em>Routing Request</em> message is generated when the request is received by the router. In addition to the http method and path info, it tells us how many matching routes were found. The <em>Route Invoked</em> message is generated when a specific route has been invoked, and the <em>Routing Complete</em> message indicates that the router has finished invoking routes for a given request.</p>
+<p>Let me first draw your attention to the string of numbers and letters between the <code>:</code> and the <code>-</code> on each message. Because requests are handled in parallel on different threads, this unique identifier is used to keep track of which messages belong to the same request.</p>
+<p>Next, did you notice how it tells us that two routes were discovered for <code>GET /repeat</code>, but only one was executed? What&apos;s up with that?</p>
+<h1 id="responding-to-requests">Responding To Requests</h1>
+<p>Routes are invoked on an incoming request until one of the routes responds to the request. By default, routing stops and subsequent routes are not invoked. Let&apos;s take advantage of that behaviour in this next example to execute several methods in a specific order.</p>
+<p>Let&apos;s replace the <code>RepeatMe</code> method with three new methods, <code>MeFirst</code>, <code>MeSecond</code> and <code>MeThird</code>, in that order, as shown below.</p>
+<pre class="language-"><code class="lang-csharp"><span class="token punctuation">[</span>RestResource<span class="token punctuation">]</span>
+<span class="token keyword">public</span> <span class="token keyword">class</span> <span class="token class-name">TestResource</span>
+<span class="token punctuation">{</span>
+    <span class="token punctuation">[</span><span class="token function">RestRoute</span><span class="token punctuation">(</span>HttpMethod <span class="token operator">=</span> HttpMethod<span class="token punctuation">.</span>GET<span class="token punctuation">,</span> PathInfo <span class="token operator">=</span> <span class="token string">&quot;/inorder&quot;</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+    <span class="token keyword">public</span> IHttpContext <span class="token function">MeFirst</span><span class="token punctuation">(</span>IHttpContext context<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> context<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token punctuation">[</span><span class="token function">RestRoute</span><span class="token punctuation">(</span>HttpMethod <span class="token operator">=</span> HttpMethod<span class="token punctuation">.</span>GET<span class="token punctuation">,</span> PathInfo <span class="token operator">=</span> <span class="token string">&quot;/inorder&quot;</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+    <span class="token keyword">public</span> IHttpContext <span class="token function">MeSecond</span><span class="token punctuation">(</span>IHttpContext context<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> context<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token punctuation">[</span><span class="token function">RestRoute</span><span class="token punctuation">(</span>HttpMethod <span class="token operator">=</span> HttpMethod<span class="token punctuation">.</span>GET<span class="token punctuation">,</span> PathInfo <span class="token operator">=</span> <span class="token string">&quot;/inorder&quot;</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+    <span class="token keyword">public</span> IHttpContext <span class="token function">MeThird</span><span class="token punctuation">(</span>IHttpContext context<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> context<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token punctuation">[</span>RestRoute<span class="token punctuation">]</span>
+    <span class="token keyword">public</span> IHttpContext <span class="token function">HelloWorld</span><span class="token punctuation">(</span>IHttpContext context<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        context<span class="token punctuation">.</span>Response<span class="token punctuation">.</span><span class="token function">SendResponse</span><span class="token punctuation">(</span><span class="token string">&quot;Hello, world.&quot;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> context<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>After starting our server and going to <a href="http://localhost:1234/inorder" target="_blank">http://localhost:1234/inorder</a>, we can take a look at the messages generated in the console.</p>
+<pre class="language-"><code>1/1/2016 12:30:15 PM   Info    Routing Request  : b194febe36f5 - GET /inorder has 4 routes
+1/1/2016 12:30:15 PM   Trace   Route Invoked    : b194febe36f5 - 1/4 GrapevineConsole.TestResource.MeFirst
+1/1/2016 12:30:15 PM   Trace   Route Invoked    : b194febe36f5 - 2/4 GrapevineConsole.TestResource.MeSecond
+1/1/2016 12:30:15 PM   Trace   Route Invoked    : b194febe36f5 - 3/4 GrapevineConsole.TestResource.MeThird
+1/1/2016 12:30:15 PM   Trace   Route Invoked    : b194febe36f5 - 4/4 GrapevineConsole.TestResource.HelloWorld
+1/1/2016 12:30:15 PM   Trace   Routing Complete : b194febe36f5 - 4 of 4 routes invoked
+</code></pre><p>Notice that all four routes were invoked until one of them - HelloWorld - responded to the request.</p>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="./" class="navigation navigation-prev navigation-unique" aria-label="Previous page: Introduction">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Getting Started","level":"1.2","depth":1,"previous":{"title":"Introduction","level":"1.1","depth":1,"path":"README.md","ref":"README.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-highlight","prism","prism-themes"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"prism":{"css":["prismjs/themes/prism-okaidia.css"]},"prism-themes":{},"livereload":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Scott Offen","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Grapevine API Documentation","language":"en","gitbook":"*","description":"The decription of my book."},"file":{"path":"getting-started.md","mtime":"2017-03-31T23:29:44.246Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-03-31T23:32:22.991Z"},"basePath":".","book":{"language":"en"}});
+        });
+    </script>
+</div>
+
+        
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-livereload/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+
