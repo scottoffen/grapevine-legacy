@@ -1,0 +1,353 @@
+
+<!DOCTYPE HTML>
+<html lang="en" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>On Using HttpListener · Grapevine API Documentation</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.2">
+        <meta name="author" content="Scott Offen">
+        
+        
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-prism/prism-okaidia.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="faqs.html" />
+    
+    
+    <link rel="prev" href="getting-started.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        <li class="header">Grapevine 4</li>
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="getting-started.html">
+            
+                <a href="getting-started.html">
+            
+                    
+                    Getting Started
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.3" data-path="using-httplistener.html">
+            
+                <a href="using-httplistener.html">
+            
+                    
+                    On Using HttpListener
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="divider"></li>
+        
+        
+    
+        <li class="chapter " data-level="2.1" data-path="faqs.html">
+            
+                <a href="faqs.html">
+            
+                    
+                    FAQs
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="." >On Using HttpListener</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="on-using-httplistener">On Using HttpListener</h1>
+<p>The current implementation of Grapevine relies on the features exposed by <a href="https://msdn.microsoft.com/en-us/library/system.net.httplistener%28v=vs.110%29.aspx" target="_blank"><code>System.Net.HttpListener</code></a>. As such, being familiar with its usage and documentation will help resolve many questions you may encounter when using Grapevine. This document outlines the most common and problematic issues reported when using <code>HttpListener</code> and, by extension, Grapevine.</p>
+<ul>
+<li><a href="#access-denied">Access Denied</a></li>
+<li><a href="#port-in-use">The Process Cannot Access The File</a></li>
+<li><a href="#open-firewall">Connecting From Another Computer</a></li>
+<li><a href="#set-up-ssl">Setting Up SSL</a></li>
+</ul>
+<h2 id="access-denied">Access Denied </h2>
+<p>When you try to run your server for the first time, you might see an <code>Access Denied</code> exception occur. While annoying, this is rather easy to overcome. If you want to use HTTP.SYS to listen on a URI, you either need administrative privileges or an administrator that reserves the URI for normal users.</p>
+<h3 id="run-as-administrator">Run As Administrator</h3>
+<p>For development purposes, assuming you are an administrator on your Widows instance, you can simply run Visual Studio as administrator. Likewise, you can run the Windows command line as administrator if you want to test it outside of Visual Studio.</p>
+<h3 id="configure-namespace-reservations">Configure Namespace Reservations</h3>
+<p>For obvious reasons, counting on your application running as administrator in production is unwise. In these instances, you&apos;ll want to configure a namespace reservation.</p>
+<p>This reservation can be made by using the <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/cc307236%28v=vs.85%29.aspx" target="_blank"><code>netsh</code></a> utility.</p>
+<pre class="language-"><code>$ netsh http add urlacl url=http://+:1234/ user=DOMAIN\user
+</code></pre><p>This can be done programatically, but the implementation is outside the scope of this document. It&apos;s important that the value of the <code>url</code> argument is an <em>exact</em> match, or the exception will still be thrown.</p>
+<pre class="language-"><code class="lang-csharp">server<span class="token punctuation">.</span>Host <span class="token operator">=</span> <span class="token string">&quot;+&quot;</span><span class="token punctuation">;</span>
+server<span class="token punctuation">.</span>Port <span class="token operator">=</span> <span class="token string">&quot;1234&quot;</span><span class="token punctuation">;</span>
+</code></pre>
+<p>See the documentation for the <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/cc307223%28v=vs.85%29.aspx" target="_blank"><code>add urlacl</code></a> for a description of the parameters.</p>
+<blockquote>
+<p>This documentation does not cover Windows operating systems earlier than Vista. For help with XP or Server 2003, see the documentation for <a href="https://technet.microsoft.com/en-us/library/99a5b6e9-8654-4802-8c9a-89f1c645faba" target="_blank">httpcfg</a>.</p>
+</blockquote>
+<h2 id="port-in-use">The process cannot access the file </h2>
+<p>This exception can be puzzling because it isn&apos;t immediately apparent what the problem actually is. This actually means that there is already an application bound to the same port Grapevine is trying to use. Change the port your application is using to an open port and this exception goes away.</p>
+<p>You can use the built-in <code>PortFinder</code> class to help with this.</p>
+<pre class="language-"><code class="lang-csharp"><span class="token comment" spellcheck="true">// Assigns the next open port, which is commonly &quot;1&quot;</span>
+server<span class="token punctuation">.</span>Port <span class="token operator">=</span> PortFinder<span class="token punctuation">.</span><span class="token function">FindNextLocalOpenPort</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token comment" spellcheck="true">// Assigns the next open port starting at the integer specified (inclusive)</span>
+server<span class="token punctuation">.</span>Port <span class="token operator">=</span> PortFinder<span class="token punctuation">.</span><span class="token function">FindNextLocalOpenPort</span><span class="token punctuation">(</span><span class="token number">1234</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<p>If you are interested in seeing what ports are in use, you can the Windows command line utility <a href="https://technet.microsoft.com/en-us/library/bb490947.aspx" target="_blank">netstat</a>.</p>
+<pre class="language-"><code>$ netstat -a -b -n
+</code></pre><p>You can also use <a href="http://www.techrepublic.com/blog/windows-and-office/learn-how-to-use-the-windows-7-resource-monitor-for-effective-troubleshooting/" target="_blank"><strong>Resource Monitor</strong></a>, the the native Windows GUI by running <code>resmon</code>.</p>
+<h2 id="open-firewall">Connecting from another computer </h2>
+<p>If you want to be able to reach your Grapevine server from another computer, you will need to open a port in your Windows firewall. The firewall blocks all incoming communications unless you open a port in the Windows firewall to let other computers communicate with your computer.</p>
+<blockquote>
+<p>Opening ports in your firewall can leave your system exposed to malicious attacks. Be sure to understand firewall systems before opening ports.
+Consult the documentation specific to your firewall software.</p>
+</blockquote>
+<p><strong>To open a port in the Windows 7 Firewall</strong></p>
+<ol>
+<li><p>On the Start menu, click <strong>Control Panel</strong></p>
+</li>
+<li><p>Click on the <strong>System and Security</strong> category, then <strong>Windows Firewall</strong>.
+<em>If you are not viewing by category, you can simply click on the <strong>Window Firewall</strong> item.</em></p>
+</li>
+<li><p>Click on the <strong>Advanced Settings</strong> link on the left hand side.
+<em>This will open the Windows Firewall with Advanced Security Management Console application.</em></p>
+</li>
+<li><p>Click on <strong>Inbound Rules</strong> on the left hand menu. Under the Actions on the right hand side, click on <strong>New Rule</strong>.
+<em>This opens the New Inbound Rule Wizard.</em></p>
+</li>
+<li><p>Select the <strong>Port</strong> option and click <strong>Next</strong>.</p>
+</li>
+<li><p>Select <strong>TCP</strong> and <strong>Specific local ports</strong>, then enter a comma-separated list of port numbers you want to open and click <strong>Next</strong>.</p>
+</li>
+<li><p>Select <strong>Allow the connection</strong> and click <strong>Next</strong>.</p>
+</li>
+<li><p>Check the boxes next to the desired network types and click <strong>Next</strong>.</p>
+</li>
+<li><p>Enter a name for your rule - and optionally a description - and click <strong>Finish</strong>.</p>
+</li>
+</ol>
+<p>Your inbound rule should now be displayed on the Inbound Rules list. To remove this rule, simply delete it from the list when you are done.</p>
+<h2 id="set-up-ssl">Setting up SSL </h2>
+<p>Setting up SSL (so that you can use the HTTPS protocol) depends greatly on which certificate provide you choose to use. On the code side, it&apos;s pretty straight forward:</p>
+<pre class="language-"><code class="lang-csharp">server<span class="token punctuation">.</span>UseHttps <span class="token operator">=</span> <span class="token keyword">true</span><span class="token punctuation">;</span>
+</code></pre>
+<p>Beyond that, I&apos;m going to refer you to a great <a href="http://stackoverflow.com/questions/11403333/httplistener-with-https-support" target="_blank">post on StackOverflow for <strong>setting up HTTPS support for HttpListener</strong></a>. There are examples there for using <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/aa386968%28v=vs.85%29.aspx" target="_blank"><strong>MakeCert</strong></a> or <a href="https://www.openssl.org/" target="_blank"><strong>OpenSSL</strong></a> or <a href="https://letsencrypt.org/" target="_blank"><strong>Let&apos;s Encrypt</strong></a>, along with lots of great links and research. I&apos;m not going to reproduce all of that here right now, but maybe in the future someone can contribute some more detailed instruction specific to Grapevine.</p>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="getting-started.html" class="navigation navigation-prev " aria-label="Previous page: Getting Started">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="faqs.html" class="navigation navigation-next " aria-label="Next page: FAQs">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"On Using HttpListener","level":"1.3","depth":1,"next":{"title":"FAQs","level":"2.1","depth":1,"path":"faqs.md","ref":"faqs.md","articles":[]},"previous":{"title":"Getting Started","level":"1.2","depth":1,"path":"getting-started.md","ref":"getting-started.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-highlight","prism","prism-themes"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"prism":{"css":["prismjs/themes/prism-okaidia.css"]},"prism-themes":{},"livereload":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Scott Offen","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Grapevine API Documentation","language":"en","gitbook":"*","description":"The decription of my book."},"file":{"path":"using-httplistener.md","mtime":"2017-04-04T23:01:37.595Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-04-04T23:01:44.105Z"},"basePath":".","book":{"language":"en"}});
+        });
+    </script>
+</div>
+
+        
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-livereload/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+
