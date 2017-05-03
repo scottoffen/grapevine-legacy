@@ -296,9 +296,9 @@ namespace Grapevine.Server
             }
         }
 
-        public IRestServer LogToConsole()
+        public IRestServer LogToConsole(LogLevel level = LogLevel.Trace)
         {
-            Logger = new ConsoleLogger();
+            Logger = new ConsoleLogger(level);
             return this;
         }
 
