@@ -148,6 +148,7 @@ namespace Grapevine.Server
                     }
                 }
 
+                context.Response.ContentType = ContentType.DEFAULT.FromExtension(filepath);
                 context.Response.SendResponse(new FileStream(filepath, FileMode.Open));
             }
 
