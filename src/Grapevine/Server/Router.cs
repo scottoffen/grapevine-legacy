@@ -306,7 +306,6 @@ namespace Grapevine.Server
         #endregion
 
         protected internal readonly IList<IRoute> RegisteredRoutes;
-        protected internal ConcurrentDictionary<string, IList<IRoute>> RouteCache;
 
         public event RoutingEventHandler AfterRouting;
         public event RoutingEventHandler BeforeRouting;
@@ -322,7 +321,6 @@ namespace Grapevine.Server
         public Router()
         {
             RegisteredRoutes = new List<IRoute>();
-            RouteCache = new ConcurrentDictionary<string, IList<IRoute>>();
             Logger = NullLogger.GetInstance();
             Scanner = new RouteScanner();
             Scope = string.Empty;
@@ -598,8 +596,7 @@ namespace Grapevine.Server
 
         public IList<IRoute> RoutesFor(IHttpContext context)
         {
-            var key = $"{context.Request.HttpMethod}:{context.Request.PathInfo}";
-            return RouteCache.GetOrAdd(key, RegisteredRoutes.Where(r => r.Matches(context) && r.Enabled).ToList());
+            return RegisteredRoutes.Where(r => r.Matches(context) && r.Enabled).ToList();
         }
 
         /// <summary>
@@ -634,7 +631,6 @@ namespace Grapevine.Server
         {
             if (route.Function == null) throw new ArgumentNullException(nameof(route));
             if (!RegisteredRoutes.Contains(route)) RegisteredRoutes.Add(route);
-            if (!RouteCache.IsEmpty) RouteCache.Clear();
         }
 
         /// <summary>

@@ -637,24 +637,6 @@ namespace Grapevine.Tests.Server
             }
         }
 
-        public class AppendRoutingTableMethod
-        {
-            [Fact]
-            public void ClearsRouteCacheWhenCacheIsNotEmpty()
-            {
-                var router = new Router().Import<RouterToImport>() as Router;
-                var context = Mocks.HttpContext(new Dictionary<string, object> { { "HttpMethod", HttpMethod.POST }, { "PathInfo", "/user" } });
-
-                router.ShouldNotBeNull();
-                router.RoutesFor(context);
-                router.RouteCache.ShouldNotBeEmpty();
-
-                router.AppendRoutingTable(new Route(ctx => ctx));
-
-                router.RouteCache.ShouldBeEmpty();
-            }
-        }
-
         public class RegisterMethod
         {
             [Fact]
@@ -1111,22 +1093,6 @@ namespace Grapevine.Tests.Server
 
                 router.RoutingTable.Count.ShouldBe(8);
                 routes.Count.ShouldBe(1);
-            }
-
-            [Fact]
-            public void CachesRoutesForRequest()
-            {
-                var router = new Router().Import<RouterToImport>() as Router;
-                var context = Mocks.HttpContext(new Dictionary<string, object> { { "HttpMethod", HttpMethod.POST }, { "PathInfo", "/user" } });
-
-                router.ShouldNotBeNull();
-                router.RouteCache.ShouldBeEmpty();
-
-                var routes = router.RoutesFor(context);
-
-                router.RoutingTable.Count.ShouldBe(8);
-                routes.Count.ShouldBe(1);
-                router.RouteCache.ShouldNotBeEmpty();
             }
         }
 
