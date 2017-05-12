@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using Grapevine.Exceptions.Server;
 using Grapevine.Interfaces.Server;
@@ -9,6 +10,7 @@ using Grapevine.Interfaces.Shared;
 using Grapevine.Server.Attributes;
 using Grapevine.Shared;
 using Grapevine.Shared.Loggers;
+using HttpStatusCode = Grapevine.Shared.HttpStatusCode;
 
 namespace Grapevine.Server
 {
@@ -584,6 +586,13 @@ namespace Grapevine.Server
                     if (ContinueRoutingAfterResponseSent) continue;
                     if (context.WasRespondedTo) break;
                 }
+            }
+            catch (HttpListenerException e)
+            {
+                var msg = e.NativeErrorCode == 64
+                    ? "Connection aborted by client"
+                    : "An error occured while attempting to respond to the request";
+                Logger.Error(msg, e);
             }
             finally
             {
