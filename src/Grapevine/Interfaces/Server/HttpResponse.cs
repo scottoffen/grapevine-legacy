@@ -295,10 +295,16 @@ namespace Grapevine.Interfaces.Server
                 Response.Headers["Content-Encoding"] = "gzip";
             }
 
-            Response.ContentLength64 = contents.Length;
-            Response.OutputStream.Write(contents, 0, contents.Length);
-            Response.OutputStream.Close();
-            Advanced.Close();
+            try
+            {
+                Response.ContentLength64 = contents.Length;
+                Response.OutputStream.Write(contents, 0, contents.Length);
+            }
+            finally
+            {
+                Response.OutputStream.Close();
+                Advanced.Close();
+            }
         }
     }
 
