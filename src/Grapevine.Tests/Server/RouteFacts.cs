@@ -804,6 +804,11 @@ namespace Grapevine.Tests.Server
         {
             throw new System.NotImplementedException();
         }
+
+        public IRoute MatchOn(string header, Regex pattern)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public static class RouteExtensions
