@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>On Using HttpListener · Grapevine API Documentation</title>
+        <title>Notes On Using HttpListener · Grapevine API Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.2">
@@ -57,10 +57,8 @@
     <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="faqs.html" />
     
-    
-    <link rel="prev" href="getting-started.html" />
+    <link rel="prev" href="managing-rest-server.html" />
     
 
     </head>
@@ -104,12 +102,19 @@
             
         </li>
     
-        <li class="chapter " data-level="1.2" data-path="getting-started.html">
+
+    
+        
+        <li class="header">Rest Server</li>
+        
+        
+    
+        <li class="chapter " data-level="2.1" data-path="overview.html">
             
-                <a href="getting-started.html">
+                <a href="overview.html">
             
                     
-                    Getting Started
+                    Rest Server Overview
             
                 </a>
             
@@ -117,14 +122,99 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.3" data-path="using-httplistener.html">
+        <li class="chapter " data-level="2.2" data-path="getting-started.html">
+            
+                <a href="getting-started.html">
+            
+                    
+                    Getting Started with Grapevine
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.3" data-path="working-with-httpcontext.html">
+            
+                <a href="working-with-httpcontext.html">
+            
+                    
+                    Working With HttpContext
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.4" data-path="route-creation-registration.html">
+            
+                <a href="route-creation-registration.html">
+            
+                    
+                    Creating and Registering Routes
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.5" data-path="routing-lifecycle.html">
+            
+                <a href="routing-lifecycle.html">
+            
+                    
+                    The Request Routing Lifecycle
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.6" data-path="managing-rest-server.html">
+            
+                <a href="managing-rest-server.html">
+            
+                    
+                    Managing Your Rest Server 
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="2.7" data-path="using-httplistener.html">
             
                 <a href="using-httplistener.html">
             
                     
-                    On Using HttpListener
+                    Notes On Using HttpListener
             
                 </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Rest Client</li>
+        
+        
+    
+        <li class="chapter " data-level="3.1" >
+            
+                <span>
+            
+                    
+                    Documentation TBD
+            
+                </span>
             
 
             
@@ -137,7 +227,7 @@
         
         
     
-        <li class="chapter " data-level="2.1" data-path="faqs.html">
+        <li class="chapter " data-level="4.1" data-path="faqs.html">
             
                 <a href="faqs.html">
             
@@ -180,7 +270,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >On Using HttpListener</a>
+        <a href="." >Notes On Using HttpListener</a>
     </h1>
 </div>
 
@@ -195,7 +285,7 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="on-using-httplistener">On Using HttpListener</h1>
+                                <h1 id="notes-on-using-httplistener">Notes On Using HttpListener</h1>
 <p>The current implementation of Grapevine relies on the features exposed by <a href="https://msdn.microsoft.com/en-us/library/system.net.httplistener%28v=vs.110%29.aspx" target="_blank"><code>System.Net.HttpListener</code></a>. As such, being familiar with its usage and documentation will help resolve many questions you may encounter when using Grapevine. This document outlines the most common and problematic issues reported when using <code>HttpListener</code> and, by extension, Grapevine.</p>
 <ul>
 <li><a href="#access-denied">Access Denied</a></li>
@@ -294,14 +384,10 @@ Consult the documentation specific to your firewall software.</p>
 
             
                 
-                <a href="getting-started.html" class="navigation navigation-prev " aria-label="Previous page: Getting Started">
+                <a href="managing-rest-server.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: Managing Your Rest Server ">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
-                
-                <a href="faqs.html" class="navigation navigation-next " aria-label="Next page: FAQs">
-                    <i class="fa fa-angle-right"></i>
-                </a>
                 
             
         
@@ -310,7 +396,7 @@ Consult the documentation specific to your firewall software.</p>
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"On Using HttpListener","level":"1.3","depth":1,"next":{"title":"FAQs","level":"2.1","depth":1,"path":"faqs.md","ref":"faqs.md","articles":[]},"previous":{"title":"Getting Started","level":"1.2","depth":1,"path":"getting-started.md","ref":"getting-started.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-highlight","prism","prism-themes","ga"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"prism":{"css":["prismjs/themes/prism-okaidia.css"]},"livereload":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"prism-themes":{},"ga":{"configuration":"auto","token":"UA-35821423-3"},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Scott Offen","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Grapevine API Documentation","language":"en","gitbook":"*","description":"The decription of my book."},"file":{"path":"using-httplistener.md","mtime":"2017-04-04T23:01:37.595Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-04-07T22:14:13.316Z"},"basePath":".","book":{"language":"en"}});
+            gitbook.page.hasChanged({"page":{"title":"Notes On Using HttpListener","level":"2.7","depth":1,"next":{"title":"Documentation TBD","level":"3.1","depth":1,"ref":"","articles":[]},"previous":{"title":"Managing Your Rest Server ","level":"2.6","depth":1,"path":"managing-rest-server.md","ref":"managing-rest-server.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-highlight","prism","prism-themes","ga"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"prism":{"css":["prismjs/themes/prism-okaidia.css"]},"livereload":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"prism-themes":{},"ga":{"configuration":"auto","token":"UA-35821423-3"},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Scott Offen","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Grapevine API Documentation","language":"en","gitbook":"*","description":"The decription of my book."},"file":{"path":"using-httplistener.md","mtime":"2017-07-21T22:44:18.390Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-07-21T21:29:15.709Z"},"basePath":".","book":{"language":"en"}});
         });
     </script>
 </div>

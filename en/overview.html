@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>FAQs · Grapevine API Documentation</title>
+        <title>Rest Server Overview · Grapevine API Documentation</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.2">
@@ -57,6 +57,10 @@
     <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
 
     
+    <link rel="next" href="getting-started.html" />
+    
+    
+    <link rel="prev" href="./" />
     
 
     </head>
@@ -107,7 +111,7 @@
         
         
     
-        <li class="chapter " data-level="2.1" data-path="overview.html">
+        <li class="chapter active" data-level="2.1" data-path="overview.html">
             
                 <a href="overview.html">
             
@@ -225,7 +229,7 @@
         
         
     
-        <li class="chapter active" data-level="4.1" data-path="faqs.html">
+        <li class="chapter " data-level="4.1" data-path="faqs.html">
             
                 <a href="faqs.html">
             
@@ -268,7 +272,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >FAQs</a>
+        <a href="." >Rest Server Overview</a>
     </h1>
 </div>
 
@@ -283,9 +287,19 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="faqs">FAQs</h1>
-<p>This page addresses common questions and issues that arise when using Grapevine.</p>
-<hr>
+                                <h1 id="rest-server-overview">Rest Server Overview</h1>
+<h3 id="listen-route-and-respond">Listen, Route and Respond</h3>
+<p>The basic idea behind Grapevine is simple: listen for incoming http requests on a given host/port combination and route the requests to one or more methods (in your code) for processing. At least one of the methods should send a response back to the client.</p>
+<h3 id="working-with-ihttpcontext">Working With IHttpContext</h3>
+<p>Before anything else, one should understanding the <a href="">HttpContext</a> that gets generated from an incoming HTTP request and passed around. It encapsulates the clients incoming request, a response object for responding, a reference to the server that received the request and a collection of user-defined request-specific properties.</p>
+<h3 id="creating-and-registering-routes">Creating and Registering Routes</h3>
+<p>Now that we understand what a route will be operating on, we&apos;ll explore how to create routes and the three strategies - manual, autodiscovery and hybrid - available for registering our routes with the router.</p>
+<h3 id="the-request-routing-lifecycle">The Request Routing Lifecycle</h3>
+<p>With all the routes in place, we can discuss the journey an client request (encapsulated in <code>IHttpContext</code>) takes through the registered routes to produce a response for the client and how to set up event handlers to fire before and after each request.</p>
+<h3 id="managing-your-rest-server">Managing Your Rest Server</h3>
+<p>Finally we&apos;ll cover setting up and starting the actual rest server. We&apos;ll also include such intriguing topics as logging, clustering, public folders (for static content) and  event handlers for starting and stopping the server.</p>
+<h3 id="miscellaneous">Miscellaneous</h3>
+<p>We&apos;ll wrap it all up with a brief overview of some of the less prominent (but no less useful) bits such as the <code>HttpStatusCode</code>, <code>HttpMethod</code> and <code>ContentType</code> enums, the built-in port-finder and utilizing dynamic properties to maintain state between routes.</p>
 
                                 
                                 </section>
@@ -313,6 +327,14 @@
 
             
                 
+                <a href="./" class="navigation navigation-prev " aria-label="Previous page: Introduction">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="getting-started.html" class="navigation navigation-next " aria-label="Next page: Getting Started with Grapevine">
+                    <i class="fa fa-angle-right"></i>
+                </a>
                 
             
         
@@ -321,7 +343,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"FAQs","level":"4.1","depth":1,"previous":{"title":"Documentation TBD","level":"3.1","depth":1,"ref":"","articles":[]},"dir":"ltr"},"config":{"plugins":["-highlight","prism","prism-themes","ga"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"prism":{"css":["prismjs/themes/prism-okaidia.css"]},"livereload":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"prism-themes":{},"ga":{"configuration":"auto","token":"UA-35821423-3"},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Scott Offen","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Grapevine API Documentation","language":"en","gitbook":"*","description":"The decription of my book."},"file":{"path":"faqs.md","mtime":"2017-04-07T22:14:01.628Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-07-21T21:29:15.709Z"},"basePath":".","book":{"language":"en"}});
+            gitbook.page.hasChanged({"page":{"title":"Rest Server Overview","level":"2.1","depth":1,"next":{"title":"Getting Started with Grapevine","level":"2.2","depth":1,"path":"getting-started.md","ref":"getting-started.md","articles":[]},"previous":{"title":"Introduction","level":"1.1","depth":1,"path":"README.md","ref":"README.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-highlight","prism","prism-themes","ga"],"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"prism":{"css":["prismjs/themes/prism-okaidia.css"]},"livereload":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"prism-themes":{},"ga":{"configuration":"auto","token":"UA-35821423-3"},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"theme":"default","author":"Scott Offen","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"Grapevine API Documentation","language":"en","gitbook":"*","description":"The decription of my book."},"file":{"path":"overview.md","mtime":"2017-07-21T22:45:07.541Z","type":"markdown"},"gitbook":{"version":"3.2.2","time":"2017-07-21T21:29:15.709Z"},"basePath":".","book":{"language":"en"}});
         });
     </script>
 </div>
