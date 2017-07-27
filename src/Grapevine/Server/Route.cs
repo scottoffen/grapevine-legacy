@@ -263,7 +263,7 @@ namespace Grapevine.Server
             // Generates new instance every time
             return context =>
             {
-                var instance = Activator.CreateInstance(method.ReflectedType);
+                var instance = RestServer.CustomCreateInstance == null ? Activator.CreateInstance(method.ReflectedType) : RestServer.CustomCreateInstance(method.ReflectedType);
                 var disposed = false;
                 try
                 {

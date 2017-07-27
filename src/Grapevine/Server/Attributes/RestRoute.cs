@@ -74,8 +74,8 @@ namespace Grapevine.Server.Attributes
             // Can the method be invoked?
             if (!method.CanInvoke()) exceptions.Add(new InvalidRouteMethodException($"{method.Name} cannot be invoked"));
 
-            // Does the type have a parameterless constructor?
-            if (method.ReflectedType != null && !method.ReflectedType.HasParameterlessConstructor()) exceptions.Add(new InvalidRouteMethodException($"{method.Name} does not have a parameterless constructor"));
+            if (RestServer.CustomCreateInstance == null && method.ReflectedType != null && !method.ReflectedType.HasParameterlessConstructor())
+                exceptions.Add(new InvalidRouteMethodException($"{method.Name} does not have a parameterless constructor"));
 
             // Can not have a special name (getters and setters)
             if (method.IsSpecialName) exceptions.Add(new InvalidRouteMethodException($"{method.Name} may be treated in a special way by some compilers (such as property accessors and operator overloading methods)"));

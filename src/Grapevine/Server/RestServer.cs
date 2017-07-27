@@ -74,6 +74,8 @@ namespace Grapevine.Server
 
         public RestServer() : this(new ServerSettings()) { }
 
+        public static Func<Type, object> CustomCreateInstance;
+
         protected internal RestServer(IHttpListener listener) : this(new ServerSettings())
         {
             TestingMode = true;
