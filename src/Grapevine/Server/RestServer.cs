@@ -88,10 +88,10 @@ namespace Grapevine.Server
 
             options.CloneEventHandlers(this);
             Host = options.Host;
-            Logger = options.Logger;
             Port = options.Port;
             PublicFolders = options.PublicFolders;
             Router = options.Router;
+            Logger = options.Logger;
             UseHttps = options.UseHttps;
 
             /* Obsolete */
