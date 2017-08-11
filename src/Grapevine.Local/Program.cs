@@ -13,17 +13,13 @@ namespace Grapevine.Local
             using (var server = new RestServer())
             {
                 server.LogToConsole();
-                server.PublicFolder = new PublicFolder(@"C:\source\github\gv-gh-pages") {Prefix = "Grapevine"};
 
-                server.OnBeforeStart = () => Console.WriteLine("---------------> Starting Server");
-                server.OnAfterStart = () => Console.WriteLine($"<--------------- Server Started");
-
-                server.OnBeforeStop = () => Console.WriteLine("---------------> Stopping Server");
-                server.OnAfterStop = () =>
-                {
-                    Console.WriteLine("<--------------- Server Stopped");
-                    Console.ReadLine();
-                };
+                server.OnBeforeStart = () => server.Logger.Trace("Starting Server");
+                server.OnAfterStart = () => server.Logger.Trace("Server Started");
+                server.OnBeforeStop = () => server.Logger.Trace("Stopping Server");
+                server.OnAfterStop = () => server.Logger.Trace("Server Stopped");
+                server.Router.BeforeRouting += ctx => server.Logger.Debug("Before Routing!!");
+                server.Router.BeforeRouting += ctx => server.Logger.Debug("After Routing!!");
 
                 server.Start();
                 Console.ReadLine();
@@ -35,22 +31,10 @@ namespace Grapevine.Local
     [RestResource]
     public class TestResource
     {
-        [RestRoute(HttpMethod = HttpMethod.GET, PathInfo = "/inorder")]
-        public IHttpContext MeFirst(IHttpContext context)
+        [RestRoute(HttpMethod = HttpMethod.ALL, PathInfo = "^.*$")]
+        public IHttpContext LevelOne(IHttpContext context)
         {
-            return context;
-        }
-
-        [RestRoute(HttpMethod = HttpMethod.GET, PathInfo = "/inorder")]
-        public IHttpContext MeSecond(IHttpContext context)
-        {
-            return context;
-        }
-
-        [RestRoute(HttpMethod = HttpMethod.GET, PathInfo = "/inorder")]
-        public IHttpContext MeThird(IHttpContext context)
-        {
-            return context;
+            throw new Exception("Killing It!");
         }
 
         [RestRoute]

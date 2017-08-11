@@ -61,6 +61,11 @@ namespace Grapevine.Server
         bool ContinueRoutingAfterResponseSent { get; set; }
 
         /// <summary>
+        /// Gets or sets a value to indicate whether exception text, where available, should be sent in http responses
+        /// </summary>
+        bool SendExceptionMessages { get; set; }
+
+        /// <summary>
         /// Scan the assembly for routes based on inclusion and exclusion rules
         /// </summary>
         IRouteScanner Scanner { get; }
@@ -313,6 +318,7 @@ namespace Grapevine.Server
         public event RoutingEventHandler BeforeRouting;
 
         public bool ContinueRoutingAfterResponseSent { get; set; }
+        public bool SendExceptionMessages { get; set; } = true;
         public string Scope { get; }
         public IRouteScanner Scanner { get; protected internal set; }
         public IList<IRoute> RoutingTable => RegisteredRoutes.ToList().AsReadOnly();
@@ -550,17 +556,17 @@ namespace Grapevine.Server
 
                 if (e is NotFoundException)
                 {
-                    context.Response.SendResponse(HttpStatusCode.NotFound, e.Message);
+                    context.Response.SendResponse(HttpStatusCode.NotFound, SendExceptionMessages ? e.Message : null);
                     return;
                 }
 
                 if (e is NotImplementedException)
                 {
-                    context.Response.SendResponse(HttpStatusCode.NotImplemented, e.Message);
+                    context.Response.SendResponse(HttpStatusCode.NotImplemented, SendExceptionMessages ? e.Message : null);
                     return;
                 }
 
-                context.Response.SendResponse(HttpStatusCode.InternalServerError, e);
+                context.Response.SendResponse(HttpStatusCode.InternalServerError, SendExceptionMessages ? e : null);
             }
         }
 
@@ -578,13 +584,12 @@ namespace Grapevine.Server
 
                 foreach (var route in routing.Where(route => route.Enabled))
                 {
+                    if (context.WasRespondedTo && !ContinueRoutingAfterResponseSent) break;
+
                     routeCounter++;
                     route.Invoke(context);
 
                     Logger.RouteInvoked($"{context.Request.Id} - {routeCounter}/{totalRoutes} {route.Name}");
-
-                    if (ContinueRoutingAfterResponseSent) continue;
-                    if (context.WasRespondedTo) break;
                 }
             }
             catch (HttpListenerException e)

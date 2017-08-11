@@ -1142,6 +1142,7 @@ namespace Grapevine.Tests.Server
         public event RoutingEventHandler AfterRouting;
         public event RoutingEventHandler BeforeRouting;
         public bool ContinueRoutingAfterResponseSent { get; set; }
+        public bool SendExceptionMessages { get; set; }
         public IRouteScanner Scanner { get; }
         public IList<IRoute> RoutingTable { get; }
         public string Scope { get; }
