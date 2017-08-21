@@ -45,7 +45,7 @@ namespace Grapevine.Shared
             var pattern = new StringBuilder("^");
 
             pattern.Append(ParseForParams.IsMatch(pathinfo)
-                ? ParseForParams.Replace(pathinfo, "(.+)")
+                ? ParseForParams.Replace(pathinfo, "([^/]+)")
                 : pathinfo);
 
             if (!pathinfo.EndsWith("$")) pattern.Append("$");

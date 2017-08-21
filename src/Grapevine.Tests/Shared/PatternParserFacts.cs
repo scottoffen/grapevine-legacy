@@ -12,7 +12,7 @@ namespace Grapevine.Tests.Shared
             [Fact]
             public void ReturnsRegularExpressionFromPathInfoPattern()
             {
-                PatternParser.GenerateRegEx("/path/[param1]/[param2]").ToString().ShouldBe(@"^/path/(.+)/(.+)$");
+                PatternParser.GenerateRegEx("/path/[param1]/[param2]").ToString().ShouldBe(@"^/path/([^/]+)/([^/]+)$");
             }
 
             [Fact]

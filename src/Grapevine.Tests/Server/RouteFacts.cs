@@ -61,7 +61,7 @@ namespace Grapevine.Tests.Server
             {
                 var method = typeof(TestInvokeRoutes).GetMethod("ShouldThrowNoExceptions");
                 const string pathinfo = "/path/[param1]/[param2]";
-                const string pattern = "^/path/(.+)/(.+)$";
+                const string pattern = "^/path/([^/]+)/([^/]+)$";
 
                 var route = new Route(method, HttpMethod.GET, pathinfo);
 
@@ -128,7 +128,7 @@ namespace Grapevine.Tests.Server
             {
                 Func<IHttpContext, IHttpContext> function = context => context;
                 const string pathinfo = "/path/[param1]/[param2]";
-                const string pattern = "^/path/(.+)/(.+)$";
+                const string pattern = "^/path/([^/]+)/([^/]+)$";
 
                 var route = new Route(function, HttpMethod.GET, pathinfo);
 
