@@ -129,6 +129,14 @@ namespace Grapevine.Interfaces.Server
 
     public class HttpResponse : IHttpResponse
     {
+        private static string _server;
+
+        static HttpResponse()
+        {
+            var assembly = AppDomain.CurrentDomain.GetAssemblies().SingleOrDefault(a => a.GetName().Name == "Grapevine");
+            if (assembly != null) _server = $"{assembly.GetName().Name}/{assembly.GetName().Version}";
+        }
+
         private ContentType _contentType;
         private bool _parsedContentType;
 
@@ -282,6 +290,8 @@ namespace Grapevine.Interfaces.Server
 
         public void SendResponse(byte[] contents)
         {
+            if (_server != null) Headers["Server"] = _server;
+
             if (RequestHeaders.AllKeys.Contains("Accept-Encoding") && RequestHeaders["Accept-Encoding"].Contains("gzip") && contents.Length > 1024)
             {
                 using (var ms = new MemoryStream())
