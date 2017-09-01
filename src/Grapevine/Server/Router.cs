@@ -554,19 +554,11 @@ namespace Grapevine.Server
 
                 if (context.WasRespondedTo) return;
 
-                if (e is NotFoundException)
-                {
-                    context.Response.SendResponse(HttpStatusCode.NotFound, SendExceptionMessages ? e.Message : null);
-                    return;
-                }
+                var status = (context.Response.StatusCode == HttpStatusCode.Ok) ? HttpStatusCode.InternalServerError : context.Response.StatusCode;
+                if (e is NotFoundException) status = HttpStatusCode.NotFound;
+                if (e is NotImplementedException) status = HttpStatusCode.NotImplemented;
 
-                if (e is NotImplementedException)
-                {
-                    context.Response.SendResponse(HttpStatusCode.NotImplemented, SendExceptionMessages ? e.Message : null);
-                    return;
-                }
-
-                context.Response.SendResponse(HttpStatusCode.InternalServerError, SendExceptionMessages ? e : null);
+                context.Response.TrySendResponse(Logger, status, SendExceptionMessages ? e : null);
             }
         }
 

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Text;
 using Grapevine.Interfaces.Server;
+using Grapevine.Interfaces.Shared;
 using Grapevine.Shared;
 using HttpStatusCode = Grapevine.Shared.HttpStatusCode;
 
@@ -177,6 +177,18 @@ namespace Grapevine.Server
                 : stream.GetBinaryBytes();
 
             response.SendResponse(buffer);
+        }
+
+        public static void TrySendResponse(this IHttpResponse response, IGrapevineLogger logger, HttpStatusCode status, Exception e = null)
+        {
+            try
+            {
+                response.SendResponse(status, e);
+            }
+            catch (Exception ex)
+            {
+                logger.Log(new LogEvent { Exception = ex, Level = LogLevel.Error, Message = "Failed to send response" });
+            }
         }
     }
 }

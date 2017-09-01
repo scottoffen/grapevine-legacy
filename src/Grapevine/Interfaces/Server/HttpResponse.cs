@@ -310,10 +310,15 @@ namespace Grapevine.Interfaces.Server
             {
                 Response.ContentLength64 = contents.Length;
                 Response.OutputStream.Write(contents, 0, contents.Length);
+                Response.OutputStream.Close();
+            }
+            catch
+            {
+                Response.OutputStream.Dispose();
+                throw;
             }
             finally
             {
-                Response.OutputStream.Close();
                 Advanced.Close();
             }
         }
