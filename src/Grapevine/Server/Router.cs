@@ -554,7 +554,7 @@ namespace Grapevine.Server
 
                 if (context.WasRespondedTo) return;
 
-                var status = (context.Response.StatusCode == HttpStatusCode.Ok) ? HttpStatusCode.InternalServerError : context.Response.StatusCode;
+                var status = (context.Response.StatusCode == HttpStatusCode.Ok) ? context.Response.StatusCode : HttpStatusCode.InternalServerError;
                 if (e is NotFoundException) status = HttpStatusCode.NotFound;
                 if (e is NotImplementedException) status = HttpStatusCode.NotImplemented;
 
