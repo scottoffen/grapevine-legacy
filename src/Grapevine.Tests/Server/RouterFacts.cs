@@ -792,6 +792,18 @@ namespace Grapevine.Tests.Server
             }
 
             [Fact]
+            public void RegistersInstance()
+            {
+                var router = new Router();
+                router.RoutingTable.ShouldBeEmpty();
+
+                router.Register(new RoutesFromInstance(), "v2");
+
+                router.RoutingTable.Count.ShouldBe(1);
+                router.RoutingTable.First().PathInfo.ShouldContain("v2/api");
+            }
+
+            [Fact]
             public void RegistersAssembly()
             {
                 var router = new Router();
@@ -1267,6 +1279,11 @@ namespace Grapevine.Tests.Server
             throw new NotImplementedException();
         }
 
+        public IRouter Register<T>(T instance, string pathInfo = null) where T : class
+        {
+            throw new NotImplementedException();
+        }
+
         public IRouter Register(Assembly assembly)
         {
             throw new NotImplementedException();
@@ -1294,6 +1311,14 @@ namespace Grapevine.Tests.Server
     }
 
     public class MethodsToRegister
+    {
+        [RestRoute]
+        public IHttpContext Method(IHttpContext context) { return context; }
+    }
+
+    
+    [RestResource(BasePath = "/api")]
+    public class RoutesFromInstance
     {
         [RestRoute]
         public IHttpContext Method(IHttpContext context) { return context; }

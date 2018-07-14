@@ -108,9 +108,10 @@ namespace Grapevine.Server
         /// <param name="methodInfo"></param>
         /// <param name="httpMethod"></param>
         /// <param name="pathInfo"></param>
-        public Route(MethodInfo methodInfo, HttpMethod httpMethod, string pathInfo) : this(httpMethod, pathInfo)
+        /// <param name="methodHolderInstance"></param>
+        public Route(MethodInfo methodInfo, HttpMethod httpMethod, string pathInfo, object methodHolderInstance = null) : this(httpMethod, pathInfo)
         {
-            Function = ConvertMethodToFunc(methodInfo);
+            Function = ConvertMethodToFunc(methodInfo, methodHolderInstance);
             Name = $"{methodInfo.ReflectedType.FullName}.{methodInfo.Name}";
             Description = $"{HttpMethod} {PathInfo} > {Name}";
         }
@@ -249,8 +250,9 @@ namespace Grapevine.Server
         /// Returns a generic delegate for the given MethodInfo if it is rest route eligible
         /// </summary>
         /// <param name="method"></param>
+        /// <param name="instance"></param>
         /// <returns></returns>
-        public static Func<IHttpContext, IHttpContext> ConvertMethodToFunc(MethodInfo method)
+        public static Func<IHttpContext, IHttpContext> ConvertMethodToFunc(MethodInfo method, object instance = null)
         {
             method.IsRestRouteEligible(true); // throws an aggregate exception if the method is not eligible
 
@@ -263,7 +265,7 @@ namespace Grapevine.Server
             // Generates new instance every time
             return context =>
             {
-                var instance = Activator.CreateInstance(method.ReflectedType);
+                instance = instance ?? Activator.CreateInstance(method.ReflectedType);
                 var disposed = false;
                 try
                 {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -119,8 +119,17 @@ namespace Grapevine.Server
         /// </summary>
         /// <param name="method"></param>
         /// <param name="basePath"></param>
+        /// <param name="methodHolderInstance"></param>
         /// <returns>IList&lt;IRoute&gt;</returns>
-        IList<IRoute> ScanMethod(MethodInfo method, string basePath);
+        IList<IRoute> ScanMethod(MethodInfo method, string basePath, object methodHolderInstance = null);
+
+        /// <summary>
+        /// Generates a list of routes for all RestRoute attributed methods found in the class instance
+        /// </summary>
+        /// <param name="instance">an instance containing RestRoutes</param>
+        /// <param name="basePath"></param>
+        /// <returns>IList&lt;IRoute&gt;</returns>
+        IList<IRoute> ScanInstance<T>(T instance, string basePath = null) where T:class;
     }
 
     public sealed class RouteScanner : IRouteScanner
@@ -310,7 +319,7 @@ namespace Grapevine.Server
             return ScanMethod(method, string.Empty);
         }
 
-        public IList<IRoute> ScanMethod(MethodInfo method, string basePath)
+        public IList<IRoute> ScanMethod(MethodInfo method, string basePath, object methodHolderInstance = null)
         {
             var routes = new List<IRoute>();
             var basepath = SanitizeBasePath(basePath);
@@ -318,9 +327,24 @@ namespace Grapevine.Server
             foreach (var attribute in method.GetCustomAttributes(true).Where(a => a is RestRoute).Cast<RestRoute>())
             {
                 var pathinfo = GeneratePathInfo(attribute.PathInfo, basepath);
-                var route = new Route(method, attribute.HttpMethod, pathinfo);
+                var route = new Route(method, attribute.HttpMethod, pathinfo, methodHolderInstance);
                 Logger.Trace($"Generated route {route}");
                 routes.Add(route);
+            }
+
+            return routes;
+        }
+
+        public IList<IRoute> ScanInstance<T>(T instance, string basePath = null) where T : class
+        {
+            var routes = new List<IRoute>();
+
+            var type = instance.GetType();
+
+            var basepath = GenerateBasePath(basePath, type);
+            foreach (var method in type.GetMethods().Where(m => m.IsRestRoute()))
+            {
+                routes.AddRange(ScanMethod(method, basepath, instance));
             }
 
             return routes;
