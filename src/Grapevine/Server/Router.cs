@@ -276,7 +276,7 @@ namespace Grapevine.Server
         /// <param name="pathInfo">base path</param>
         /// <typeparam name="T"></typeparam>
         /// <returns>IRouter</returns>
-        IRouter Register<T>(T instance, string pathInfo = null) where T:class;
+        IRouter Register(object instance, string pathInfo = null); //where T:class;
 
         /// <summary>
         /// Adds all RestRoutes found in all RestResources in the specified assembly to the routing table
@@ -526,7 +526,7 @@ namespace Grapevine.Server
             return Register(typeof(T));
         }
 
-        public IRouter Register<T>(T instance, string pathInfo = null) where T:class
+        public IRouter Register(object instance, string pathInfo = null) //where T:class
         {
             AppendRoutingTable(Scanner.ScanInstance(instance, pathInfo));
             return this;
