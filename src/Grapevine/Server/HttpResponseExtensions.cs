@@ -45,7 +45,9 @@ namespace Grapevine.Server
         public static void SendResponse(this IHttpResponse response, HttpStatusCode statusCode, Exception exception)
         {
             response.StatusCode = statusCode;
-            response.SendResponse($"{exception.Message}{Environment.NewLine}<br>{Environment.NewLine}{exception.StackTrace}");
+            response.SendResponse(exception != null
+                ? $"{exception.Message}{Environment.NewLine}<br>{Environment.NewLine}{exception.StackTrace}"
+                : string.Empty);
         }
 
         /// <summary>
