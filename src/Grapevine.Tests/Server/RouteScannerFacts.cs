@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using Grapevine.Exceptions.Server;
 using Grapevine.Interfaces.Server;
+using Grapevine.Interfaces.Shared;
 using Grapevine.Server;
 using Grapevine.Server.Attributes;
 using Grapevine.Shared;
@@ -13,9 +13,97 @@ using Grapevine.TestAssembly;
 using Grapevine.Tests.Server.Attributes;
 using Shouldly;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Grapevine.Tests.Server
 {
+    public class XUnitLogger : IGrapevineLogger
+    {
+        private readonly ITestOutputHelper _output;
+
+        public XUnitLogger(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+        public LogLevel Level { get; }
+        public void Log(LogEvent evt)
+        {
+        }
+
+        public void Trace(object obj)
+        {
+        }
+
+        public void Trace(string message)
+        {
+        }
+
+        public void Trace(string message, Exception ex)
+        {
+            _output.WriteLine($"{message}\r\n{ex}");
+        }
+
+        public void Debug(object obj)
+        {
+        }
+
+        public void Debug(string message)
+        {
+        }
+
+        public void Debug(string message, Exception ex)
+        {
+        }
+
+        public void Info(object obj)
+        {
+        }
+
+        public void Info(string message)
+        {
+        }
+
+        public void Info(string message, Exception ex)
+        {
+        }
+
+        public void Warn(object obj)
+        {
+        }
+
+        public void Warn(string message)
+        {
+        }
+
+        public void Warn(string message, Exception ex)
+        {
+        }
+
+        public void Error(object obj)
+        {
+        }
+
+        public void Error(string message)
+        {
+        }
+
+        public void Error(string message, Exception ex)
+        {
+        }
+
+        public void Fatal(object obj)
+        {
+        }
+
+        public void Fatal(string message)
+        {
+        }
+
+        public void Fatal(string message, Exception ex)
+        {
+        }
+    }
+
     public class RouteScannerFacts
     {
         protected Assembly GetTestAssembly()
@@ -25,11 +113,19 @@ namespace Grapevine.Tests.Server
 
         public class ExcludeMethod
         {
+            private readonly ITestOutputHelper _helper;
+
+            public ExcludeMethod(ITestOutputHelper helper)
+            {
+                _helper = helper;
+            }
+
             [Fact]
             public void ExcludesAssemblies()
             {
                 var assembly = AppDomain.CurrentDomain.GetAssemblies().First();
                 var scanner = new RouteScanner();
+                scanner.Logger = new XUnitLogger(_helper);
                 scanner.ExcludedAssemblies().Count.ShouldBe(0);
 
                 scanner.Exclude(assembly);
@@ -42,6 +138,7 @@ namespace Grapevine.Tests.Server
             public void ExcludesGenericTypes()
             {
                 var scanner = new RouteScanner();
+                scanner.Logger = new XUnitLogger(_helper);
                 scanner.ExcludedTypes().Count.ShouldBe(0);
 
                 scanner.Exclude<Route>();
@@ -54,6 +151,7 @@ namespace Grapevine.Tests.Server
             public void ExcludesTypes()
             {
                 var scanner = new RouteScanner();
+                scanner.Logger = new XUnitLogger(_helper);
                 scanner.ExcludedTypes().Count.ShouldBe(0);
 
                 scanner.Exclude(typeof(Route));
@@ -62,11 +160,13 @@ namespace Grapevine.Tests.Server
                 scanner.ExcludedTypes()[0].ShouldBe(typeof(Route));
             }
 
+#if NET4
             [Fact]
             public void ExcludesNamespaces()
             {
                 const string ns = "Grapevine.Tests.Server";
                 var scanner = new RouteScanner();
+                scanner.Logger = new XUnitLogger(_helper);
                 scanner.ExcludedNamespaces().Count.ShouldBe(0);
 
                 scanner.Exclude(ns);
@@ -74,6 +174,78 @@ namespace Grapevine.Tests.Server
                 scanner.ExcludedNamespaces().Count.ShouldBe(1);
                 scanner.ExcludedNamespaces()[0].ShouldBe(ns);
             }
+    
+            [Fact]
+            public void SkipsDuplicateNamespaces()
+            {
+                const string ns1 = "Grapevine.Tests.Server";
+                const string ns2 = "Grapevine.Tests.Client";
+
+                var scanner = new RouteScanner();
+                scanner.Logger = new XUnitLogger(_helper);
+                scanner.ExcludedNamespaces().Count.ShouldBe(0);
+
+                scanner.Exclude(ns1);
+
+                scanner.ExcludedNamespaces().Count.ShouldBe(1);
+                scanner.ExcludedNamespaces()[0].ShouldBe(ns1);
+
+                scanner.Exclude(ns2);
+
+                scanner.ExcludedNamespaces().Count.ShouldBe(2);
+                scanner.ExcludedNamespaces()[0].ShouldBe(ns1);
+                scanner.ExcludedNamespaces()[1].ShouldBe(ns2);
+
+                scanner.Exclude(ns1);
+
+                scanner.ExcludedNamespaces().Count.ShouldBe(2);
+                scanner.ExcludedNamespaces()[0].ShouldBe(ns1);
+                scanner.ExcludedNamespaces()[1].ShouldBe(ns2);
+            }
+#endif
+#if NETCOREAPP
+            [Fact]
+            public void ExcludesNamespaces()
+            {
+                const string ns = "Grapevine.Tests.Server";
+                var scanner = new RouteScanner();
+                scanner.Logger = new XUnitLogger(_helper);
+                scanner.ExcludedNamespaces().Count.ShouldBe(1);
+
+                scanner.Exclude(ns);
+
+                scanner.ExcludedNamespaces().Count.ShouldBe(2);
+                scanner.ExcludedNamespaces()[1].ShouldBe(ns);
+            }
+
+            [Fact]
+            public void SkipsDuplicateNamespaces()
+            {
+                const string ns1 = "Grapevine.Tests.Server";
+                const string ns2 = "Grapevine.Tests.Client";
+
+                var scanner = new RouteScanner();
+                scanner.Logger = new XUnitLogger(_helper);
+                scanner.ExcludedNamespaces().Count.ShouldBe(1);
+
+                scanner.Exclude(ns1);
+
+                scanner.ExcludedNamespaces().Count.ShouldBe(2);
+                scanner.ExcludedNamespaces()[1].ShouldBe(ns1);
+
+                scanner.Exclude(ns2);
+
+                scanner.ExcludedNamespaces().Count.ShouldBe(3);
+                scanner.ExcludedNamespaces()[1].ShouldBe(ns1);
+                scanner.ExcludedNamespaces()[2].ShouldBe(ns2);
+
+                scanner.Exclude(ns1);
+
+                scanner.ExcludedNamespaces().Count.ShouldBe(3);
+                scanner.ExcludedNamespaces()[1].ShouldBe(ns1);
+                scanner.ExcludedNamespaces()[2].ShouldBe(ns2);
+            }
+#endif
 
             [Fact]
             public void SkipsDuplicateAssemblies()
@@ -83,6 +255,7 @@ namespace Grapevine.Tests.Server
                 var assembly2 = assemblies[1];
 
                 var scanner = new RouteScanner();
+                scanner.Logger = new XUnitLogger(_helper);
                 scanner.ExcludedAssemblies().Count.ShouldBe(0);
 
                 scanner.Exclude(assembly1);
@@ -107,6 +280,7 @@ namespace Grapevine.Tests.Server
             public void SkipsDuplicateTypes()
             {
                 var scanner = new RouteScanner();
+                scanner.Logger = new XUnitLogger(_helper);
                 scanner.ExcludedTypes().Count.ShouldBe(0);
 
                 scanner.Exclude<Route>();
@@ -125,33 +299,6 @@ namespace Grapevine.Tests.Server
                 scanner.ExcludedTypes().Count.ShouldBe(2);
                 scanner.ExcludedTypes()[0].ShouldBe(typeof(Route));
                 scanner.ExcludedTypes()[1].ShouldBe(typeof(Router));
-            }
-
-            [Fact]
-            public void SkipsDuplicateNamespaces()
-            {
-                const string ns1 = "Grapevine.Tests.Server";
-                const string ns2 = "Grapevine.Tests.Client";
-
-                var scanner = new RouteScanner();
-                scanner.ExcludedNamespaces().Count.ShouldBe(0);
-
-                scanner.Exclude(ns1);
-
-                scanner.ExcludedNamespaces().Count.ShouldBe(1);
-                scanner.ExcludedNamespaces()[0].ShouldBe(ns1);
-
-                scanner.Exclude(ns2);
-
-                scanner.ExcludedNamespaces().Count.ShouldBe(2);
-                scanner.ExcludedNamespaces()[0].ShouldBe(ns1);
-                scanner.ExcludedNamespaces()[1].ShouldBe(ns2);
-
-                scanner.Exclude(ns1);
-
-                scanner.ExcludedNamespaces().Count.ShouldBe(2);
-                scanner.ExcludedNamespaces()[0].ShouldBe(ns1);
-                scanner.ExcludedNamespaces()[1].ShouldBe(ns2);
             }
 
             public class IsExcludedMethod
