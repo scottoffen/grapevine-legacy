@@ -32,7 +32,8 @@ namespace Grapevine.Tests.Client
                 var actionCalled = false;
                 Action updateActionCalled = () => actionCalled = true;
 
-                var client = new RestClient { RequestTimeoutAction = updateActionCalled, Host = "localhost", Port = 1234, Scheme = UriScheme.Http };
+                var client = new RestClient { RequestTimeoutAction = updateActionCalled,
+                    Host = "localhost", Port = 1234, Scheme = UriScheme.Http };
 
                 var req = new RestRequest { Timeout = 1, ContentType = ContentType.MIME };
 

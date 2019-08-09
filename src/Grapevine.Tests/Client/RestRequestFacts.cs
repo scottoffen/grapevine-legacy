@@ -84,7 +84,13 @@ namespace Grapevine.Tests.Client
                 httpRequest.ContinueDelegate.ShouldBeNull();
                 httpRequest.CookieContainer.ShouldNotBeNull();
                 httpRequest.Expect.ShouldBeNull();
+
+#if NETCOREAPP2_1
+                // Core adds the Content-Length header
+                httpRequest.Headers.Count.ShouldBe(4);
+#else
                 httpRequest.Headers.Count.ShouldBe(3);
+#endif
                 httpRequest.ImpersonationLevel.ShouldBe(TokenImpersonationLevel.Delegation);
                 httpRequest.KeepAlive.ShouldBeTrue();
                 httpRequest.MaximumAutomaticRedirections.ShouldBe(50);
