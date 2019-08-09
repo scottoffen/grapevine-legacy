@@ -37,7 +37,7 @@ namespace Grapevine.Tests.Server
             [Fact]
             public void AbsolutePathShouldNotChange()
             {
-                const string path = @"C:\temp";
+                const string path = @"C:\temp\kjhgf";
 
                 var folder = new PublicFolder(path);
 

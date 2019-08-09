@@ -2,12 +2,29 @@
 
   <PropertyGroup>
     <TargetFrameworks>net4;netstandard2.0</TargetFrameworks>
+    <PackageId>Grapevine</PackageId>
+    <PackageVersion>$(Version)</PackageVersion>
     <Authors>Scott Offen</Authors>
-    <AssemblyVersion>4.1.1.0</AssemblyVersion>
-    <FileVersion>4.1.1.0</FileVersion>
     <Copyright>© 2014-2019 Scott Offen</Copyright>
-    <Version>4.1.1.0</Version>
+    <Owners>Scott Offen</Owners>
+    <Title>The embeddable, unopinionated minimalist rest framework for .NET</Title>
+    <Description>The embeddable, unopinionated minimalist rest framework for .NET</Description>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageTags>rest http api web router client server express json xml embedded</PackageTags>
+    <AssemblyVersion>4.1.2.0</AssemblyVersion>
+    <FileVersion>4.1.2.0</FileVersion>
+    <Version>4.1.2.0</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/sukona/Grapevine</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/sukona/Grapevine/wiki</PackageProjectUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/sukona/Grapevine/master/img/grapevine.png</PackageIconUrl>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE" Pack="true" Visible="false" PackagePath=""/>
+  </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="System.Security.Permissions">

@@ -634,110 +634,53 @@ namespace Grapevine.Tests.Server
             [Fact]
             public void ReturnsRoutesAndLogs()
             {
-                //ReflectionTypeLoadException exception = null;
-                //var attempts = 0;
+                var logger = new InMemoryLogger();
+                var scanner = new RouteScanner { Logger = logger };
 
-                //do
-                //{
-                //    attempts++;
-                //    exception = null;
+                logger.Logs.ShouldBeEmpty();
 
-                //    try
-                //    {
-                        var logger = new InMemoryLogger();
-                        var scanner = new RouteScanner { Logger = logger };
+                var routes = scanner.Scan();
 
-                        logger.Logs.ShouldBeEmpty();
-
-                        var routes = scanner.Scan();
-
-                        routes.ShouldNotBeNull();
-                        routes.ShouldNotBeEmpty();
-                        routes.Count.ShouldBeGreaterThanOrEqualTo(2);
-                        logger.Logs.ShouldNotBeEmpty();
-                //    }
-                //    catch (ReflectionTypeLoadException ex)
-                //    {
-                //        exception = ex;
-                //        Thread.Sleep(417);
-                //    }
-                //} while (exception != null || attempts > 5);
-
-                //if (exception != null) throw exception;
+                routes.ShouldNotBeNull();
+                routes.ShouldNotBeEmpty();
+                routes.Count.ShouldBeGreaterThanOrEqualTo(2);
+                logger.Logs.ShouldNotBeEmpty();
             }
 
             [Fact]
             public void ReturnsRoutesAndLogsWithInclusions()
             {
-                //ReflectionTypeLoadException exception = null;
-                //var attempts = 0;
+                var logger = new InMemoryLogger();
+                var scanner = new RouteScanner { Logger = logger };
 
-                //do
-                //{
-                //    attempts++;
-                //    exception = null;
+                scanner.Include(Assembly.GetExecutingAssembly());
+                logger.Logs.ShouldBeEmpty();
 
-                //    try
-                //    {
-                        var logger = new InMemoryLogger();
-                        var scanner = new RouteScanner { Logger = logger };
+                var routes = scanner.Scan();
 
-                        scanner.Include(Assembly.GetExecutingAssembly());
-                        logger.Logs.ShouldBeEmpty();
-
-                        var routes = scanner.Scan();
-
-                        routes.ShouldNotBeNull();
-                        routes.Count.ShouldBe(2);
-                        logger.Logs.ShouldNotBeEmpty();
-                //    }
-                //    catch (ReflectionTypeLoadException ex)
-                //    {
-                //        exception = ex;
-                //        Thread.Sleep(231);
-                //    }
-                //} while (exception != null || attempts > 5);
-
-                //if (exception != null) throw exception;
+                routes.ShouldNotBeNull();
+                routes.Count.ShouldBe(2);
+                logger.Logs.ShouldNotBeEmpty();
             }
 
             [Fact]
             public void ReturnsRoutesAndLogsWithExclusions()
             {
-                //ReflectionTypeLoadException exception = null;
-                //var attempts = 0;
+                var logger = new InMemoryLogger();
+                var scanner = new RouteScanner { Logger = logger };
 
-                //do
-                //{
-                //    attempts++;
-                //    exception = null;
+                logger.Logs.ShouldBeEmpty();
 
-                //    try
-                //    {
-                        var logger = new InMemoryLogger();
-                        var scanner = new RouteScanner { Logger = logger };
+                var routesBefore = scanner.Scan();
 
-                        logger.Logs.ShouldBeEmpty();
+                scanner.Exclude(Assembly.GetExecutingAssembly());
 
-                        var routesBefore = scanner.Scan();
+                var routesAfter = scanner.Scan();
 
-                        scanner.Exclude(Assembly.GetExecutingAssembly());
-
-                        var routesAfter = scanner.Scan();
-
-                        routesBefore.ShouldNotBeNull();
-                        routesAfter.ShouldNotBeNull();
-                        (routesBefore.Count - routesAfter.Count).ShouldBe(2);
-                        logger.Logs.ShouldNotBeEmpty();
-                //    }
-                //    catch (ReflectionTypeLoadException ex)
-                //    {
-                //        exception = ex;
-                //        Thread.Sleep(780);
-                //    }
-                //} while (exception != null || attempts > 5);
-
-                //if (exception != null) throw exception;
+                routesBefore.ShouldNotBeNull();
+                routesAfter.ShouldNotBeNull();
+                (routesBefore.Count - routesAfter.Count).ShouldBe(2);
+                logger.Logs.ShouldNotBeEmpty();
             }
         }
 

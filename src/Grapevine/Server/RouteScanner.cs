@@ -144,7 +144,12 @@ namespace Grapevine.Server
             foreach (
                 var assembly in
                     AppDomain.CurrentDomain.GetAssemblies()
-                        .Where(a => !a.GlobalAssemblyCache && a.GetName().Name != "Grapevine" && !a.GetName().Name.StartsWith("vshost"))
+                        .Where(a => !a.GlobalAssemblyCache
+                            && a.GetName().Name != "Grapevine"
+                            && !a.GetName().Name.StartsWith("vshost")
+                            && !a.GetName().Name.StartsWith("xunit")
+                            && !a.GetName().Name.StartsWith("Shouldly")
+                        )
 #if NETSTANDARD
                         .Where(x => !x.GetName().Name.Contains("TestPlatform"))
 #endif
@@ -274,7 +279,7 @@ namespace Grapevine.Server
             }
             catch (ReflectionTypeLoadException ex)
             {
-                 foreach (var loaderEx in ex.LoaderExceptions)
+                foreach (var loaderEx in ex.LoaderExceptions)
                 {
                     Debug.WriteLine(loaderEx);
                     Console.WriteLine(loaderEx);
