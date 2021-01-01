@@ -34,7 +34,8 @@ namespace Grapevine.Local
         [RestRoute(HttpMethod = HttpMethod.ALL, PathInfo = "^.*$")]
         public IHttpContext LevelOne(IHttpContext context)
         {
-            throw new Exception("Killing It!");
+            // throw new Exception("Killing It!");
+            return context;
         }
 
         [RestRoute]

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Text;
 using Grapevine.Interfaces.Server;
 using Grapevine.Server;
@@ -120,7 +119,7 @@ namespace Grapevine.Tests.Server
             {
                 const HttpStatusCode status = HttpStatusCode.EnhanceYourCalm;
                 var exception = new Exception("This is the exception message");
-                
+
                 var bytes = GetBytes($"{exception.Message}{Environment.NewLine}<br>{Environment.NewLine}{exception.StackTrace}");
 
                 _response.ContentEncoding = Encoding.ASCII;

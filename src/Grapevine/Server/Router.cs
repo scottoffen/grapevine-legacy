@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -25,26 +24,6 @@ namespace Grapevine.Server
     /// </summary>
     public interface IRouter
     {
-        #region Deprecated
-
-        /// <summary>
-        /// Gets or sets a function to be executed prior to any routes being executed
-        /// </summary>
-        [Obsolete(
-             "The After delegate has been replace with the AfterRouting event and will be removed in the next version.")
-        ]
-        Func<IHttpContext, IHttpContext> After { get; set; }
-
-        /// <summary>
-        /// Gets or sets a function to be executed after route execution has completed
-        /// </summary>
-        [Obsolete(
-             "The Before delegate has been replace with the BeforeRouting event and will be removed in the next version."
-         )]
-        Func<IHttpContext, IHttpContext> Before { get; set; }
-
-        #endregion
-
         /// <summary>
         /// Raised after a request has completed invoking matching routes
         /// </summary>
@@ -304,14 +283,6 @@ namespace Grapevine.Server
 
     public class Router : IRouter
     {
-        #region Deprecated
-
-        public Func<IHttpContext, IHttpContext> After { get; set; }
-        public Func<IHttpContext, IHttpContext> Before { get; set; }
-        private IGrapevineLogger _logger;
-
-        #endregion
-
         protected internal readonly IList<IRoute> RegisteredRoutes;
 
         public event RoutingEventHandler AfterRouting;
@@ -322,6 +293,8 @@ namespace Grapevine.Server
         public string Scope { get; }
         public IRouteScanner Scanner { get; protected internal set; }
         public IList<IRoute> RoutingTable => RegisteredRoutes.ToList().AsReadOnly();
+
+        private IGrapevineLogger _logger;
 
         /// <summary>
         /// Creates a new Router object
@@ -618,7 +591,6 @@ namespace Grapevine.Server
         /// <param name="context">The <see cref="IHttpContext"/> being routed</param>
         protected internal void OnBeforeRouting(IHttpContext context)
         {
-            Before?.Invoke(context);
             BeforeRouting?.Invoke(context);
         }
 
@@ -628,7 +600,6 @@ namespace Grapevine.Server
         /// <param name="context">The <see cref="IHttpContext"/> being routed</param>
         protected internal void OnAfterRouting(IHttpContext context)
         {
-            After?.Invoke(context);
             if (AfterRouting == null) return;
             foreach (var action in AfterRouting.GetInvocationList().Reverse().Cast<RoutingEventHandler>())
             {

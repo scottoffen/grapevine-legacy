@@ -42,5 +42,15 @@ namespace Grapevine.Shared
         {
             return guid.ToString().Split('-').Last();
         }
+
+        internal static bool StartsWith(this string value, string[] values)
+        {
+            foreach (var x in values)
+            {
+                if (value.StartsWith(x, StringComparison.CurrentCultureIgnoreCase)) return true;
+            }
+
+            return false;
+        }
     }
 }

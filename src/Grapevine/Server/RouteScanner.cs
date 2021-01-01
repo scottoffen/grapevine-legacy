@@ -5,19 +5,13 @@ using System.Linq;
 using System.Reflection;
 using Grapevine.Interfaces.Shared;
 using Grapevine.Server.Attributes;
+using Grapevine.Shared;
 using Grapevine.Shared.Loggers;
 
 namespace Grapevine.Server
 {
     public interface IRouteScanner
     {
-        /// <summary>
-        /// Set a rule to exclude types in the specified namespace when auto-scanning for routes
-        /// </summary>
-        /// <param name="nameSpace"></param>
-        [Obsolete("This will be removed in the next release")]
-        void Exclude(string nameSpace);
-
         /// <summary>
         /// Set a rule to exclude the specified type when auto-scanning for routes
         /// </summary>
@@ -35,13 +29,6 @@ namespace Grapevine.Server
         /// </summary>
         /// <param name="assembly"></param>
         void Exclude(Assembly assembly);
-
-        /// <summary>
-        /// Set a rule to include types in the specified namespace when auto-scanning for routes
-        /// </summary>
-        /// <param name="nameSpace"></param>
-        [Obsolete("This will be removed in the next release")]
-        void Include(string nameSpace);
 
         /// <summary>
         /// Set a rule to include the specified type when auto-scanning for routes
@@ -140,21 +127,29 @@ namespace Grapevine.Server
 
         static RouteScanner()
         {
+            var IgnoredAssemblies = new List<string>
+            {
+                "vshost",
+                "xunit",
+                "Shouldly",
+                "System",
+                "Microsoft",
+                "netstandard",
+                "TestPlatform",
+            };
+
             Assemblies = new List<Assembly>();
             foreach (
                 var assembly in
                     AppDomain.CurrentDomain.GetAssemblies()
-                        .Where(a => !a.GlobalAssemblyCache
-                            && a.GetName().Name != "Grapevine"
-                            && !a.GetName().Name.StartsWith("vshost")
-                            && !a.GetName().Name.StartsWith("xunit")
-                            && !a.GetName().Name.StartsWith("Shouldly")
+                        .Where(a => a.GetName().Name != "Grapevine"
+                            && !a.GetName().Name.StartsWith(IgnoredAssemblies.ToArray())
                         )
 #if NETSTANDARD
-                        .Where(x => !x.GetName().Name.Contains("TestPlatform"))
+                        .Where(a => !a.GlobalAssemblyCache)
 #endif
                         .OrderBy(a => a.FullName))
-            {Assemblies.Add(assembly);}
+                { Assemblies.Add(assembly); }
         }
 
         internal RouteScanner()

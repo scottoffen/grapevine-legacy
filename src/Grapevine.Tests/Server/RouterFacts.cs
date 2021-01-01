@@ -100,7 +100,10 @@ namespace Grapevine.Tests.Server
                     context.WasRespondedTo.Returns(true); return ctx; });
                 routing.Add(route);
 
-                var router = new Router { After = ctx => { executionOrder.Add("after"); return ctx; } };
+                var router = new Router();
+                router.AfterRouting += ctx => {
+                    executionOrder.Add("after");
+                };
 
                 router.Route(context, routing);
 
@@ -146,7 +149,8 @@ namespace Grapevine.Tests.Server
                     context.WasRespondedTo.Returns(true); return ctx; });
                 routing.Add(route);
 
-                var router = new Router { Before = ctx => { executionOrder.Add("before"); return ctx; } };
+                var router = new Router();
+                router.BeforeRouting += ctx => { executionOrder.Add("before"); };
 
                 router.Route(context, routing);
 

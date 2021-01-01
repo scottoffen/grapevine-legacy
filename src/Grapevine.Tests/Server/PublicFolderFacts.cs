@@ -37,7 +37,7 @@ namespace Grapevine.Tests.Server
             [Fact]
             public void AbsolutePathShouldNotChange()
             {
-                const string path = @"C:\temp\kjhgf";
+                string path = Path.Combine(Path.GetTempPath(), "kjhgf");
 
                 var folder = new PublicFolder(path);
 

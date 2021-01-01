@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Grapevine.Interfaces.Shared;
 using Grapevine.Shared.Loggers;
@@ -29,12 +28,6 @@ namespace Grapevine.Server
         event ServerEventHandler BeforeStopping;
 
         /// <summary>
-        /// Gets or sets the number of HTTP connection threads maintained per processor; defaults to 50
-        /// </summary>
-        [Obsolete("Connections has been deprecated and is not longer used.")]
-        int Connections { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating that route exceptions should be rethrown instead of logged
         /// </summary>
         bool EnableThrowingExceptions { get; set; }
@@ -50,42 +43,6 @@ namespace Grapevine.Server
         /// Gets or sets the internal logger
         /// </summary>
         IGrapevineLogger Logger { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Action that will be executed immediately following server start; synonym for OnAfterStart
-        /// </summary>
-        [Obsolete("The OnStart delegate has been replace with the BeforeStarting event and will be removed in the next version.")]
-        Action OnStart { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Action that will be executed before attempting to start the server
-        /// </summary>
-        [Obsolete("The OnBeforeStart delegate has been replace with the BeforeStarting event and will be removed in the next version.")]
-        Action OnBeforeStart { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Action that will be executed immediately following server start
-        /// </summary>
-        [Obsolete("The OnAfterStart delegate has been replace with the AfterStarting event and will be removed in the next version.")]
-        Action OnAfterStart { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Action that will be executed immediately following server stop; synonym for OnAfterStop
-        /// </summary>
-        [Obsolete("The OnStop delegate has been replace with the AfterStopping event and will be removed in the next version.")]
-        Action OnStop { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Action that will be executed before attempting to stop the server
-        /// </summary>
-        [Obsolete("The OnBeforeStop delegate has been replace with the BeforeStopping event and will be removed in the next version.")]
-        Action OnBeforeStop { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Action that will be executed immediately following server stops
-        /// </summary>
-        [Obsolete("The OnAfterStop delegate has been replace with the AfterStopping event and will be removed in the next version.")]
-        Action OnAfterStop { get; set; }
 
         /// <summary>
         /// Gets or sets the port number (as a string) used to create the prefix used by the HttpListener for incoming traffic; defaults to 1234
@@ -124,27 +81,6 @@ namespace Grapevine.Server
 
     public class ServerSettings : IServerSettings
     {
-        #region Deprecated
-        public Action OnBeforeStart { get; set; }
-        public Action OnAfterStart { get; set; }
-        public Action OnBeforeStop { get; set; }
-        public Action OnAfterStop { get; set; }
-
-        public Action OnStart
-        {
-            get { return OnAfterStart; }
-            set { OnAfterStart = value; }
-        }
-
-        public Action OnStop
-        {
-            get { return OnAfterStop; }
-            set { OnAfterStop = value; }
-        }
-
-        public int Connections { get; set; }
-        #endregion
-
         public event ServerEventHandler AfterStarting;
         public event ServerEventHandler AfterStopping;
         public event ServerEventHandler BeforeStarting;
@@ -164,7 +100,6 @@ namespace Grapevine.Server
         public ServerSettings()
         {
             PublicFolders = new List<IPublicFolder>();
-            Connections = 50;
             Host = "localhost";
             Logger = NullLogger.GetInstance();
             Port = "1234";

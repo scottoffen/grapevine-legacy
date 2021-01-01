@@ -14,7 +14,7 @@ namespace Grapevine.Tests.Server
             var stopped = new ManualResetEvent(false);
             var port = PortFinder.FindNextLocalOpenPort(1234);
 
-            using (var server = new RestServer { Connections = 1, Port = port })
+            using (var server = new RestServer { Port = port })
             {
                 server.OnAfterStop += () => { stopped.Set(); };
 
