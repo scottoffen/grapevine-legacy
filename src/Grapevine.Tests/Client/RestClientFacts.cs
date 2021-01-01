@@ -49,7 +49,7 @@ namespace Grapevine.Tests.Client
 
                 var req = new RestRequest { Timeout = 1, ContentType = ContentType.MIME };
 
-                Should.Throw<WebException>(() => client.Execute(req));
+                Should.Throw<Exception>(() => client.Execute(req));
             }
         }
     }
