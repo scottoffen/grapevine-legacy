@@ -18,7 +18,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/sukona/Grapevine</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/sukona/Grapevine/wiki</PackageProjectUrl>
+    <PackageProjectUrl>https://sukona.github.io/Grapevine/</PackageProjectUrl>
     <PackageIcon>grapevine.png</PackageIcon>
     <PackageIconUrl>https://raw.githubusercontent.com/sukona/Grapevine/master/img/grapevine.png</PackageIconUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
