@@ -1,7 +1,7 @@
 Grapevine Support
 =================
 
-Unfortunately, I don't have the time to personally respond to every support request I receive for the open source software I publish. [sadface] Fortunately, I haven't received very many such requests - fortunate because that means Grapevine is easy to understand and intuitive to use! If you do find yourself in need of some support, here are several free options, and one not-so-free option.
+If you do find yourself in need of some support, here are several options.
 
 ### [Refer To The Documentation](https://github.com/scottoffen/Grapevine/wiki) ###
 
@@ -11,7 +11,7 @@ In addition to class level documentation, the [project wiki](https://github.com/
 
 **For 4.x**
 
-See the [new project website](https://sukona.github.io/Grapevine/), hosted by github.io!
+See the [new project website](https://sukona.github.io/Grapevine/).
 
 ### [Ask The Community For Help](http://stackoverflow.com/questions/tagged/grapevine?sort=newest) ###
 
@@ -32,15 +32,3 @@ If you have a great idea for an enhancement, but don't know how to implement it,
 Whether you're contributing code or just an idea, providing a clear and detailed use case and usage examples is going to be paramount in deciding if and when your contribution makes it into the core library.
 
 Depending on our availability, sometimes pull requests will sit in the queue until we can get around to reviewing them and merging them into the master branch. I appreciate your patience with my time as I endeavor to ensure that Grapevine remains a stable, high-quality and reliable solution.
-
-### Geek For Hire ###
-
-> Let me be **very clear** about this: I did not create Grapevine and offer it as open source with the intention of making money off of it, nor am I making this suggestion in an *ex post facto* attempt to monetize. Not that I'd turn down the opportunity to benefit from my hard work here, but I'd be just fine if this option were never exercised. That being said...
-
-**If you'd like to pay** for my time and expenses to:
-
-- Provide consulting services on your project
-- Train your team on REST and/or Grapevine
-- Give higher priority to your support requests
-
-Then you should [contact me directly](mailto:github@scottoffen.com) with your request, project time-frame and a description of the problem you'd like me to solve, and I'll respond to you with my availability and an estimate on a first-come-first-serve basis.

@@ -1,3 +1,8 @@
+<h1 style="text-align: center;">
+    Grapevine 4 is in maintenence mode<br>Please migrate to <a href="https://github.com/scottoffen/grapevine">Grapevine 5</a>
+</h1>
+
+
 ![](https://raw.githubusercontent.com/sukona/Grapevine/master/img/grapevine.png)
 
 [![Join the chat at https://gitter.im/sukona/Grapevine](https://badges.gitter.im/sukona/Grapevine.svg)](https://gitter.im/sukona/Grapevine?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
@@ -5,7 +10,8 @@
 
 *The best solutions are the simplest to implement*. Embedding a REST/HTTP server in your application should be **simple**. Consuming REST resources from inside your application should be **simple**. If what you've been using *doesn't feel simple*, try **Grapevine**. It doesn't get any simpler than this.
 
-> I'm **always** open to [flattry](https://flattr.com/submit/auto?fid=x79jw7&url=https%3A%2F%2Fgithub.com%2Fsukona%2FGrapevine)
+>**Important**:<br>
+>No additional features or enhancements are being made. Bug fixes will be considered on a case-by-case basis.
 
 ### Introduction ###
 
