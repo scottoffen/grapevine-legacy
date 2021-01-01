@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Grapevine.Interfaces.Server;
+﻿using Grapevine.Interfaces.Server;
 using Grapevine.Server;
 using NSubstitute;
 using Shouldly;

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using Grapevine.Client;
 using Grapevine.Shared;
 using Shouldly;
