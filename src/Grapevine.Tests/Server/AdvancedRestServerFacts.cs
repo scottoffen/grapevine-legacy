@@ -14,7 +14,7 @@ namespace Grapevine.Tests.Server
         {
             var listener = Substitute.For<IHttpListener>();
             var advanced = new AdvancedRestServer(listener);
-            
+
             var val = advanced.AuthenticationSchemeSelectorDelegate;
             advanced.AuthenticationSchemeSelectorDelegate = val;
 
@@ -34,32 +34,6 @@ namespace Grapevine.Tests.Server
             var temp = listener.Received().AuthenticationSchemes;
             listener.Received().AuthenticationSchemes = val;
         }
-
-        //[Fact]
-        //public void ExtendedProtectionPolicyProperty()
-        //{
-        //    var listener = Substitute.For<IHttpListener>();
-        //    var advanced = new AdvancedRestServer(listener);
-
-        //    var val = advanced.ExtendedProtectionPolicy;
-        //    advanced.ExtendedProtectionPolicy = val;
-
-        //    var temp = listener.Received().ExtendedProtectionPolicy;
-        //    listener.Received().ExtendedProtectionPolicy = val;
-        //}
-
-        //[Fact]
-        //public void ExtendedProtectionSelectorDelegateProperty()
-        //{
-        //    var listener = Substitute.For<IHttpListener>();
-        //    var advanced = new AdvancedRestServer(listener);
-
-        //    var val = advanced.ExtendedProtectionSelectorDelegate;
-        //    advanced.ExtendedProtectionSelectorDelegate = val;
-
-        //    var temp = listener.Received().ExtendedProtectionSelectorDelegate;
-        //    listener.Received().ExtendedProtectionSelectorDelegate = val;
-        //}
 
         [Fact]
         public void IgnoreWriteExceptionsProperty()

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net;
-using System.Security.Authentication.ExtendedProtection;
 using System.Security.Permissions;
 
 namespace Grapevine.Interfaces.Server
@@ -21,19 +20,9 @@ namespace Grapevine.Interfaces.Server
         AuthenticationSchemeSelector AuthenticationSchemeSelectorDelegate { get; set; }
 
         /// <summary>
-        /// Gets a default list of Service Provider Names (SPNs) as determined by registered prefixes.
-        /// </summary>
-        ServiceNameCollection DefaultServiceNames { get; }
-
-        /// <summary>
         /// Get or set the ExtendedProtectionPolicy to use for extended protection for a session.
         /// </summary>
         //ExtendedProtectionPolicy ExtendedProtectionPolicy { get; set; }
-
-        /// <summary>
-        /// Get or set the delegate called to determine the ExtendedProtectionPolicy to use for each request.
-        /// </summary>
-        //System.Net.HttpListener.ExtendedProtectionSelector ExtendedProtectionSelectorDelegate { get; set; }
 
         /// <summary>
         /// Gets or sets a Boolean value that specifies whether your application receives exceptions that occur when an HttpListener sends the response to the client.
@@ -131,23 +120,6 @@ namespace Grapevine.Interfaces.Server
             get { return InnerListener.AuthenticationSchemeSelectorDelegate; }
             set { InnerListener.AuthenticationSchemeSelectorDelegate = value; }
         }
-
-        public ServiceNameCollection DefaultServiceNames => InnerListener.DefaultServiceNames;
-
-        //public ExtendedProtectionPolicy ExtendedProtectionPolicy
-        //{
-        //    get { return InnerListener.ExtendedProtectionPolicy; }
-        //    set
-        //    {
-        //        InnerListener.ExtendedProtectionPolicy = value;
-        //    }
-        //}
-
-        //public System.Net.HttpListener.ExtendedProtectionSelector ExtendedProtectionSelectorDelegate
-        //{
-        //    get { return InnerListener.ExtendedProtectionSelectorDelegate; }
-        //    set { InnerListener.ExtendedProtectionSelectorDelegate = value; }
-        //}
 
         public bool IgnoreWriteExceptions
         {

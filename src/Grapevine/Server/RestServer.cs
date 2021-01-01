@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Security.Authentication.ExtendedProtection;
 using System.Threading;
 using Grapevine.Exceptions.Server;
 using Grapevine.Interfaces.Server;
 using Grapevine.Interfaces.Shared;
 using Grapevine.Shared;
 using Grapevine.Shared.Loggers;
-using ExtendedProtectionSelector = System.Net.HttpListener.ExtendedProtectionSelector;
 using HttpListener = Grapevine.Interfaces.Server.HttpListener;
 
 namespace Grapevine.Server
@@ -423,24 +421,6 @@ namespace Grapevine.Server
             get { return _listener.AuthenticationSchemes; }
             set { _listener.AuthenticationSchemes = value; }
         }
-
-        /// <summary>
-        /// Get or set the ExtendedProtectionPolicy to use for extended protection for a session
-        /// </summary>
-        //public ExtendedProtectionPolicy ExtendedProtectionPolicy
-        //{
-        //    get { return _listener.ExtendedProtectionPolicy; }
-        //    set { _listener.ExtendedProtectionPolicy = value; }
-        //}
-
-        /// <summary>
-        /// Get or set the delegate called to determine the ExtendedProtectionPolicy to use for each request
-        /// </summary>
-        //public ExtendedProtectionSelector ExtendedProtectionSelectorDelegate
-        //{
-        //    get { return _listener.ExtendedProtectionSelectorDelegate; }
-        //    set { _listener.ExtendedProtectionSelectorDelegate = value; }
-        //}
 
         /// <summary>
         /// Gets or sets a Boolean value that specifies whether your application receives exceptions that occur when an HttpListener sends the response to the client
