@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Grapevine.Interfaces.Shared;
 using Grapevine.Server.Attributes;
+using Grapevine.Shared;
 using Grapevine.Shared.Loggers;
 
 namespace Grapevine.Server
@@ -126,21 +127,29 @@ namespace Grapevine.Server
 
         static RouteScanner()
         {
+            var IgnoredAssemblies = new List<string>
+            {
+                "vshost",
+                "xunit",
+                "Shouldly",
+                "System",
+                "Microsoft",
+                "netstandard",
+                "TestPlatform",
+            };
+
             Assemblies = new List<Assembly>();
             foreach (
                 var assembly in
                     AppDomain.CurrentDomain.GetAssemblies()
-                        .Where(a => !a.GlobalAssemblyCache
-                            && a.GetName().Name != "Grapevine"
-                            && !a.GetName().Name.StartsWith("vshost")
-                            && !a.GetName().Name.StartsWith("xunit")
-                            && !a.GetName().Name.StartsWith("Shouldly")
+                        .Where(a => a.GetName().Name != "Grapevine"
+                            && !a.GetName().Name.StartsWith(IgnoredAssemblies.ToArray())
                         )
 #if NETSTANDARD
-                        .Where(x => !x.GetName().Name.Contains("TestPlatform"))
+                        .Where(a => !a.GlobalAssemblyCache)
 #endif
                         .OrderBy(a => a.FullName))
-            {Assemblies.Add(assembly);}
+                { Assemblies.Add(assembly); }
         }
 
         internal RouteScanner()
