@@ -12,13 +12,6 @@ namespace Grapevine.Server
     public interface IRouteScanner
     {
         /// <summary>
-        /// Set a rule to exclude types in the specified namespace when auto-scanning for routes
-        /// </summary>
-        /// <param name="nameSpace"></param>
-        [Obsolete("This will be removed in the next release")]
-        void Exclude(string nameSpace);
-
-        /// <summary>
         /// Set a rule to exclude the specified type when auto-scanning for routes
         /// </summary>
         /// <param name="type"></param>
@@ -35,13 +28,6 @@ namespace Grapevine.Server
         /// </summary>
         /// <param name="assembly"></param>
         void Exclude(Assembly assembly);
-
-        /// <summary>
-        /// Set a rule to include types in the specified namespace when auto-scanning for routes
-        /// </summary>
-        /// <param name="nameSpace"></param>
-        [Obsolete("This will be removed in the next release")]
-        void Include(string nameSpace);
 
         /// <summary>
         /// Set a rule to include the specified type when auto-scanning for routes

@@ -2,12 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using Grapevine.Exceptions.Server;
 using Grapevine.Interfaces.Server;
-using Grapevine.Interfaces.Shared;
 using Grapevine.Server;
-using Grapevine.Shared;
 using Grapevine.Shared.Loggers;
 using NSubstitute;
 using Shouldly;
@@ -24,7 +21,6 @@ namespace Grapevine.Tests.Server
             {
                 using (var server = new RestServer())
                 {
-                    server.Connections.ShouldBe(50);
                     server.EnableThrowingExceptions.ShouldBeFalse();
                     server.Host.ShouldBe("localhost");
                     server.IsListening.ShouldBeFalse();
@@ -773,9 +769,9 @@ namespace Grapevine.Tests.Server
         public CustomSettings()
         {
             Port = "5555";
-            OnBeforeStart = () =>
+            BeforeStarting += (s) =>
             {
-                UseHttps = true;
+                s.UseHttps = true;
             };
         }
     }

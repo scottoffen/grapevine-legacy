@@ -92,13 +92,6 @@ namespace Grapevine.Server
             Logger = options.Logger;
             UseHttps = options.UseHttps;
 
-            /* Obsolete */
-            Connections = options.Connections;
-            OnBeforeStart = options.OnBeforeStart;
-            OnAfterStart = options.OnAfterStart;
-            OnBeforeStop = options.OnBeforeStop;
-            OnAfterStop = options.OnAfterStop;
-
             Advanced = new AdvancedRestServer(Listener);
             Listener.IgnoreWriteExceptions = true;
         }
@@ -119,8 +112,6 @@ namespace Grapevine.Server
         /// Provides direct access to selected methods and properties on the internal HttpListener instance in use; do not used unless you are fully aware of what you are doing and the consequences involved.
         /// </summary>
         public AdvancedRestServer Advanced { get; }
-
-        public int Connections { get; set; }
 
         public string Host
         {

@@ -69,8 +69,6 @@ namespace Grapevine.Client
         public CookieContainer Cookies { get; }
         public ICredentials Credentials { get; set; }
 
-        private Action _requestTimeoutAction;
-
         public Dictionary<WebExceptionStatus, WebExceptionHandler> WebExceptionHandlers;
 
         public RestClient()
@@ -79,17 +77,6 @@ namespace Grapevine.Client
             Scheme = UriScheme.Http;
             Cookies = new CookieContainer();
             WebExceptionHandlers = new Dictionary<WebExceptionStatus, WebExceptionHandler>();
-        }
-
-        [Obsolete("RequestTimeoutAction is deprecated, add an entry to WebExceptionHandlers instead.")]
-        public Action RequestTimeoutAction
-        {
-            get { return _requestTimeoutAction; }
-            set
-            {
-                _requestTimeoutAction = value;
-                WebExceptionHandlers[WebExceptionStatus.Timeout] = (client, request, exception) => _requestTimeoutAction();
-            }
         }
 
         public string Host
