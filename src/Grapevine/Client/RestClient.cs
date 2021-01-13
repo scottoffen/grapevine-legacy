@@ -111,19 +111,20 @@ namespace Grapevine.Client
 
         public IRestResponse Execute(IRestRequest restRequest)
         {
-            var request = restRequest.ToHttpWebRequest(Builder, Cookies);
-
-            if (request.Credentials == null) request.Credentials = Credentials;
-            request.CookieContainer.Add(Cookies.GetCookies(request.RequestUri));
-
-            RestResponse response;
             var stopwatch = Stopwatch.StartNew();
+            RestResponse response;
 
             try
             {
-                var httpresponse = (HttpWebResponse)request.GetResponse();
-                var elapsed = stopwatch.ElapsedMilliseconds;
-                response = new RestResponse(httpresponse) { ElapsedTime = elapsed };
+                var request = restRequest.ToHttpWebRequest(Builder, Cookies);
+
+                if (request.Credentials == null) request.Credentials = Credentials;
+                request.CookieContainer.Add(Cookies.GetCookies(request.RequestUri));
+
+                response = new RestResponse((HttpWebResponse)request.GetResponse())
+                {
+                    ElapsedTime = stopwatch.ElapsedMilliseconds
+                };
             }
             catch (WebException e)
             {
