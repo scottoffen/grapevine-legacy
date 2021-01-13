@@ -7,20 +7,18 @@
     <Authors>Scott Offen</Authors>
     <Copyright>© 2014-2019 Scott Offen</Copyright>
     <Owners>Scott Offen</Owners>
-    <Title>The embeddable, unopinionated minimalist rest framework for .NET</Title>
-    <Description>The embeddable, unopinionated minimalist rest framework for .NET</Description>
+    <Description>The unopinionated, embeddable, minimalist REST framework for .NET</Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageTags>rest http api web router client server express json xml embedded</PackageTags>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
-    <Version>4.2.0.0</Version>
+    <Version>4.2.1.0</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <RepositoryUrl>https://github.com/sukona/Grapevine</RepositoryUrl>
+    <RepositoryUrl>https://github.com/scottoffen/grapevine-legacy</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://sukona.github.io/Grapevine/</PackageProjectUrl>
+    <PackageProjectUrl>https://scottoffen.github.io/grapevine-legacy/</PackageProjectUrl>
     <PackageIcon>grapevine.png</PackageIcon>
-    <PackageIconUrl>https://raw.githubusercontent.com/sukona/Grapevine/master/img/grapevine.png</PackageIconUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
@@ -37,6 +35,10 @@
     <PackageReference Include="System.Security.Permissions">
       <Version>4.5.0</Version>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\grapevine.png" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
   <ItemGroup>
