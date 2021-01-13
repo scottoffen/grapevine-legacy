@@ -28,17 +28,13 @@
 
   <ItemGroup>
     <None Include="..\..\LICENSE" Pack="true" Visible="false" PackagePath=""/>
-    <None Include="..\..\img\grapevine.png" Pack="true" PackagePath="\"/>
+    <None Include="..\..\grapevine.png" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="System.Security.Permissions">
       <Version>4.5.0</Version>
     </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\grapevine.png" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
   <ItemGroup>
