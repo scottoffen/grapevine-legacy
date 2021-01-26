@@ -12,7 +12,7 @@
     <PackageTags>rest http api web router client server express json xml embedded</PackageTags>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
-    <Version>4.2.1.0</Version>
+    <Version>4.2.2.0</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <RepositoryUrl>https://github.com/scottoffen/grapevine-legacy</RepositoryUrl>

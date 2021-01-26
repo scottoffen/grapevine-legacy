@@ -217,7 +217,7 @@ namespace Grapevine.Interfaces.Server
         protected internal HttpRequest(HttpListenerRequest request)
         {
             Request = request;
-            PathInfo = RawUrl.Split(new[] { '?' }, 2)[0];
+            PathInfo = request.Url.AbsolutePath.TrimEnd('/');
             Name = $"{HttpMethod} {PathInfo}";
             Id = Guid.NewGuid().Truncate();
             Advanced = new AdvancedHttpRequest(request);
